@@ -1,0 +1,6 @@
+{
+	"name": "@architekt/ui",
+	"type": "module",
+	"version": "1.0-alpha",
+	"main": "index.js"
+}

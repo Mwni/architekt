@@ -1,0 +1,6 @@
+{
+	"name": "@architekt/engine",
+	"type": "module",
+	"version": "1.0-alpha",
+	"main": "index.js"
+}

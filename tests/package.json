@@ -1,0 +1,8 @@
+{
+	"name": "@architekt/tests",
+	"type": "module",
+	"version": "1.0-alpha",
+	"dependencies": {
+		"@architekt/engine": "file:../engine"
+	}
+}
