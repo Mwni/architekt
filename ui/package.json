@@ -2,5 +2,8 @@
 	"name": "@architekt/ui",
 	"type": "module",
 	"version": "1.0-alpha",
-	"main": "index.js"
+	"main": "index.js",
+	"dependencies": {
+		"@architekt/engine": "file:../engine"
+	}
 }

@@ -27,7 +27,7 @@ const Welcome = Component(({ name }) => {
 	}
 })
 
-mount(document.body, Welcome, { name: 'Alice' })
+mount(null, Welcome, { name: 'Alice' })
 
 /*
 const Welcome2 = Component(({ app, props, state, didCreate }) => {

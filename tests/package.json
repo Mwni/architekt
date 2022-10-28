@@ -3,6 +3,7 @@
 	"type": "module",
 	"version": "1.0-alpha",
 	"dependencies": {
-		"@architekt/engine": "file:../engine"
+		"@architekt/ui": "file:../ui",
+		"@architekt/web": "file:../web"
 	}
 }

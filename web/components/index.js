@@ -1,3 +1,3 @@
-export { VStack } from './vstack.js'
-export { Headline } from './headline.js'
-export { Text } from './text.js'
+export { default as VStack } from './vstack.js'
+export { default as Headline } from './headline.js'
+export { default as Text } from './text.js'
