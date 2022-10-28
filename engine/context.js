@@ -1,1 +1,3 @@
-export const ctx = {}
+export const ctx = {
+	stack: []
+}

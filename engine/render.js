@@ -34,5 +34,5 @@ function createNode(ctx, node, nextSibling){
 }
 
 function createComponent(ctx, node, nextSibling){
-
+	
 }

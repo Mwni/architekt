@@ -3,7 +3,7 @@ import { mount } from '@architekt/web'
 
 
 const Welcome = Component(({ name }) => {
-	let { app, state, didCreate } = getContext()
+	/*let { app, state, didCreate } = getContext()
 	
 	state.default({
 		name,
@@ -14,15 +14,15 @@ const Welcome = Component(({ name }) => {
 	didCreate(dom => {
 		dom.style.opacity = 0.5
 		app.notify()
-	})
+	})*/
 
 	return ({ name }) => {
 		VStack(() => {
 			Headline({ text: `Hi, ${name}` })
 			Text({ text: 'How are you today?' })
-			Button({
+			/*Button({
 				action: event => getContext().state.apply({ happy: true })
-			})
+			})*/
 		})
 	}
 })
