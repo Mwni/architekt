@@ -1,5 +1,5 @@
 import { Component } from '@architekt/engine'
-import Element from '../element.js'
+import { Element } from '../dom.js'
 
 export default Component(
 	() => {

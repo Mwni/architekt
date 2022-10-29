@@ -4,6 +4,7 @@
 	"version": "1.0-alpha",
 	"dependencies": {
 		"@architekt/ui": "file:../ui",
-		"@architekt/web": "file:../web"
+		"@architekt/web": "file:../web",
+		"@rollup/plugin-node-resolve": "^15.0.1"
 	}
 }
