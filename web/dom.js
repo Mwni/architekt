@@ -74,7 +74,7 @@ function setAttr(node, key, old, value, isFileInput) {
 	if(key === 'key' || key === 'is' || value == null || (old === value && !isFormAttribute(node, key)) && typeof value !== 'object' || key === 'type' && node.tag === 'input') 
 		return
 	
-	if(key[0] === 'o' && key[1] === 'n') 
+	if(key.startsWith('on')) 
 		return updateEvent(node, key, value)
 
 
@@ -209,20 +209,10 @@ function updateStyle(element, old, style) {
 	}
 }
 
-// Here's an explanation of how this works:
-// 1. The event names are always (by design) prefixed by `on`.
-// 2. The EventListener interface accepts either a function or an object
-//    with a `handleEvent` method.
-// 3. The object does not inherit from `Object.prototype`, to avoid
-//    any potential interference with that (e.g. setters).
-// 4. The event name is remapped to the handler before calling it.
-// 5. In function-based event handlers, `ev.target === this`. We replicate
-//    that below.
-// 6. In function-based event handlers, `return false` prevents the default
-//    action and stops event propagation. We replicate that below.
+
 function EventDict() {
 	// Save this, so the current redraw is correctly tracked.
-	this._ = currentRedraw
+	this._ = null
 }
 EventDict.prototype = Object.create(null)
 EventDict.prototype.handleEvent = function (ev) {

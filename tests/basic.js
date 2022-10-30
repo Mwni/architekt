@@ -1,28 +1,21 @@
-import { getContext, Component, VStack, Headline, Text } from '@architekt/ui'
+import { getContext, Component, VStack, Headline, Text, Button } from '@architekt/ui'
 import { mount } from '@architekt/web'
 
 
 const Welcome = Component(({ name }) => {
-	/*let { app, state, didCreate } = getContext()
-	
-	state.default({
-		name,
-		happy: undefined
-	})
-	
-
-	didCreate(dom => {
-		dom.style.opacity = 0.5
-		app.notify()
-	})*/
+	let clicks = 0
 
 	return ({ name }) => {
 		VStack(() => {
 			Headline({ text: `Hi, ${name}` })
-			Text({ text: 'How are you today?' })
-			/*Button({
-				action: event => getContext().state.apply({ happy: true })
-			})*/
+			Text({ text: `You clicked ${clicks} times!` })
+			Button({
+				text: 'Click',
+				action: event => {
+					console.log('clicked')
+					clicks++
+				}
+			})
 		})
 	}
 })
