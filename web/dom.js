@@ -20,6 +20,10 @@ export function insertElement(parent, element, nextSibling){
 		parent.appendChild(element)
 }
 
+export function removeElement(element){
+	element.parentNode.removeChild(element)
+}
+
 export function setAttrs(node, attrs, previousAttrs){
 	if(attrs){
 		let isInput = node.element === 'input'
@@ -227,7 +231,7 @@ function updateEvent(node, key, value) {
 		}else{
 			if(node.events[key] != null) 
 				node.dom.removeEventListener(key.slice(2), node.events, false)
-				
+
 			node.events[key] = undefined
 		}
 	}else if(value != null && (typeof value === 'function' || typeof value === 'object')){

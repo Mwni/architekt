@@ -73,7 +73,7 @@
 			}
 
 			if(previousNodes.length > commonLength)
-				removeNodes(parent, old, start, old.length);
+				removeNodes(previousNodes.slice(start));
 
 			if(nodes.length > commonLength)
 				createNodes(nodes.slice(start));
@@ -265,11 +265,14 @@
 				let previousParentDom = ctx.parentDom;
 		
 				ctx.parentDom = node.dom;
-		
+
 				updateNodes(node.children, previousNode.children, null);
 		
 				ctx.parentDom = previousParentDom;
 			}
+
+			//hack
+			Object.assign(previousNode, node);
 		}else {
 			removeNode(previousNode);
 			createNode(node);
@@ -295,8 +298,23 @@
 		else
 			updateNode(node.instance[0], previousNode.instance[0]);
 
-		node.dom = node.instance.dom;
+		node.dom = node.instance[0].dom;
 	}
+
+	function removeNodes(nodes){
+		for(let node of nodes){
+			if(!node)
+				continue
+
+			removeNode(node);
+		}
+	}
+
+	function removeNode(node){
+		if(node.dom)
+			ctx.removeElement(node.dom);
+	}
+
 
 	function getNextSibling(nodes, startIndex, nextSibling){
 		for(let i=startIndex; i<nodes.length; i++){
@@ -334,7 +352,6 @@
 
 		return {
 			redraw: () => {
-				console.log('redraw', scope);
 				render(scope, scope.node.component, scope.node.props);
 			}
 		}
@@ -363,6 +380,10 @@
 			parent.insertBefore(element, nextSibling);
 		else
 			parent.appendChild(element);
+	}
+
+	function removeElement(element){
+		element.parentNode.removeChild(element);
 	}
 
 	function setAttrs(node, attrs, previousAttrs){
@@ -570,7 +591,7 @@
 			}else {
 				if(node.events[key] != null) 
 					node.dom.removeEventListener(key.slice(2), node.events, false);
-					
+
 				node.events[key] = undefined;
 			}
 		}else if(value != null && (typeof value === 'function' || typeof value === 'object')){
@@ -635,6 +656,7 @@
 			components,
 			createElement, 
 			insertElement,
+			removeElement,
 			setAttrs,
 			parentDom: dom
 		};
@@ -652,7 +674,7 @@
 			VStack(() => {
 				Headline({ text: `Hi, ${name}` });
 				
-				for(let i=0; i<3; i++){
+				for(let i=0; i<(clicks%5)+1; i++){
 					Text({ text: `You clicked ${clicks} times!` });
 				}
 

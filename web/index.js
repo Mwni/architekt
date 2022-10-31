@@ -1,5 +1,5 @@
 import { render } from '@architekt/engine'
-import { createElement, insertElement, setAttrs } from './dom.js'
+import { createElement, insertElement, removeElement, setAttrs } from './dom.js'
 import * as components from './components/index.js'
 
 
@@ -9,6 +9,7 @@ export function mount(dom, component, props){
 		components,
 		createElement, 
 		insertElement,
+		removeElement,
 		setAttrs,
 		parentDom: dom
 	}

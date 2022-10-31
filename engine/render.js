@@ -71,7 +71,7 @@ function updateNodes(nodes, previousNodes, nextSibling){
 		}
 
 		if(previousNodes.length > commonLength)
-			removeNodes(parent, old, start, old.length)
+			removeNodes(previousNodes.slice(start))
 
 		if(nodes.length > commonLength)
 			createNodes(nodes.slice(start), nextSibling)
@@ -263,11 +263,14 @@ function updateNode(node, previousNode, nextSibling){
 			let previousParentDom = ctx.parentDom
 	
 			ctx.parentDom = node.dom
-	
+
 			updateNodes(node.children, previousNode.children, null)
 	
 			ctx.parentDom = previousParentDom
 		}
+
+		//hack
+		Object.assign(previousNode, node)
 	}else{
 		removeNode(previousNode)
 		createNode(node, nextSibling)
@@ -293,8 +296,23 @@ function updateComponent(node, previousNode, nextSibling){
 	else
 		updateNode(node.instance[0], previousNode.instance[0], nextSibling)
 
-	node.dom = node.instance.dom
+	node.dom = node.instance[0].dom
 }
+
+function removeNodes(nodes){
+	for(let node of nodes){
+		if(!node)
+			continue
+
+		removeNode(node)
+	}
+}
+
+function removeNode(node){
+	if(node.dom)
+		ctx.removeElement(node.dom)
+}
+
 
 function getNextSibling(nodes, startIndex, nextSibling){
 	for(let i=startIndex; i<nodes.length; i++){

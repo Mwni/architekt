@@ -12,7 +12,7 @@ const Welcome = Component(({ name }) => {
 		VStack(() => {
 			Headline({ text: `Hi, ${name}` })
 			
-			for(let i=0; i<3; i++){
+			for(let i=0; i<(clicks%5)+1; i++){
 				Text({ text: `You clicked ${clicks} times!` })
 			}
 
