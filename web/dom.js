@@ -35,9 +35,9 @@ export function setAttrs(node, attrs, previousAttrs){
 		}
 	}
 
-	let val
-
 	if(previousAttrs){
+		let val
+
 		for(let key in previousAttrs) {
 			if (((val = previousAttrs[key]) != null) && (attrs == null || attrs[key] == null)) {
 				removeAttr(node, key, val)
@@ -46,37 +46,12 @@ export function setAttrs(node, attrs, previousAttrs){
 	}
 }
 
-export function updateAttrs(node, attrs, previousAttrs) {
-	if(attrs != null){
-		let isInput = node.element === 'input'
-		let isFileInput = isInput && attrs.type === 'file'
-
-		if(isInput && attrs.type != null){
-			node.dom.setAttribute('type', attrs.type)
-		}
-		
-		for(var key in attrs){
-			setAttr(node, key, previousAttrs?.[key], attrs[key], isFileInput)
-		}
-	}
-	var val
-	if (old != null) {
-		for (var key in old) {
-			if (((val = old[key]) != null) && (attrs == null || attrs[key] == null)) {
-				removeAttr(vnode, key, val, ns)
-			}
-		}
-	}
-}
-
-
 function setAttr(node, key, old, value, isFileInput) {
-	if(key === 'key' || key === 'is' || value == null || (old === value && !isFormAttribute(node, key)) && typeof value !== 'object' || key === 'type' && node.tag === 'input') 
+	if(key === 'key' || value == null || (old === value && !isFormAttribute(node, key)) && typeof value !== 'object' || key === 'type' && node.tag === 'input') 
 		return
 	
 	if(key.startsWith('on')) 
 		return updateEvent(node, key, value)
-
 
 	if(key.slice(0, 6) === 'xlink:') 
 		node.dom.setAttributeNS('http://www.w3.org/1999/xlink', key.slice(6), value)
@@ -174,6 +149,7 @@ function normalizeKey(key) {
 		key === 'cssFloat' ? 'float' :
 			key.replace(uppercaseRegex, toLowerCase)
 }
+
 function updateStyle(element, old, style) {
 	if (old === style) {
 		// Styles are equivalent, do nothing.
@@ -210,38 +186,53 @@ function updateStyle(element, old, style) {
 }
 
 
-function EventDict() {
-	// Save this, so the current redraw is correctly tracked.
-	this._ = null
-}
-EventDict.prototype = Object.create(null)
-EventDict.prototype.handleEvent = function (ev) {
-	var handler = this['on' + ev.type]
-	var result
-	if (typeof handler === 'function') result = handler.call(ev.currentTarget, ev)
-	else if (typeof handler.handleEvent === 'function') handler.handleEvent(ev)
-	if (this._ && ev.redraw !== false) (0, this._)()
-	if (result === false) {
-		ev.preventDefault()
-		ev.stopPropagation()
+class EventDict{
+	constructor(){
+		this._ = null
+	}
+
+	handleEvent(event){
+		let handler = this['on' + event.type]
+		let result
+
+		if(typeof handler === 'function') 
+			result = handler.call(event.currentTarget, event)
+
+		else if(typeof handler.handleEvent === 'function') 
+			handler.handleEvent(event)
+
+		if (this._ && event.redraw !== false) (0, this._)()
+
+		if(result === false){
+			event.preventDefault()
+			event.stopPropagation()
+		}
 	}
 }
 
-//event
-function updateEvent(vnode, key, value) {
-	if (vnode.events != null) {
-		vnode.events._ = currentRedraw
-		if (vnode.events[key] === value) return
-		if (value != null && (typeof value === 'function' || typeof value === 'object')) {
-			if (vnode.events[key] == null) vnode.dom.addEventListener(key.slice(2), vnode.events, false)
-			vnode.events[key] = value
-		} else {
-			if (vnode.events[key] != null) vnode.dom.removeEventListener(key.slice(2), vnode.events, false)
-			vnode.events[key] = undefined
+
+
+function updateEvent(node, key, value) {
+	if(node.events){
+		node.events._ = null
+
+		if(node.events[key] === value)
+			return
+
+		if(value && (typeof value === 'function' || typeof value === 'object')){
+			if(node.events[key] == null) 
+				node.dom.addEventListener(key.slice(2), node.events, false)
+
+			node.events[key] = value
+		}else{
+			if(node.events[key] != null) 
+				node.dom.removeEventListener(key.slice(2), node.events, false)
+				
+			node.events[key] = undefined
 		}
-	} else if (value != null && (typeof value === 'function' || typeof value === 'object')) {
-		vnode.events = new EventDict()
-		vnode.dom.addEventListener(key.slice(2), vnode.events, false)
-		vnode.events[key] = value
+	}else if(value != null && (typeof value === 'function' || typeof value === 'object')){
+		node.events = new EventDict()
+		node.dom.addEventListener(key.slice(2), node.events, false)
+		node.events[key] = value
 	}
 }

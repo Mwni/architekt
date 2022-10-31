@@ -3,17 +3,25 @@ import { mount } from '@architekt/web'
 
 
 const Welcome = Component(({ name }) => {
+	let { redraw } = getContext()
 	let clicks = 0
+
+	console.log('i am constructed')
 
 	return ({ name }) => {
 		VStack(() => {
 			Headline({ text: `Hi, ${name}` })
-			Text({ text: `You clicked ${clicks} times!` })
+			
+			for(let i=0; i<3; i++){
+				Text({ text: `You clicked ${clicks} times!` })
+			}
+
 			Button({
 				text: 'Click',
 				action: event => {
 					console.log('clicked')
 					clicks++
+					redraw()
 				}
 			})
 		})

@@ -1,8 +1,7 @@
 import { ctx } from './context.js'
 
-export default (factory, meta) => {
-
-	return (props, content) => {
+export default factory => {
+	let component = (props, content) => {
 		if(!props){
 			props = {}
 		}else if(typeof props === 'function' && !content){
@@ -11,10 +10,14 @@ export default (factory, meta) => {
 		}
 
 		ctx.stack.push({
-			meta,
+			component,
 			factory,
 			props,
 			content
 		})
 	}
+
+	component.factory = factory
+
+	return component
 }
