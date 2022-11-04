@@ -3,8 +3,8 @@
 	"type": "module",
 	"version": "1.0-alpha",
 	"dependencies": {
-		"@architekt/ui": "file:../ui",
-		"@architekt/html": "file:../html",
+		"@architekt/ui": "file:../../ui",
+		"@architekt/html": "file:../../html",
 		"@rollup/plugin-node-resolve": "^15.0.1"
 	}
 }
