@@ -184,37 +184,20 @@ function createNodes(nodes, nextSibling){
 }
 
 function createNode(node, nextSibling){
-	if(node.element){
-		createElement(node)
-	}else if(node.factory){
+	if(node.factory){
 		createComponent(node)
-	}
+	}else if(node.element){
+		createElement(node)
 
-	if(node.content){
-		if(typeof node.content !== 'function'){
-			throw new Error(`Component's content parameter must either be a closure or left blank, not ${typeof node.content}`)
-		}
-
-		ctx.stack = []
-
-		node.content()
-		node.children = ctx.stack
-
-		let previousParentDom = ctx.parentDom
-
-		ctx.parentDom = node.dom
-
-		createNodes(node.children, null)
-
-		ctx.parentDom = previousParentDom
-	}
-}
-
-function createElement(node){
-	node.dom = ctx.createElement(node.element)
+		if(node.content){
+			let previousParentDom = ctx.parentDom
 	
-	ctx.setAttrs(node, node.attrs)
-	ctx.insertElement(ctx.parentDom, node.dom, ctx.nextSibling)
+			ctx.parentDom = node.dom
+			viewNodeContent(node)
+			createNodes(node.children)
+			ctx.parentDom = previousParentDom
+		}
+	}
 }
 
 function createComponent(node){
@@ -224,14 +207,32 @@ function createComponent(node){
 	ctx.node = node
 	ctx.stack = []
 
-	node.render = node.factory(node.props)
-	node.render(node.props)
+	let potentialRender = node.factory(node.props, node.content)
+
+	if(typeof potentialRender === 'function'){
+		node.render = potentialRender
+		node.render(node.props, node.content)
+	}else{
+		node.render = node.factory
+	}
+
+	if(ctx.stack.length === 0)
+		return
+	
 	node.instance = ctx.stack
 
-	if(node.instance.length === 1){
-		createNode(node.instance[0])
-		node.dom = node.instance[0].dom
-	}
+	createNodes(node.instance)
+
+	node.dom = node.instance
+		.map(({ dom }) => dom)
+		.filter(dom => dom)
+}
+
+function createElement(node){
+	node.dom = ctx.createElement(node.element)
+	
+	ctx.setAttrs(node, node.attrs)
+	ctx.insertElement(ctx.parentDom, node.dom, ctx.nextSibling)
 }
 
 
@@ -244,29 +245,19 @@ function updateNode(node, previousNode, nextSibling){
 		//if(shouldNotUpdate(node, previousNode)) 
 		//	return
 
-		if(previousNode.element){
-			updateElement(node, previousNode)
-		}else{
+		if(previousNode.factory){
 			updateComponent(node, previousNode, nextSibling)
-		}
+		}else if(previousNode.element){
+			updateElement(node, previousNode)
 
-		if(node.content){
-			if(typeof node.content !== 'function'){
-				throw new Error(`Component's content parameter must either be a closure or left blank, not ${typeof node.content}`)
+			if(node.content){
+				let previousParentDom = ctx.parentDom
+		
+				ctx.parentDom = node.dom
+				viewNodeContent(node)
+				updateNodes(node.children, previousNode.children, null)
+				ctx.parentDom = previousParentDom
 			}
-	
-			ctx.stack = []
-	
-			node.content()
-			node.children = ctx.stack
-	
-			let previousParentDom = ctx.parentDom
-	
-			ctx.parentDom = node.dom
-
-			updateNodes(node.children, previousNode.children, null)
-	
-			ctx.parentDom = previousParentDom
 		}
 
 		//hack
@@ -286,17 +277,20 @@ function updateComponent(node, previousNode, nextSibling){
 	ctx.node = node
 	ctx.stack = []
 
-	node.render(node.props)
+	node.render(node.props, node.content)
 	node.instance = ctx.stack
 
 	//updateLifecycle(vnode.state, vnode, hooks)
 
-	if(!previousNode.instance)
-		createNode(node.instance[0], nextSibling)
-	else
-		updateNode(node.instance[0], previousNode.instance[0], nextSibling)
+	if(!previousNode.instance){
+		createNodes(node.instance, nextSibling)
+	}else{
+		updateNodes(node.instance, previousNode.instance, nextSibling)
+	}
 
-	node.dom = node.instance[0].dom
+	node.dom = node.instance
+		.map(({ dom }) => dom)
+		.filter(dom => dom)
 }
 
 function removeNodes(nodes){
@@ -309,10 +303,22 @@ function removeNodes(nodes){
 }
 
 function removeNode(node){
-	if(node.dom)
-		ctx.removeElement(node.dom)
+	if(node.dom){
+		for(let element of node.dom){
+			ctx.removeElement(element)
+		}
+	}
 }
 
+function viewNodeContent(node){
+	if(typeof node.content !== 'function'){
+		throw new Error(`Component's content parameter must either be a closure or left blank, not ${typeof node.content}`)
+	}
+
+	ctx.stack = []
+	node.content()
+	node.children = ctx.stack
+}
 
 function getNextSibling(nodes, startIndex, nextSibling){
 	for(let i=startIndex; i<nodes.length; i++){
