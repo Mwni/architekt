@@ -25,6 +25,12 @@ const Welcome = Component(({ name }) => {
 				}
 			})
 		})
+
+		VStack(() => {
+			for(let i=0; i<3; i++){
+				Text({ text: `[${i}]` })
+			}
+		})
 	}
 })
 

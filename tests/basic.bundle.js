@@ -186,37 +186,20 @@
 	}
 
 	function createNode(node, nextSibling){
-		if(node.element){
-			createElement$1(node);
-		}else if(node.factory){
+		if(node.factory){
 			createComponent(node);
-		}
+		}else if(node.element){
+			createElement$1(node);
 
-		if(node.content){
-			if(typeof node.content !== 'function'){
-				throw new Error(`Component's content parameter must either be a closure or left blank, not ${typeof node.content}`)
-			}
-
-			ctx.stack = [];
-
-			node.content();
-			node.children = ctx.stack;
-
-			let previousParentDom = ctx.parentDom;
-
-			ctx.parentDom = node.dom;
-
-			createNodes(node.children);
-
-			ctx.parentDom = previousParentDom;
-		}
-	}
-
-	function createElement$1(node){
-		node.dom = ctx.createElement(node.element);
+			if(node.content){
+				let previousParentDom = ctx.parentDom;
 		
-		ctx.setAttrs(node, node.attrs);
-		ctx.insertElement(ctx.parentDom, node.dom, ctx.nextSibling);
+				ctx.parentDom = node.dom;
+				viewNodeContent(node);
+				createNodes(node.children);
+				ctx.parentDom = previousParentDom;
+			}
+		}
 	}
 
 	function createComponent(node){
@@ -226,14 +209,32 @@
 		ctx.node = node;
 		ctx.stack = [];
 
-		node.render = node.factory(node.props);
-		node.render(node.props);
+		let potentialRender = node.factory(node.props, node.content);
+
+		if(typeof potentialRender === 'function'){
+			node.render = potentialRender;
+			node.render(node.props, node.content);
+		}else {
+			node.render = node.factory;
+		}
+
+		if(ctx.stack.length === 0)
+			return
+		
 		node.instance = ctx.stack;
 
-		if(node.instance.length === 1){
-			createNode(node.instance[0]);
-			node.dom = node.instance[0].dom;
-		}
+		createNodes(node.instance);
+
+		node.dom = node.instance
+			.map(({ dom }) => dom)
+			.filter(dom => dom);
+	}
+
+	function createElement$1(node){
+		node.dom = ctx.createElement(node.element);
+		
+		ctx.setAttrs(node, node.attrs);
+		ctx.insertElement(ctx.parentDom, node.dom, ctx.nextSibling);
 	}
 
 
@@ -246,29 +247,19 @@
 			//if(shouldNotUpdate(node, previousNode)) 
 			//	return
 
-			if(previousNode.element){
+			if(previousNode.factory){
+				updateComponent(node, previousNode, nextSibling);
+			}else if(previousNode.element){
 				updateElement(node, previousNode);
-			}else {
-				updateComponent(node, previousNode);
-			}
 
-			if(node.content){
-				if(typeof node.content !== 'function'){
-					throw new Error(`Component's content parameter must either be a closure or left blank, not ${typeof node.content}`)
+				if(node.content){
+					let previousParentDom = ctx.parentDom;
+			
+					ctx.parentDom = node.dom;
+					viewNodeContent(node);
+					updateNodes(node.children, previousNode.children, null);
+					ctx.parentDom = previousParentDom;
 				}
-		
-				ctx.stack = [];
-		
-				node.content();
-				node.children = ctx.stack;
-		
-				let previousParentDom = ctx.parentDom;
-		
-				ctx.parentDom = node.dom;
-
-				updateNodes(node.children, previousNode.children, null);
-		
-				ctx.parentDom = previousParentDom;
 			}
 
 			//hack
@@ -288,17 +279,20 @@
 		ctx.node = node;
 		ctx.stack = [];
 
-		node.render(node.props);
+		node.render(node.props, node.content);
 		node.instance = ctx.stack;
 
 		//updateLifecycle(vnode.state, vnode, hooks)
 
-		if(!previousNode.instance)
-			createNode(node.instance[0]);
-		else
-			updateNode(node.instance[0], previousNode.instance[0]);
+		if(!previousNode.instance){
+			createNodes(node.instance);
+		}else {
+			updateNodes(node.instance, previousNode.instance, nextSibling);
+		}
 
-		node.dom = node.instance[0].dom;
+		node.dom = node.instance
+			.map(({ dom }) => dom)
+			.filter(dom => dom);
 	}
 
 	function removeNodes(nodes){
@@ -311,10 +305,22 @@
 	}
 
 	function removeNode(node){
-		if(node.dom)
-			ctx.removeElement(node.dom);
+		if(node.dom){
+			for(let element of node.dom){
+				ctx.removeElement(element);
+			}
+		}
 	}
 
+	function viewNodeContent(node){
+		if(typeof node.content !== 'function'){
+			throw new Error(`Component's content parameter must either be a closure or left blank, not ${typeof node.content}`)
+		}
+
+		ctx.stack = [];
+		node.content();
+		node.children = ctx.stack;
+	}
 
 	function getNextSibling(nodes, startIndex, nextSibling){
 		for(let i=startIndex; i<nodes.length; i++){
@@ -601,31 +607,21 @@
 		}
 	}
 
-	var vstack = Component(
-		() => {
+	var vStack = Component((props, content) => {
+		Element('div', {class: 'v-stack'}, content);
+	});
 
-			return ({ gap, content }) => {
-				Element('div', {class: 'a-vstack'}, content);
-			}
-		});
+	var hStack = Component(({ content }) => {
+		Element('div', {class: 'h-stack'}, content);
+	});
 
-	var headline = Component(
-		() => {
+	var headline = Component(({ text }) => {
+		Element('h1', {class: 'headline'}, text);
+	});
 
-			return ({ text }) => {
-				Element('h1', {class: 'a-headline'}, text);
-			}
-		}
-	);
-
-	var text = Component(
-		() => {
-
-			return ({ text }) => {
-				Element('span', {class: 'a-text'}, text);
-			}
-		}
-	);
+	var text = Component(({ text }) => {
+		Element('span', {class: 'text'}, text);
+	});
 
 	var button = Component(
 		() => {
@@ -645,7 +641,8 @@
 
 	var components = /*#__PURE__*/Object.freeze({
 		__proto__: null,
-		VStack: vstack,
+		VStack: vStack,
+		HStack: hStack,
 		Headline: headline,
 		Text: text,
 		Button: button
@@ -686,6 +683,12 @@
 						redraw();
 					}
 				});
+			});
+
+			VStack(() => {
+				for(let i=0; i<3; i++){
+					Text({ text: `[${i}]` });
+				}
 			});
 		}
 	});
