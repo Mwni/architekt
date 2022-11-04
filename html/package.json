@@ -1,5 +1,5 @@
 {
-	"name": "@architekt/web",
+	"name": "@architekt/html",
 	"type": "module",
 	"version": "1.0-alpha",
 	"main": "index.js",

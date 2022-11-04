@@ -1,5 +1,5 @@
 import { getContext, Component, VStack, Headline, Text, Button } from '@architekt/ui'
-import { mount } from '@architekt/web'
+import { mount } from '@architekt/html'
 
 
 const Welcome = Component(({ name }) => {
