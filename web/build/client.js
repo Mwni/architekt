@@ -1,13 +1,22 @@
+import { prebundle } from '@architekt/builder'
 
-export default async ctx => {
-	await ctx.procedure(
+
+export default async ({ config, procedure }) => {
+	await procedure(
 		{
 			id: `test`,
 			description: `testing`
 		},
 		async () => {
-			console.log(ctx)
-			await new Promise(resolve => setTimeout(resolve, 3000))
+			let bundle = await prebundle({
+				entry: {
+					file: config.clientEntry
+				},
+				platform: config.platform,
+				rootPath: config.rootPath
+			})
+
+			console.log(bundle)
 		}
 	)
 }

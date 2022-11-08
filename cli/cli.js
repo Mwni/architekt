@@ -34,6 +34,7 @@ switch(args._[0]){
 			let handle = build({
 				...config,
 				platform,
+				rootPath: process.cwd(),
 				outputPath,
 				dev: true
 			})

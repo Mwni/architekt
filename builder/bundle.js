@@ -1,61 +1,63 @@
 import pu from 'path'
 import esbuild from 'esbuild'
 import { NodeModulesPolyfillPlugin as polyfill } from '@esbuild-plugins/node-modules-polyfill'
-import { get as template } from '../lib/templates.js'
-import { shouldTreatAsExternal } from '../lib/modules.js'
-import resolve from './bundles/resolve.js'
-import transform from './bundles/transform.js'
-import defaultTransforms from '../transforms/index.js'
+import { shouldTreatAsExternal } from './lib/modules.js'
+import resolve from './pipeline/resolve.js'
+import transform from './pipeline/transform.js'
+import defaultTransforms from './transforms/index.js'
 
 
-export default async ({ blueprint, platform, target }) => {
-	let appFileName = `app.${platform}.js`
+export default async ({ platform, entry, rootPath }) => {
+	let entryPoints
+	let stdin
 	let meta = {}
 	let ephemeral = Math.random()
 		.toString(32)
 		.slice(2, 10)
 		.padStart(8, 'x')
 
+	if(entry.code){
+		let { dir, base } = pu.parse(entry.file)
+
+		stdin = {
+			contents: entry.code,
+			sourcefile: base,
+			resolveDir: dir
+		}
+	}else{
+		entryPoints = [entry.file]
+	}
+
 	let { outputFiles, metafile } = await esbuild.build({
-		stdin: {
-			contents: template(`app.${platform}.js`),
-			sourcefile: appFileName,
-			resolveDir: blueprint.root
-		},
+		entryPoints,
+		stdin,
 		plugins: [
 			resolve({
-				external: platform === 'node' 
-					? async args => await shouldTreatAsExternal(args.path, blueprint)
-					: false,
-				root: blueprint.root,
+				isExternal: async args => {
+					return await shouldTreatAsExternal(args.path, rootPath)
+				},
+				rootPath,
 				yields: meta
 			}),
 			transform({
 				platform,
 				pipeline: defaultTransforms,
-				root: blueprint.root,
+				rootPath,
 				yields: meta,
 			}),
 			polyfill()
 		],
-		loader: {
-			'.glsl': 'text',
-			'.vert': 'text',
-			'.frag': 'text'
-		},
-		platform,
-		target,
+		platform: 'node',
+		target: 'es2020',
 		format: 'esm',
 		bundle: true,
 		metafile: true,
 		write: false,
 		treeShaking: true,
-		splitting: platform === 'browser',
+		splitting: true,
 		chunkNames: `${ephemeral}-[name]-[hash]`,
-		jsxFactory: `$X`,
-		jsxFragment: `'['`,
 		logLevel: 'silent',
-		outdir: `/`
+		outdir: `/x`
 	})
 
 	let chunks = outputFiles
@@ -64,12 +66,12 @@ export default async ({ blueprint, platform, target }) => {
 			let local = `./${file}`
 
 			let build = Object.entries(metafile.outputs)
-				.find(([path, outputs]) => pu.basename(path) === file)
+				.find(([path, _]) => pu.basename(path) === file)
 				[1]
 
 			let transforms = Object.keys(build.inputs)
 				.map(src => meta.transforms
-					.find(t => pu.resolve(t.path) === pu.resolve(pu.join(blueprint.root, src))))
+					.find(t => pu.resolve(t.path) === pu.resolve(pu.join(rootPath, src))))
 
 			let includes = transforms
 				.map(transform => transform?.includes)
@@ -77,7 +79,7 @@ export default async ({ blueprint, platform, target }) => {
 				.reduce((incs, i) => [...incs, ...i], [])
 				.map(i => 
 					i.startsWith('~')
-						? pu.join(blueprint.root, i.slice(1))
+						? pu.join(rootPath, i.slice(1))
 						: i
 				)
 
@@ -102,6 +104,6 @@ export default async ({ blueprint, platform, target }) => {
 		chunks,
 		externals: meta.externals,
 		watch: Object.keys(metafile.inputs)
-			.map(path => pu.join(blueprint.root, path)),
+			.map(path => pu.join(rootPath, path)),
 	}
 }

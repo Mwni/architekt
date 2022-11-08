@@ -5,7 +5,7 @@ export default opts => {
 	opts.yields.transforms = []
 
 	return {
-		name: 'xjs-transform',
+		name: 'architekt-transform',
 		setup: build => {
 			build.onLoad(
 				{
@@ -29,7 +29,7 @@ export default opts => {
 
 					return {
 						contents: finalCode,
-						loader: 'jsx'
+						loader: 'js'
 					}
 				}
 			)
