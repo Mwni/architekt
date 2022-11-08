@@ -1,0 +1,10 @@
+{
+	"name": "@architekt/builder",
+	"type": "module",
+	"version": "1.0-alpha",
+	"main": "index.js",
+	"dependencies": {
+		"@esbuild-plugins/node-modules-polyfill": "^0.1.4",
+		"esbuild": "^0.15.13"
+	}
+}

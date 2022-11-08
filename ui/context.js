@@ -1,4 +1,4 @@
-import { ctx, render } from '@architekt/engine'
+import { ctx, render } from '../render'
 
 
 export function getContext(){

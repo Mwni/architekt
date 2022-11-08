@@ -1,0 +1,61 @@
+import fs from 'fs'
+import EventEmitter from 'events'
+import { FSWatcher } from 'chokidar'
+import { info } from './log.js'
+
+
+const sections = [
+	{id: 'js', filter: /\.(xjs|jsx|js|ts|tsx|xts)$/},
+	{id: 'css', filter: /\.(css|xcss)$/},
+]
+
+
+export default class extends EventEmitter{
+	constructor(files){
+		super()
+		this.watching = {}
+		this.timeouts = {}
+		this.watcher = new FSWatcher()
+		this.watcher.on('raw', (event, path, details) => {
+			let section = this.watching[path]
+
+			clearTimeout(this.timeouts[section])
+
+			this.timeouts[section] = setTimeout(() => {
+				info(path, 'changed')
+				this.emit('change', section)
+			}, 100)
+		})
+	}
+
+	get blank(){
+		return Object.keys(this.watching).length === 0
+	}
+
+	update(files){
+		for(let section of sections){
+			let added = 0
+			let removed = 0
+			let filtered = files
+				.filter(file => section.filter.test(file))
+				.filter(file => !file.includes('node_modules'))
+			//	.filter(file => !file.includes('@xjs'))
+				.filter((file, i, list) => list.indexOf(file) === i)
+
+			for(let file of filtered){
+				if(!this.watching[file]){
+					this.watcher.add(file)
+					this.watching[file] = section.id
+					added++
+				}
+			}
+
+
+			if(added > 0)
+				info('added', added, section.id, 'files to watchlist')
+
+			if(removed > 0)
+				info('removed', removed, section.id, 'files from watchlist')
+		}	
+	}
+}
