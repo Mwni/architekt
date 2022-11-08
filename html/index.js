@@ -1,4 +1,4 @@
-import { render } from '@architekt/engine'
+import { render } from '@architekt/render'
 import { createElement, insertElement, removeElement, setAttrs } from './dom.js'
 import * as components from './components/index.js'
 

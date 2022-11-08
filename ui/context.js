@@ -1,4 +1,4 @@
-import { ctx, render } from '../render'
+import { ctx, render } from '../render.js'
 
 
 export function getContext(){

@@ -1,4 +1,4 @@
-import { ctx } from '@architekt/engine'
+import { ctx } from '@architekt/render'
 
 export const Element = (tag, attrs, content) => {
 	if(typeof content === 'string'){
