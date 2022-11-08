@@ -1,0 +1,10 @@
+{
+	"workspaces": [
+		"builder",
+		"cli",
+		"html",
+		"render",
+		"ui",
+		"web"
+	]
+}
