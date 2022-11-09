@@ -4,7 +4,9 @@
 	"dependencies": {
 		"@architekt/cli": "file:../../cli",
 		"@architekt/ui": "file:../../ui",
-		"@architekt/web": "file:../../web"
+		"@architekt/web": "file:../../web",
+		"@architekt/minify": "file:../../minify",
+		"@architekt/polyfill-imports": "file:../../polyfill-imports"
 	},
 	"scripts": {
 		"dev": "node ./node_modules/@architekt/cli/cli.js dev"
@@ -12,7 +14,11 @@
 	"platforms": {
 		"web": {
 			"clientEntry": "./App.js",
-			"serverPort": 80
+			"serverPort": 80,
+			"plugins_": [
+				"@architekt/polyfill-imports",
+				"@architekt/minify"
+			]
 		}
 	}
 }

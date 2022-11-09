@@ -1,3 +1,4 @@
+import path from 'path'
 import { pathToFileURL } from 'url'
 
 const task = process.argv[2].slice(1, -1)
@@ -9,12 +10,26 @@ let dataCallbacks
 
 
 async function perform(config){
+	let plugins = []
+
+	if(config.plugins){
+		for(let pkg of config.plugins){
+			let pluginFile = path.join(config.rootPath, 'node_modules', pkg, 'index.js')
+			let { default: createPlugin } = await import(pathToFileURL(pluginFile))
+			let plugin = createPlugin(config)
+
+			if(plugin)
+				plugins.push(plugin)
+		}
+	}
+
 	data = {}
 	dataCallbacks = {}
 
 	let ctx = {
 		config,
 		cache,
+		plugins,
 		procedure: async ({ execute, ...descriptor }) => {
 			await new Promise(resolve => setTimeout(resolve, 10))
 

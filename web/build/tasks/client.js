@@ -2,13 +2,14 @@ import fs from 'fs'
 import path from 'path'
 import esbuild from 'esbuild'
 import { pipeline } from '@architekt/builder'
-import template from './template.js'
+import template from '../template.js'
+import { deriveVariants } from '../variants.js'
 
 
-export default async ({ config, procedure, data }) => {
+export default async ({ config, procedure, data, plugins }) => {
 	let commonBundle = await data.commonBundle
 	let { rootPath, outputPath } = config
-	let finalChunksDir = path.join(outputPath, 'browser', 'js')
+	let finalChunksDir = path.join(outputPath, 'client', 'js')
 	let finalChunks
 
 	await procedure({
@@ -85,7 +86,30 @@ export default async ({ config, procedure, data }) => {
 	if(!fs.existsSync(finalChunksDir))
 		fs.mkdirSync(finalChunksDir, { recursive: true })
 
-	for(let chunk of finalChunks){
-		fs.writeFileSync(path.join(finalChunksDir, chunk.file), chunk.code)
+	for(let { bundleSuffix, chunkTransforms } of deriveVariants('js', plugins)){
+		let modifiedFinalChunks = structuredClone(finalChunks)
+
+		if(chunkTransforms.length > 0){
+			await procedure({
+				id: `apply-${bundleSuffix}`,
+				description: bundleSuffix
+					? `applying transforms for ${bundleSuffix} bundle`
+					: `applying plugin transforms`,
+				execute: async () => {
+					for(let chunk of modifiedFinalChunks){
+						for(let transform of chunkTransforms){
+							Object.assign(chunk, await transform(chunk))
+						}
+					}
+				}
+			})
+		}
+
+		for(let chunk of modifiedFinalChunks){
+			fs.writeFileSync(
+				path.join(finalChunksDir, `${chunk.file.slice(0, -3)}${bundleSuffix}.js`), 
+				chunk.code
+			)
+		}
 	}
 }

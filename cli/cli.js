@@ -30,6 +30,7 @@ switch(args._[0]){
 		let outputPath = dirs.createTemp(process.cwd())
 
 		while(true){
+			let startTime = Date.now()
 			let timers = []
 			let handle = build({
 				...config,
@@ -52,6 +53,9 @@ switch(args._[0]){
 
 			await new Promise(resolve => {
 				handle.on('complete', build => {
+					let duration = Date.now() - startTime
+
+					log.info(`build complete after ${duration.toLocaleString('en')} ms`)
 					log.info(`spawning server at ${path.join(outputPath, 'server.js')}`)
 
 					let server = fork(path.join(outputPath, 'server.js'))

@@ -1,3 +1,4 @@
 export const tasks = [
-	{ script: './client.js' }
+	{ script: './tasks/client.js' },
+	{ script: './tasks/bootstrap.js' },
 ]

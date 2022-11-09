@@ -1,0 +1,10 @@
+{
+  "name": "@architekt/minify",
+  "type": "module",
+  "version": "1.0-alpha",
+  "author": "mwni",
+  "main": "index.js",
+  "dependencies": {
+    "terser": "^5.10.0"
+  }
+}
