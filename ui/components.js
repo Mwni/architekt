@@ -1,4 +1,4 @@
-import { ctx } from '../render.js'
+import { ctx } from '@architekt/render'
 
 export const VStack = (...args) => ctx.components.VStack(...args)
 export const HStack = (...args) => ctx.components.HStack(...args)

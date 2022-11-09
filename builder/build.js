@@ -2,10 +2,10 @@ import path from 'path'
 import EventEmitter from 'events'
 import { pathToFileURL } from 'url'
 import { fork } from 'child_process'
-import { root } from './paths.js'
+import { libRoot } from './paths.js'
 
 
-const workerPath = path.join(root, 'worker.js')
+const workerPath = path.join(libRoot, 'worker.js')
 const workers = []
 
 
@@ -25,13 +25,17 @@ export default instructions => {
 
 
 async function spawn(instructions){
-	let platformLibRoot = path.join(root, '..', instructions.platform, 'build')
+	let platformLibRoot = path.join(libRoot, '..', instructions.platform, 'build')
 	let buildSpecPath = path.join(platformLibRoot, 'index.js')
 	let buildSpec = await import(pathToFileURL(buildSpecPath))
+	let scripts = [
+		...['prebundle'].map(name => path.join(libRoot, 'tasks', `${name}.js`)),
+		...buildSpec.tasks.map(({ script }) => path.join(platformLibRoot, script))
+	]
 
-	for(let { script } of buildSpec.tasks){
+	for(let script of scripts){
 		workers.push(
-			fork(workerPath, [`"${path.join(platformLibRoot, script)}"`])
+			fork(workerPath, [`"${script}"`])
 		)
 	}
 

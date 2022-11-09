@@ -15,7 +15,7 @@ async function perform(config){
 	let ctx = {
 		config,
 		cache,
-		procedure: async (descriptor, executor) => {
+		procedure: async ({ execute, ...descriptor }) => {
 			await new Promise(resolve => setTimeout(resolve, 10))
 
 			process.send({
@@ -25,7 +25,7 @@ async function perform(config){
 			})
 
 			try{
-				await executor()
+				await execute()
 
 				process.send({
 					subject: 'procedure',

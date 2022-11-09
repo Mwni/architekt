@@ -1,6 +1,6 @@
 import pu from 'path'
 import { getBlockBounds } from './base.js'
-import { get as template } from '../lib/templates.js'
+import { template } from '../lib/template.js'
 
 
 
