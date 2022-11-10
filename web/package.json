@@ -6,6 +6,9 @@
 	"dependencies": {
 		"@architekt/render": "file:../render",
 		"esbuild": "^0.15.13",
-		"handlebars": "^4.7.7"
+		"handlebars": "^4.7.7",
+		"koa": "^2.13.4",
+		"koa-mount": "^4.0.0",
+		"koa-static": "^5.0.0"
 	}
 }

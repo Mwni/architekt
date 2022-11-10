@@ -54,13 +54,15 @@ switch(args._[0]){
 			await new Promise(resolve => {
 				handle.on('complete', build => {
 					let duration = Date.now() - startTime
+					let server
+
+					watcher.update(build.watch)
 
 					log.info(`build complete after ${duration.toLocaleString('en')} ms`)
 					log.info(`spawning server at ${path.join(outputPath, 'server.js')}`)
 
-					let server = fork(path.join(outputPath, 'server.js'))
+					server = fork(path.join(outputPath, 'server.js'))
 
-					watcher.update(build.watch)
 					watcher.once('change', () => {
 						server.kill()
 						resolve()

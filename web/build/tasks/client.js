@@ -6,17 +6,17 @@ import template from '../template.js'
 import { deriveVariants } from '../variants.js'
 
 
-export default async ({ config, procedure, data, plugins }) => {
+export default async ({ config, data, plugins, procedure, watch }) => {
 	let commonBundle = await data.commonBundle
 	let { rootPath, outputPath } = config
-	let finalChunksDir = path.join(outputPath, 'client', 'js')
+	let finalChunksDir = path.join(outputPath, 'js')
 	let finalChunks
 
 	await procedure({
 		id: `bundle-client`,
 		description: `compiling client bundle`,
 		execute: async () => {
-			let { chunks, externals, watch } = commonBundle
+			let { chunks, watch: clientWatchFiles } = commonBundle
 			let suffix = ''
 			let appChunk = chunks[0]
 			let asyncChunks = chunks
@@ -80,6 +80,7 @@ export default async ({ config, procedure, data, plugins }) => {
 			}
 
 			finalChunks = [appChunk, ...asyncChunks]
+			watch(clientWatchFiles)
 		}
 	})
 

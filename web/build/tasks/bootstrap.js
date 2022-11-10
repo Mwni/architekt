@@ -8,7 +8,6 @@ import { deriveVariants, reconcileVariants } from '../variants.js'
 export default async ({ config, procedure, data, plugins }) => {
 	let { rootPath, outputPath, splashScript } = config
 	let [ baseVariant ] = deriveVariants('js', plugins)
-	let clientDir = path.join(outputPath, 'client')
 	let alternatives = reconcileVariants(plugins)
 	let alternativesCode = ''
 
@@ -27,7 +26,7 @@ export default async ({ config, procedure, data, plugins }) => {
 
 	
 	let bootstrapChunk
-	let bootstrapDest = path.join(clientDir, 'bootstrap.js')
+	let bootstrapDest = path.join(outputPath, 'bootstrap.js')
 	let bootstrapCode = template({
 		file: 'bootstrap.js',
 		fields: {
@@ -69,9 +68,6 @@ export default async ({ config, procedure, data, plugins }) => {
 			}
 		})
 	}
-
-	if(!fs.existsSync(clientDir))
-		fs.mkdirSync(clientDir, { recursive: true })
 
 	fs.writeFileSync(bootstrapDest, bootstrapChunk.code)
 }

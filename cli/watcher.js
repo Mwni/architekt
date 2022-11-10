@@ -33,29 +33,38 @@ export default class extends EventEmitter{
 	}
 
 	update(files){
+		let added = []
+		let removed = []
+
 		for(let section of sections){
-			let added = 0
-			let removed = 0
+			
 			let filtered = files
 				.filter(file => section.filter.test(file))
 				.filter(file => !file.includes('node_modules'))
-			//	.filter(file => !file.includes('@xjs'))
+				.filter(file => !file.includes('architekt'))
 				.filter((file, i, list) => list.indexOf(file) === i)
 
 			for(let file of filtered){
 				if(!this.watching[file]){
 					this.watcher.add(file)
 					this.watching[file] = section.id
-					added++
+
+					added.push(file)
 				}
 			}
+		}
 
+		if(added.length === 0)
+			return
 
-			if(added > 0)
-				info('added', added, section.id, 'files to watchlist')
+		info('watching files for changes:')
 
-			if(removed > 0)
-				info('removed', removed, section.id, 'files from watchlist')
-		}	
+		for(let file of added){
+			info(` - ${file}`)
+		}
+
+		for(let file of removed){
+			info(` x ${file}`)
+		}
 	}
 }
