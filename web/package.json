@@ -1,10 +1,12 @@
 {
 	"name": "@architekt/web",
 	"type": "module",
-	"version": "1.0-alpha",
+	"version": "1.0.0-alpha",
 	"main": "index.js",
 	"dependencies": {
-		"@architekt/render": "file:../render",
+		"@architekt/builder": "../builder",
+		"@architekt/html": "../html",
+		"@architekt/render": "../render",
 		"esbuild": "^0.15.13",
 		"handlebars": "^4.7.7",
 		"koa": "^2.13.4",
