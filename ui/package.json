@@ -1,9 +1,9 @@
 {
 	"name": "@architekt/ui",
 	"type": "module",
-	"version": "1.0.0-alpha",
+	"version": "1.0.0",
 	"main": "index.js",
 	"dependencies": {
-		"@architekt/render": "../render"
+		"@architekt/render": "1.0.0"
 	}
 }

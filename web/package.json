@@ -1,14 +1,15 @@
 {
 	"name": "@architekt/web",
 	"type": "module",
-	"version": "1.0.0-alpha",
+	"version": "1.0.0",
 	"main": "index.js",
 	"dependencies": {
-		"@architekt/builder": "../builder",
-		"@architekt/html": "../html",
-		"@architekt/render": "../render",
+		"@architekt/builder": "1.0.0",
+		"@architekt/html": "1.0.0",
+		"@architekt/render": "1.0.0",
 		"esbuild": "^0.15.13",
 		"handlebars": "^4.7.7",
+		"jsdom": "^20.0.2",
 		"koa": "^2.13.4",
 		"koa-mount": "^4.0.0",
 		"koa-static": "^5.0.0"

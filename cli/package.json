@@ -1,9 +1,9 @@
 {
 	"name": "@architekt/cli",
 	"type": "module",
-	"version": "1.0.0-alpha",
+	"version": "1.0.0",
 	"dependencies": {
-		"@architekt/builder": "../builder",
+		"@architekt/builder": "1.0.0",
 		"chokidar": "^3.5.2",
 		"draftlog": "^1.0.13",
 		"minimist": "^1.2.5"
