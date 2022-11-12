@@ -1,6 +1,6 @@
 import fs from 'fs'
 import path from 'path'
-import esbuild from 'esbuild'
+import { esbuild } from '@architekt/builder'
 import template from '../template.js'
 import { deriveVariants, reconcileVariants } from '../variants.js'
 
@@ -37,7 +37,7 @@ export default async ({ config, procedure, data, plugins }) => {
 
 	await procedure({
 		id: `bootstrap`,
-		description: `compiling browser bootstrap unit`,
+		description: `creating browser bootstrap`,
 		execute: async () => {
 			let { outputFiles } = await esbuild.build({
 				stdin: {

@@ -1,103 +1,60 @@
 import fs from 'fs'
 import path from 'path'
-import esbuild from 'esbuild'
-import { pipeline, isFromPackage } from '@architekt/builder'
-import template from '../template.js'
-import { repoPath } from '../../paths.js'
+import { bundle } from '@architekt/builder'
 import { resolveExternals } from '../externals.js'
 import { createDevPackage } from '../package.js'
+import template from '../template.js'
 
 
-export default async ({ config, data, procedure, watch }) => {
-	let commonBundle = await data.commonBundle
-	let { rootPath, outputPath } = config
-	let meta = {}
-	let serverCode
-	let serverConfig = {
-		port: config.serverPort
-	}
+export default async ({ config, procedure, watch }) => {
+	let { platform, rootPath, clientEntry, outputPath, serverPort } = config
+	let serverConfig = { port: serverPort }
+	let externals
 
 	await procedure({
 		id: `bundle-server`,
-		description: `compiling server bundle`,
+		description: `creating server runtime`,
 		execute: async () => {
-			let { chunks, watch: serverWatchFiles } = commonBundle
-			let appChunk = chunks[0]
-			
-			let { outputFiles: [ finalBundle ], metafile } = await esbuild.build({
-				stdin: {
-					contents: template({
+			let { mainChunk, watchFiles, bundleMeta } = await bundle({
+				platform,
+				rootPath,
+				splitting: false,
+				entry: {
+					code: template({
 						file: 'server.js',
-						fields: {
-							clientEntry: appChunk.local,
+						fields: { 
+							clientEntry, 
 							serverConfig: JSON.stringify(serverConfig)
 						}
 					}),
-					sourcefile: 'server.js',
-					resolveDir: './'
-				},
-				plugins: [
-					pipeline.resolve({
-						isInternal: args => chunks.some(chunk => chunk.local === args.path),
-						isExternal: async args => {
-							if(
-								await isFromPackage({
-									filePath: args.path,
-									packagePath: rootPath
-								})
-							)
-								return false
-
-							if(
-								await isFromPackage({
-									filePath: args.path,
-									compare: p => path.resolve(path.join(p, '..')) === repoPath
-								})
-							)
-								return false
-						
-							return true
-						},
-						rootPath,
-						yields: meta
-					}),
-					pipeline.internal(
-						chunks.reduce(
-							(o, chunk) => ({...o, [chunk.local]: chunk.code}), 
-							{}
-						)
-					)
-				],
-				bundle: true,
-				format: 'esm',
-				write: false,
-				logLevel: 'silent',
-				metafile: true
+					file: './server.js'
+				}
 			})
 		
-			serverCode = finalBundle.text
-			watch(serverWatchFiles)
+			watch(watchFiles)
+
+			fs.writeFileSync(
+				path.join(outputPath, 'server.js'),
+				mainChunk.code
+			)
+
+			externals = bundleMeta.externals
 		}
 	})
-
-	fs.writeFileSync(
-		path.join(outputPath, 'server.js'),
-		serverCode
-	)
 
 	await procedure({
 		id: `package`,
 		description: `writing npm package`,
 		execute: async () => {
-			let dependencies = resolveExternals({
-				externals: [
-					rootPath, 
-					...meta.externals.map(p => path.dirname(p))
-				]
-			})
-
 			if(config.dev){
 				await createDevPackage({ rootPath, outputPath })
+			}else{
+				let dependencies = resolveExternals({
+					externals: [
+						rootPath, 
+						...externals.map(p => path.dirname(p))
+					]
+				})
 			}
 		}
 	})

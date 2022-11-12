@@ -1,99 +1,82 @@
 import fs from 'fs'
 import path from 'path'
-import esbuild from 'esbuild'
-import { pipeline } from '@architekt/builder'
+import { bundle } from '@architekt/builder'
 import template from '../template.js'
 import { deriveVariants } from '../variants.js'
 
 
-export default async ({ config, data, plugins, procedure, watch }) => {
-	let commonBundle = await data.commonBundle
-	let { rootPath, outputPath } = config
+export default async ({ config, plugins, procedure, watch }) => {
+	let { platform, rootPath, clientEntry, outputPath } = config
 	let finalChunksDir = path.join(outputPath, 'js')
-	let finalChunks
 
 	await procedure({
 		id: `bundle-client`,
-		description: `compiling client bundle`,
+		description: `creating client runtime`,
 		execute: async () => {
-			let { mainChunk, asyncChunks, watchFiles } = commonBundle
-			let { outputFiles: [ finalBundle ] } = await esbuild.build({
-				stdin: {
-					contents: template({
+			let { mainChunk, asyncChunks, watchFiles } = await bundle({
+				platform,
+				rootPath,
+				splitting: true,
+				entry: {
+					code: template({
 						file: 'client.js',
-						fields: {
-							clientEntry: mainChunk.local
-						}
+						fields: { clientEntry }
 					}),
-					sourcefile: 'app-entry.js',
-					resolveDir: './'
-				},
-				plugins: [
-					pipeline.resolve({
-						isExternal: args => asyncChunks.some(chunk => chunk.local === args.path),
-						rootPath,
-						yields: {}
-					}),
-					pipeline.internal({
-						[mainChunk.local]: mainChunk.code
-					})
-				],
-				bundle: true,
-				format: 'esm',
-				write: false,
-				logLevel: 'silent'
-			})
-
-			console.log(finalBundle.text)
-		
-			appChunk.local = './app.js'
-			appChunk.file = `app${suffix}.js`
-			appChunk.code = `${finalBundle.text}\nexport { ${sharedExports.join(', ')} }`
-
-			for(let chunk of asyncChunks){
-				let messyName = chunk.file
-				let cleanName = `${messyName.slice(9, -12)}.js`
-
-				for(let { local } of sharedChunks){
-					chunk.code = chunk.code.replace(local, `/js/app${suffix}.js`)
+					file: './client.js'
 				}
-
-				appChunk.code = appChunk.code.replace(chunk.local, `/js/${cleanName}`)
-				chunk.file = cleanName
-			}
-
-			finalChunks = [appChunk, ...asyncChunks]
+			})
+		
 			watch(watchFiles)
+		
+			if(!fs.existsSync(finalChunksDir))
+				fs.mkdirSync(finalChunksDir, { recursive: true })
+		
+			for(let { bundleSuffix, chunkTransforms } of deriveVariants('js', plugins)){
+				let mainChunkMod = structuredClone(mainChunk)
+				let asyncChunksMod = structuredClone(asyncChunks)
+		
+				mainChunkMod.local = './app.js'
+				mainChunkMod.file = `app${bundleSuffix}.js`
+		
+				for(let chunk of asyncChunksMod){
+					let messyName = chunk.file
+					let cleanName = `${messyName.slice(9, -12)}.js`
+			
+					chunk.file = cleanName
+					chunk.code = chunk.code.replace(
+						mainChunkMod.local, 
+						`/js/app${bundleSuffix}.js`
+					)
+			
+					mainChunkMod.code = mainChunkMod.code.replace(
+						chunk.local, 
+						`/js/${cleanName}`
+					)
+				}
+		
+				if(chunkTransforms.length > 0){
+					await procedure({
+						id: `apply-${bundleSuffix}`,
+						description: bundleSuffix
+							? `applying transforms for ${bundleSuffix} bundle`
+							: `applying plugin transforms`,
+						execute: async () => {
+							for(let chunk of [mainChunkMod, ...asyncChunksMod]){
+								for(let transform of chunkTransforms){
+									Object.assign(chunk, await transform(chunk))
+								}
+							}
+						}
+					})
+				}
+		
+				for(let chunk of [mainChunkMod, ...asyncChunksMod]){
+					fs.writeFileSync(
+						path.join(finalChunksDir, `${chunk.file.slice(0, -3)}${bundleSuffix}.js`), 
+						chunk.code
+					)
+				}
+			}
 		}
 	})
-
-	if(!fs.existsSync(finalChunksDir))
-		fs.mkdirSync(finalChunksDir, { recursive: true })
-
-	for(let { bundleSuffix, chunkTransforms } of deriveVariants('js', plugins)){
-		let modifiedFinalChunks = structuredClone(finalChunks)
-
-		if(chunkTransforms.length > 0){
-			await procedure({
-				id: `apply-${bundleSuffix}`,
-				description: bundleSuffix
-					? `applying transforms for ${bundleSuffix} bundle`
-					: `applying plugin transforms`,
-				execute: async () => {
-					for(let chunk of modifiedFinalChunks){
-						for(let transform of chunkTransforms){
-							Object.assign(chunk, await transform(chunk))
-						}
-					}
-				}
-			})
-		}
-
-		for(let chunk of modifiedFinalChunks){
-			fs.writeFileSync(
-				path.join(finalChunksDir, `${chunk.file.slice(0, -3)}${bundleSuffix}.js`), 
-				chunk.code
-			)
-		}
-	}
 }
