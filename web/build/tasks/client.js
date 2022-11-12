@@ -39,21 +39,34 @@ export default async ({ config, plugins, procedure, watch }) => {
 				mainChunkMod.file = `app${bundleSuffix}.js`
 		
 				for(let chunk of asyncChunksMod){
-					let messyName = chunk.file
-					let cleanName = `${messyName.slice(9, -12)}.js`
-			
+					let dirtyName = chunk.file
+					let cleanName = `${dirtyName.slice(9, -12)}.js`
+
 					chunk.file = cleanName
-					chunk.code = chunk.code.replace(
-						mainChunkMod.local, 
+					chunk.dirtyName = dirtyName
+					chunk.code = chunk.code.replaceAll(
+						'./stdin.js',
 						`/js/app${bundleSuffix}.js`
 					)
 			
-					mainChunkMod.code = mainChunkMod.code.replace(
+					mainChunkMod.code = mainChunkMod.code.replaceAll(
 						chunk.local, 
 						`/js/${cleanName}`
 					)
 				}
-		
+
+				for(let c1 of asyncChunksMod){
+					for(let c2 of asyncChunksMod){
+						if(c1 === c2)
+							continue
+
+						c1.code = c1.code.replaceAll(
+							`./${c2.dirtyName}`,
+							`/js/${c2.file}`
+						)
+					}
+				}
+				
 				if(chunkTransforms.length > 0){
 					await procedure({
 						id: `apply-${bundleSuffix}`,

@@ -9,8 +9,8 @@ export const Element = (tag, attrs, content) => {
 	ctx.stack.push({ element: tag, attrs, content })
 }
 
-export function createElement(tag){
-	return document.createElement(tag)
+export function createElementWrap(tag){
+	return ctx.document.createElement(tag)
 }
 
 export function insertElement(parent, element, nextSibling){

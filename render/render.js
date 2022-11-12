@@ -77,99 +77,6 @@ function updateNodes(nodes, previousNodes, nextSibling){
 			createNodes(nodes.slice(start), nextSibling)
 	}else{
 		throw Error(`Keyed diffing is not implemented.`)
-		/*
-		// keyed diff
-		var oldEnd = old.length - 1, end = vnodes.length - 1, map, o, v, oe, ve, topSibling
-
-		// bottom-up
-		while (oldEnd >= oldStart && end >= start) {
-			oe = old[oldEnd]
-			ve = vnodes[end]
-			if (oe.key !== ve.key) break
-			if (oe !== ve) updateNode(parent, oe, ve, hooks, nextSibling, ns)
-			if (ve.dom != null) nextSibling = ve.dom
-			oldEnd--, end--
-		}
-		// top-down
-		while (oldEnd >= oldStart && end >= start) {
-			o = old[oldStart]
-			v = vnodes[start]
-			if (o.key !== v.key) break
-			oldStart++, start++
-			if (o !== v) updateNode(parent, o, v, hooks, getNextSibling(old, oldStart, nextSibling), ns)
-		}
-		// swaps and list reversals
-		while (oldEnd >= oldStart && end >= start) {
-			if (start === end) break
-			if (o.key !== ve.key || oe.key !== v.key) break
-			topSibling = getNextSibling(old, oldStart, nextSibling)
-			moveDOM(parent, oe, topSibling)
-			if (oe !== v) updateNode(parent, oe, v, hooks, topSibling, ns)
-			if (++start <= --end) moveDOM(parent, o, nextSibling)
-			if (o !== ve) updateNode(parent, o, ve, hooks, nextSibling, ns)
-			if (ve.dom != null) nextSibling = ve.dom
-			oldStart++; oldEnd--
-			oe = old[oldEnd]
-			ve = vnodes[end]
-			o = old[oldStart]
-			v = vnodes[start]
-		}
-		// bottom up once again
-		while (oldEnd >= oldStart && end >= start) {
-			if (oe.key !== ve.key) break
-			if (oe !== ve) updateNode(parent, oe, ve, hooks, nextSibling, ns)
-			if (ve.dom != null) nextSibling = ve.dom
-			oldEnd--, end--
-			oe = old[oldEnd]
-			ve = vnodes[end]
-		}
-		if (start > end) removeNodes(parent, old, oldStart, oldEnd + 1)
-		else if (oldStart > oldEnd) createNodes(parent, vnodes, start, end + 1, hooks, nextSibling, ns)
-		else {
-			// inspired by ivi https://github.com/ivijs/ivi/ by Boris Kaul
-			var originalNextSibling = nextSibling, vnodesLength = end - start + 1, oldIndices = new Array(vnodesLength), li=0, i=0, pos = 2147483647, matched = 0, map, lisIndices
-			for (i = 0; i < vnodesLength; i++) oldIndices[i] = -1
-			for (i = end; i >= start; i--) {
-				if (map == null) map = getKeyMap(old, oldStart, oldEnd + 1)
-				ve = vnodes[i]
-				var oldIndex = map[ve.key]
-				if (oldIndex != null) {
-					pos = (oldIndex < pos) ? oldIndex : -1 // becomes -1 if nodes were re-ordered
-					oldIndices[i-start] = oldIndex
-					oe = old[oldIndex]
-					old[oldIndex] = null
-					if (oe !== ve) updateNode(parent, oe, ve, hooks, nextSibling, ns)
-					if (ve.dom != null) nextSibling = ve.dom
-					matched++
-				}
-			}
-			nextSibling = originalNextSibling
-			if (matched !== oldEnd - oldStart + 1) removeNodes(parent, old, oldStart, oldEnd + 1)
-			if (matched === 0) createNodes(parent, vnodes, start, end + 1, hooks, nextSibling, ns)
-			else {
-				if (pos === -1) {
-					// the indices of the indices of the items that are part of the
-					// longest increasing subsequence in the oldIndices list
-					lisIndices = makeLisIndices(oldIndices)
-					li = lisIndices.length - 1
-					for (i = end; i >= start; i--) {
-						v = vnodes[i]
-						if (oldIndices[i-start] === -1) createNode(parent, v, hooks, ns, nextSibling)
-						else {
-							if (lisIndices[li] === i - start) li--
-							else moveDOM(parent, v, nextSibling)
-						}
-						if (v.dom != null) nextSibling = vnodes[i].dom
-					}
-				} else {
-					for (i = end; i >= start; i--) {
-						v = vnodes[i]
-						if (oldIndices[i-start] === -1) createNode(parent, v, hooks, ns, nextSibling)
-						if (v.dom != null) nextSibling = vnodes[i].dom
-					}
-				}
-			}
-		}*/
 	}
 }
 
@@ -205,6 +112,7 @@ function createComponent(node){
 	node.instance = []
 
 	ctx.node = node
+	ctx.downstream = { ...ctx.downstream }
 	ctx.stack = []
 
 	let potentialRender = node.factory(node.props, node.content)
