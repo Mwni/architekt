@@ -3,7 +3,7 @@ import path from 'path'
 import esbuild from 'esbuild'
 import { pipeline, isFromPackage } from '@architekt/builder'
 import template from '../template.js'
-import { libPath } from '../../paths.js'
+import { repoPath } from '../../paths.js'
 import { resolveExternals } from '../externals.js'
 import { createDevPackage } from '../package.js'
 
@@ -40,18 +40,23 @@ export default async ({ config, data, procedure, watch }) => {
 					pipeline.resolve({
 						isInternal: args => chunks.some(chunk => chunk.local === args.path),
 						isExternal: async args => {
-							let isFromThisLib = await isFromPackage({
-								filePath: args.path,
-								packagePath: libPath
-							})
-
-							if(isFromThisLib)
+							if(
+								await isFromPackage({
+									filePath: args.path,
+									packagePath: rootPath
+								})
+							)
 								return false
 
-							return !await isFromPackage({
-								filePath: args.path,
-								packagePath: rootPath
-							})
+							if(
+								await isFromPackage({
+									filePath: args.path,
+									compare: p => path.resolve(path.join(p, '..')) === repoPath
+								})
+							)
+								return false
+						
+							return true
 						},
 						rootPath,
 						yields: meta

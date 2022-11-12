@@ -4,27 +4,31 @@ import { fileURLToPath } from 'url'
 import Koa from 'koa'
 import mount from 'koa-mount'
 import serve from 'koa-static'
+import { JSDOM } from 'jsdom'
+import { mount as mountComponent } from '@architekt/html'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-export default ({ port }) => {
+export default ({ port, clientApp }) => {
 	log('starting')
 
 	let koa = new Koa()
 	let bootstrapCode = readFile({ filePath: 'bootstrap.js' })
 
 	koa.use(serveDir({ fileDir: 'js', webPath: '/js' }))
-	koa.use(serveApp())
+	koa.use(serveApp({ clientApp, bootstrapCode }))
 
 	koa.listen(port)
 
 	log(`listening on port ${port}`)
 }
 
-function serveApp(){
+function serveApp({ clientApp, bootstrapCode }){
 	return async ctx => {
-		console.log(ctx.path)
+		let dom = new JSDOM()
+
+		mountComponent(dom.window.document.body, clientApp)
 	}
 }
 
