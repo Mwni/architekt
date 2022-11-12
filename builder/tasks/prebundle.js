@@ -1,14 +1,15 @@
-import pu from 'path'
+import path from 'path'
 import esbuild from 'esbuild'
 import { NodeModulesPolyfillPlugin as polyfill } from '@esbuild-plugins/node-modules-polyfill'
 import { resolve, transform } from '../pipeline/index.js'
 import defaultTransforms from '../transforms/index.js'
+import { stripExports, stripImports } from '../lib/code.js'
 
 
 export default async ({ config, procedure }) => {
 	let { platform, clientEntry, rootPath } = config
 	let meta = {}
-	let chunks
+	let commonBundle
 	let ephemeral = Math.random()
 		.toString(32)
 		.slice(2, 10)
@@ -49,18 +50,18 @@ export default async ({ config, procedure }) => {
 				outdir: `__temp__`
 			})
 
-			chunks = outputFiles
+			let chunks = outputFiles
 				.map(f => {
-					let file = pu.basename(f.path)
+					let file = path.basename(f.path)
 					let local = `./${file}`
 
 					let build = Object.entries(metafile.outputs)
-						.find(([path, _]) => pu.basename(path) === file)
+						.find(([f, _]) => path.basename(f) === file)
 						[1]
 
 					let transforms = Object.keys(build.inputs)
 						.map(src => meta.transforms
-							.find(t => pu.resolve(t.path) === pu.resolve(pu.join(rootPath, src))))
+							.find(t => path.resolve(t.path) === path.resolve(path.join(rootPath, src))))
 
 					let includes = transforms
 						.map(transform => transform?.includes)
@@ -68,7 +69,7 @@ export default async ({ config, procedure }) => {
 						.reduce((incs, i) => [...incs, ...i], [])
 						.map(i => 
 							i.startsWith('~')
-								? pu.join(rootPath, i.slice(1))
+								? path.join(rootPath, i.slice(1))
 								: i
 						)
 
@@ -89,17 +90,66 @@ export default async ({ config, procedure }) => {
 					}
 				})
 
-			meta.watch = Object.keys(metafile.inputs)
-				.map(path => pu.join(rootPath, path))
+			let mainChunk = chunks[0]
+			let asyncChunks = chunks.filter(
+				chunk => chunks.some(
+					otherChunk => {
+						if(chunk === otherChunk)
+							return false
+
+						return otherChunk.meta.imports
+							.filter(i => i.kind === 'dynamic-import')
+							.some(i => path.basename(i.path) === chunk.file)
+					}
+				)
+			)
+			
+			let sharedChunks = chunks
+					.slice(1)
+					.filter(chunk => !asyncChunks.includes(chunk))
+
+
+			mergeSharedChunksIntoMain({ mainChunk, sharedChunks })
+			rewriteImportsOfAsyncChunks({ 
+				asyncChunks, 
+				sharedChunks, 
+				vendorFile: mainChunk.local 
+			})
+
+			console.log(mainChunk)
+			console.log(asyncChunks)
+
+			commonBundle = {
+				mainChunk,
+				asyncChunks,
+				watchFiles: Object.keys(metafile.inputs)
+					.map(f => path.join(rootPath, f))
+			}
 		}
 	})
 
+	return { commonBundle }
+}
 
-	return { 
-		commonBundle: {
-			chunks,
-			externals: meta.externals,
-			watch: meta.watch,
+function mergeSharedChunksIntoMain({ mainChunk, sharedChunks }){
+	let sharedExports = sharedChunks
+		.reduce((e, chunk) => [...e, ...chunk.meta.exports], [])
+
+	let mergedCode = ``
+
+	for(let chunk of sharedChunks.slice().reverse()){
+		mergedCode += stripExports(stripImports(chunk.code))
+		mergedCode += `\n`
+	}
+
+	mainChunk.code = mergedCode + stripImports(mainChunk.code)
+	mainChunk.code += `export { ${sharedExports.join(', ')} };`
+}
+
+function rewriteImportsOfAsyncChunks({ asyncChunks, sharedChunks, vendorFile }){
+	for(let chunk of asyncChunks){
+		for(let { local } of sharedChunks){
+			chunk.code = chunk.code.replace(local, vendorFile)
 		}
 	}
 }

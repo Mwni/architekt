@@ -16,52 +16,35 @@ export default async ({ config, data, plugins, procedure, watch }) => {
 		id: `bundle-client`,
 		description: `compiling client bundle`,
 		execute: async () => {
-			let { chunks, watch: clientWatchFiles } = commonBundle
-			let suffix = ''
-			let appChunk = chunks[0]
-			let asyncChunks = chunks
-				.filter(chunk => 
-					appChunk.meta.imports
-						.filter(i => i.kind === 'dynamic-import')
-						.some(i => path.basename(i.path) === chunk.file))
-			
-			let sharedChunks = chunks
-					.slice(1)
-					.filter(chunk => !asyncChunks.includes(chunk))
-
-			let sharedExports = sharedChunks
-				.reduce((e, chunk) => [...e, ...chunk.meta.exports], [])
-			
+			let { mainChunk, asyncChunks, watchFiles } = commonBundle
 			let { outputFiles: [ finalBundle ] } = await esbuild.build({
 				stdin: {
 					contents: template({
 						file: 'client.js',
 						fields: {
-							clientEntry: appChunk.local
+							clientEntry: mainChunk.local
 						}
 					}),
-					sourcefile: 'app.js',
+					sourcefile: 'app-entry.js',
 					resolveDir: './'
 				},
 				plugins: [
 					pipeline.resolve({
-						isInternal: args => chunks.some(chunk => chunk.local === args.path),
 						isExternal: args => asyncChunks.some(chunk => chunk.local === args.path),
 						rootPath,
 						yields: {}
 					}),
-					pipeline.internal(
-						chunks.reduce(
-							(o, chunk) => ({...o, [chunk.local]: chunk.code}), 
-							{}
-						)
-					)
+					pipeline.internal({
+						[mainChunk.local]: mainChunk.code
+					})
 				],
 				bundle: true,
 				format: 'esm',
 				write: false,
 				logLevel: 'silent'
 			})
+
+			console.log(finalBundle.text)
 		
 			appChunk.local = './app.js'
 			appChunk.file = `app${suffix}.js`
@@ -80,7 +63,7 @@ export default async ({ config, data, plugins, procedure, watch }) => {
 			}
 
 			finalChunks = [appChunk, ...asyncChunks]
-			watch(clientWatchFiles)
+			watch(watchFiles)
 		}
 	})
 

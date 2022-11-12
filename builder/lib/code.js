@@ -22,6 +22,20 @@ export function extractImports(src){
 		.join('\n')
 }
 
+export function stripImports(src){
+	return src.replace(
+		/import\s+?(?:(?:(?:[\w*\s{},]*)\s+from\s+?)|)(?:(?:".*?")|(?:'.*?'))[\s]*?(?:;|$|)/g,
+		''
+	)
+}
+
+export function stripExports(src){
+	return src.replace(
+		/export\s*{(.|\n)*};/g,
+		''
+	)
+}
+
 
 export function extractBlocks(src, locator, includeLocator){
 	let regex = new RegExp('('+locator+')' + '(.*)(\\{|\\[)', 'g')
