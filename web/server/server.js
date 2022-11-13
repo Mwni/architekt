@@ -64,13 +64,11 @@ function serveDir({ router, fileDir, webPath }){
 		let mime = mimes[ext] || mimes.default
 		let content = fs.readFileSync(path.join(absFileDir, file))
 
-		log(`serving ${fileDir}/${file} at ${webPath}/${file}`)
+		log(`serving ${file} at ${webPath}/${file}`)
 
 		router.get(`${webPath}/${file}`, async ctx => {
 			ctx.body = content
 			ctx.type = mime
-
-			console.log('served', file, mime)
 		})
 	}
 }
