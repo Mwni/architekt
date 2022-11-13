@@ -62,12 +62,17 @@ function updateNodes(nodes, previousNodes, nextSibling){
 			if (o === v || (!o && !v))
 				continue
 
-			if(!o)
-				createNode(v, getNextSibling(previousNodes, start + 1, nextSibling))
-			else if(!v)
+			if(!v){
 				removeNode(o)
+				continue
+			}
+
+			let sibling = getNextSibling(previousNodes, start + 1) || nextSibling
+			
+			if(o)
+				updateNode(v, o, sibling)
 			else
-				updateNode(v, o, getNextSibling(previousNodes, start + 1, nextSibling))
+				createNode(v, sibling)
 		}
 
 		if(previousNodes.length > commonLength)
@@ -81,8 +86,10 @@ function updateNodes(nodes, previousNodes, nextSibling){
 }
 
 
-function createNodes(nodes, nextSibling){
-	for(let node of nodes){
+function createNodes(nodes, nextSibling, offset){
+	for(let i=offset || 0; i<nodes.length; i++){
+		let node = nodes[i]
+
 		if(!node)
 			continue
 
@@ -92,22 +99,22 @@ function createNodes(nodes, nextSibling){
 
 function createNode(node, nextSibling){
 	if(node.factory){
-		createComponent(node)
+		createComponent(node, nextSibling)
 	}else if(node.element){
-		createElement(node)
+		createElement(node, nextSibling)
 
 		if(node.content){
 			let previousParentDom = ctx.parentDom
 	
 			ctx.parentDom = node.dom
 			viewNodeContent(node)
-			createNodes(node.children)
+			createNodes(node.children, nextSibling)
 			ctx.parentDom = previousParentDom
 		}
 	}
 }
 
-function createComponent(node){
+function createComponent(node, nextSibling){
 	node.state = {}
 	node.instance = []
 
@@ -129,18 +136,18 @@ function createComponent(node){
 	
 	node.instance = ctx.stack
 
-	createNodes(node.instance)
+	createNodes(node.instance, nextSibling)
 
 	node.dom = node.instance
 		.map(({ dom }) => dom)
 		.filter(dom => dom)
 }
 
-function createElement(node){
+function createElement(node, nextSibling){
 	node.dom = ctx.createElement(node.element)
 	
 	ctx.setAttrs(node, node.attrs)
-	ctx.insertElement(ctx.parentDom, node.dom, ctx.nextSibling)
+	ctx.insertElement(ctx.parentDom, node.dom, nextSibling)
 }
 
 
@@ -228,11 +235,15 @@ function viewNodeContent(node){
 	node.children = ctx.stack
 }
 
-function getNextSibling(nodes, startIndex, nextSibling){
+function getNextSibling(nodes, startIndex){
+	let sibling
+
 	for(let i=startIndex; i<nodes.length; i++){
-		if(nodes[i] && nodes[i].dom) 
-			return nodes[i].dom
+		sibling = nodes[i]?.dom
+
+		while(sibling && Array.isArray(sibling))
+			sibling = sibling[0]
 	}
 
-	return nextSibling
+	return sibling
 }
