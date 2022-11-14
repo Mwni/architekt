@@ -10,47 +10,47 @@ export function render(scope, component, props){
 		props
 	}
 
-	updateNodes([node], scope.node ? [scope.node] : undefined)
+	updateNodes(scope.node ? [scope.node] : undefined, [node])
 
 	Object.assign(ctx, { node })
 }
 
-function updateNodes(nodes, previousNodes){
-	if(previousNodes === nodes || (!previousNodes && !nodes))
+function updateNodes(nodes, newNodes){
+	if(newNodes === nodes || (!newNodes && !nodes))
 		return
-
-	if(!previousNodes || previousNodes.length === 0){
-		createNodes(nodes)
-		return
-	}
 
 	if(!nodes || nodes.length === 0){
-		removeNodes(previousNodes)
+		createNodes(newNodes)
 		return
 	}
 
-	let commonLength = Math.min(nodes.length, previousNodes.length)
+	if(!newNodes || newNodes.length === 0){
+		removeNodes(nodes)
+		return
+	}
+
+	let commonLength = Math.min(nodes.length, newNodes.length)
 
 	for (let i=0; i<commonLength; i++){
-		let o = previousNodes[i]
-		let v = nodes[i]
+		let o = nodes[i]
+		let v = newNodes[i]
 
 		if (o === v || (!o && !v))
 			continue
 
 		if(o)
-			updateNode(v, o)
+			updateNode(o, v)
 		else if(v)
 			createNode(v)
 		else
 			removeNode(o)
 	}
 
-	if(previousNodes.length > commonLength)
-		removeNodes(previousNodes, commonLength)
-
 	if(nodes.length > commonLength)
-		createNodes(nodes, commonLength)
+		removeNodes(nodes, commonLength)
+
+	if(newNodes.length > commonLength)
+		createNodes(newNodes, commonLength)
 	
 }
 
@@ -91,16 +91,16 @@ function createComponent(node){
 	
 	node.instance = ctx.stack
 
-	interlinkNodes(node.instance)
+	interlinkNodes(node.instance, node)
 	createNodes(node.instance)
 }
 
 function createElement(node){
 	node.dom = ctx.createElement(node.element)
-	
+
 	ctx.setAttrs(node, node.attrs)
 	ctx.insertElement(
-		ctx.parentDom, 
+		ctx.parentDom,
 		node.dom, 
 		findNextSiblingElement(node)
 	)
@@ -110,64 +110,61 @@ function createElement(node){
 
 		ctx.node = node
 		ctx.parentDom = node.dom
+
 		node.children = collectNodes(node.content)
 		createNodes(node.children)
+
 		ctx.parentDom = previousParentDom
 	}
 }
 
 
-function updateNode(node, previousNode){
-	if (node.factory === previousNode.factory){
-		node.render = previousNode.render
-		node.state = previousNode.state
-		node.events = previousNode.events
-
-		//if(shouldNotUpdate(node, previousNode)) 
-		//	return
-
-		if(previousNode.factory){
-			updateComponent(node, previousNode)
-		}else if(previousNode.element){
-			updateElement(node, previousNode)
+function updateNode(node, newNode){
+	if (node.factory === newNode.factory){
+		if(node.factory){
+			updateComponent(node, newNode)
+		}else if(node.element){
+			updateElement(node, newNode)
 		}
-
-		//hack
-		Object.assign(previousNode, node)
 	}else{
-		console.log('teardown', previousNode, node)
-		removeNode(previousNode)
-		createNode(node)
+		newNode.prevSibling = node.prevSibling
+		newNode.nextSibling = node.nextSibling
+		removeNode(node)
+		createNode(newNode, true)
+		Object.assign(node, newNode)
 	}
 }
 
-function updateComponent(node, previousNode){
+function updateComponent(node, newNode){
+	let newInstance = []
+
 	ctx.node = node
-	ctx.stack = []
+	ctx.stack = newInstance
 
-	node.render(node.props, node.content)
-	node.instance = ctx.stack
-	
-	interlinkNodes(node.instance)
-	//updateLifecycle(vnode.state, vnode, hooks)
+	node.render(newNode.props, newNode.content)
+	interlinkNodes(newInstance)
 
-	if(!previousNode.instance){
-		createNodes(node.instance)
+	if(!node.instance){
+		createNodes(newInstance)
+		node.instance = newInstance
 	}else{
-		updateNodes(node.instance, previousNode.instance)
+		updateNodes(node.instance, newInstance)
 	}
 }
 
-function updateElement(node, previousNode){
-	node.dom = previousNode.dom
-	ctx.setAttrs(node, node.attrs, previousNode.attrs)
+function updateElement(node, newNode){
+	ctx.setAttrs(node, newNode.attrs, node.attrs)
 
 	if(node.content){
 		let previousParentDom = ctx.parentDom
 
 		ctx.parentDom = node.dom
-		node.children = collectNodes(node.content)
-		updateNodes(node.children, previousNode.children, null)
+
+		updateNodes(
+			node.children, 
+			collectNodes(node.content)
+		)
+
 		ctx.parentDom = previousParentDom
 	}
 }
@@ -188,10 +185,15 @@ function removeNode(node){
 	}
 }
 
-function interlinkNodes(nodes){
+function interlinkNodes(nodes, parentNode){
 	for(let i=0; i<nodes.length; i++){
 		nodes[i].prevSibling = nodes[i-1]
 		nodes[i].nextSibling = nodes[i+1]
+	}
+
+	if(parentNode){
+		nodes[0].prevSibling = parentNode.prevSibling
+		nodes[nodes.length-1].nextSibling = parentNode.nextSibling
 	}
 }
 
@@ -208,13 +210,13 @@ function findNextSiblingElement(node){
 	let sibling = node.nextSibling
 
 	while(sibling){
-		let element = sibling.dom?.[0]
+		let target = sibling
 
-		while(element && Array.isArray(element))
-			element = element[0]
+		while(target.instance)
+			target = target.instance[0]
 
-		if(element)
-			return element
+		if(target?.dom)
+			return target.dom
 		
 		sibling = sibling.nextSibling
 	}
