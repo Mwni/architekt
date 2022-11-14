@@ -15,12 +15,12 @@ export function render(scope, component, props){
 	Object.assign(ctx, { node })
 }
 
-function updateNodes(nodes, previousNodes, nextSibling){
+function updateNodes(nodes, previousNodes){
 	if(previousNodes === nodes || (!previousNodes && !nodes))
 		return
 
 	if(!previousNodes || previousNodes.length === 0){
-		createNodes(nodes, nextSibling)
+		createNodes(nodes)
 		return
 	}
 
@@ -29,92 +29,47 @@ function updateNodes(nodes, previousNodes, nextSibling){
 		return
 	}
 
-	let isPreviousKeyed = previousNodes[0] && previousNodes[0].key != null
-	let isKeyed = nodes[0] && nodes[0].key != null
+	let commonLength = Math.min(nodes.length, previousNodes.length)
 
-	let start = 0
-	let oldStart = 0
+	for (let i=0; i<commonLength; i++){
+		let o = previousNodes[i]
+		let v = nodes[i]
 
-	if(!isPreviousKeyed){
-		while(oldStart < previousNodes.length && !previousNodes[oldStart]) 
-			oldStart++
-	}
-
-	if(!isKeyed){
-		while(start < nodes.length && !nodes[start]) 
-			start++
-	}
-
-	if(isPreviousKeyed !== isKeyed){
-		removeNodes(previousNodes.slice(oldStart))
-		createNodes(nodes.slice(start), nextSibling)
-	}else if(!isKeyed){
-		let commonLength = previousNodes.length < nodes.length 
-			? previousNodes.length 
-			: nodes.length
-	
-		start = start < oldStart ? start : oldStart
-
-		for (; start < commonLength; start++){
-			let o = previousNodes[start]
-			let v = nodes[start]
-
-			if (o === v || (!o && !v))
-				continue
-
-			if(!v){
-				removeNode(o)
-				continue
-			}
-
-			let sibling = getNextSibling(previousNodes, start + 1) || nextSibling
-			
-			if(o)
-				updateNode(v, o, sibling)
-			else
-				createNode(v, sibling)
-		}
-
-		if(previousNodes.length > commonLength)
-			removeNodes(previousNodes.slice(start))
-
-		if(nodes.length > commonLength)
-			createNodes(nodes.slice(start), nextSibling)
-	}else{
-		throw Error(`Keyed diffing is not implemented.`)
-	}
-}
-
-
-function createNodes(nodes, nextSibling, offset){
-	for(let i=offset || 0; i<nodes.length; i++){
-		let node = nodes[i]
-
-		if(!node)
+		if (o === v || (!o && !v))
 			continue
 
-		createNode(node, nextSibling)
+		if(o)
+			updateNode(v, o)
+		else if(v)
+			createNode(v)
+		else
+			removeNode(o)
 	}
-}
 
-function createNode(node, nextSibling){
-	if(node.factory){
-		createComponent(node, nextSibling)
-	}else if(node.element){
-		createElement(node, nextSibling)
+	if(previousNodes.length > commonLength)
+		removeNodes(previousNodes, commonLength)
 
-		if(node.content){
-			let previousParentDom = ctx.parentDom
+	if(nodes.length > commonLength)
+		createNodes(nodes, commonLength)
 	
-			ctx.parentDom = node.dom
-			viewNodeContent(node)
-			createNodes(node.children, nextSibling)
-			ctx.parentDom = previousParentDom
-		}
+}
+
+
+function createNodes(nodes, offset){
+	for(let i=offset || 0; i<nodes.length; i++){
+		createNode(nodes[i])
 	}
 }
 
-function createComponent(node, nextSibling){
+function createNode(node){
+	if(node.factory){
+		createComponent(node)
+	}else if(node.element){
+		createElement(node)
+	}
+}
+
+function createComponent(node){
 	node.state = {}
 	node.instance = []
 
@@ -136,22 +91,33 @@ function createComponent(node, nextSibling){
 	
 	node.instance = ctx.stack
 
-	createNodes(node.instance, nextSibling)
-
-	node.dom = node.instance
-		.map(({ dom }) => dom)
-		.filter(dom => dom)
+	interlinkNodes(node.instance)
+	createNodes(node.instance)
 }
 
-function createElement(node, nextSibling){
+function createElement(node){
 	node.dom = ctx.createElement(node.element)
 	
 	ctx.setAttrs(node, node.attrs)
-	ctx.insertElement(ctx.parentDom, node.dom, nextSibling)
+	ctx.insertElement(
+		ctx.parentDom, 
+		node.dom, 
+		findNextSiblingElement(node)
+	)
+
+	if(node.content){
+		let previousParentDom = ctx.parentDom
+
+		ctx.node = node
+		ctx.parentDom = node.dom
+		node.children = collectNodes(node.content)
+		createNodes(node.children)
+		ctx.parentDom = previousParentDom
+	}
 }
 
 
-function updateNode(node, previousNode, nextSibling){
+function updateNode(node, previousNode){
 	if (node.factory === previousNode.factory){
 		node.render = previousNode.render
 		node.state = previousNode.state
@@ -161,89 +127,95 @@ function updateNode(node, previousNode, nextSibling){
 		//	return
 
 		if(previousNode.factory){
-			updateComponent(node, previousNode, nextSibling)
+			updateComponent(node, previousNode)
 		}else if(previousNode.element){
 			updateElement(node, previousNode)
-
-			if(node.content){
-				let previousParentDom = ctx.parentDom
-		
-				ctx.parentDom = node.dom
-				viewNodeContent(node)
-				updateNodes(node.children, previousNode.children, null)
-				ctx.parentDom = previousParentDom
-			}
 		}
 
 		//hack
 		Object.assign(previousNode, node)
 	}else{
+		console.log('teardown', previousNode, node)
 		removeNode(previousNode)
-		createNode(node, nextSibling)
+		createNode(node)
+	}
+}
+
+function updateComponent(node, previousNode){
+	ctx.node = node
+	ctx.stack = []
+
+	node.render(node.props, node.content)
+	node.instance = ctx.stack
+	
+	interlinkNodes(node.instance)
+	//updateLifecycle(vnode.state, vnode, hooks)
+
+	if(!previousNode.instance){
+		createNodes(node.instance)
+	}else{
+		updateNodes(node.instance, previousNode.instance)
 	}
 }
 
 function updateElement(node, previousNode){
 	node.dom = previousNode.dom
 	ctx.setAttrs(node, node.attrs, previousNode.attrs)
-}
 
-function updateComponent(node, previousNode, nextSibling){
-	ctx.node = node
-	ctx.stack = []
+	if(node.content){
+		let previousParentDom = ctx.parentDom
 
-	node.render(node.props, node.content)
-	node.instance = ctx.stack
-
-	//updateLifecycle(vnode.state, vnode, hooks)
-
-	if(!previousNode.instance){
-		createNodes(node.instance, nextSibling)
-	}else{
-		updateNodes(node.instance, previousNode.instance, nextSibling)
+		ctx.parentDom = node.dom
+		node.children = collectNodes(node.content)
+		updateNodes(node.children, previousNode.children, null)
+		ctx.parentDom = previousParentDom
 	}
-
-	node.dom = node.instance
-		.map(({ dom }) => dom)
-		.filter(dom => dom)
 }
 
-function removeNodes(nodes){
-	for(let node of nodes){
-		if(!node)
-			continue
-
-		removeNode(node)
+function removeNodes(nodes, offset){
+	for(let i=offset || 0; i<nodes.length; i++){
+		removeNode(nodes[i])
 	}
 }
 
 function removeNode(node){
 	if(node.dom){
-		for(let element of node.dom){
-			ctx.removeElement(element)
+		ctx.removeElement(node.dom)
+	}else if(node.instance){
+		for(let subNode of node.instance){
+			removeNode(subNode)
 		}
 	}
 }
 
-function viewNodeContent(node){
-	if(typeof node.content !== 'function'){
-		throw new Error(`Component's content parameter must either be a closure or left blank, not ${typeof node.content}`)
+function interlinkNodes(nodes){
+	for(let i=0; i<nodes.length; i++){
+		nodes[i].prevSibling = nodes[i-1]
+		nodes[i].nextSibling = nodes[i+1]
 	}
-
-	ctx.stack = []
-	node.content()
-	node.children = ctx.stack
 }
 
-function getNextSibling(nodes, startIndex){
-	let sibling
+function collectNodes(viewFunc){
+	ctx.stack = []
 
-	for(let i=startIndex; i<nodes.length; i++){
-		sibling = nodes[i]?.dom
+	viewFunc()
+	interlinkNodes(ctx.stack)
+	
+	return ctx.stack
+}
 
-		while(sibling && Array.isArray(sibling))
-			sibling = sibling[0]
+function findNextSiblingElement(node){
+	let sibling = node.nextSibling
+
+	while(sibling){
+		let element = sibling.dom?.[0]
+
+		while(element && Array.isArray(element))
+			element = element[0]
+
+		if(element)
+			return element
+		
+		sibling = sibling.nextSibling
 	}
-
-	return sibling
 }
