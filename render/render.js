@@ -71,15 +71,15 @@ function createComponent(node){
 	ctx.downstream = { ...ctx.downstream }
 	ctx.stack = []
 
-	let potentialRender = node.construct(node.props, node.content)
+	let render = node.construct(node.props, node.content)
 
-	if(typeof potentialRender === 'function'){
-		node.render = potentialRender
-		node.render(node.props, node.content)
-	}else if(potentialRender instanceof Promise){
+	if(!render)
+		return
+
+	if(render instanceof Promise){
 		node.constructLock = true
 		
-		potentialRender
+		render
 			.then(render => {
 				node.constructLock = false
 				node.render = render
@@ -89,7 +89,8 @@ function createComponent(node){
 				console.error(error)
 			})
 	}else{
-		node.render = node.construct
+		node.render = render
+		node.render(node.props, node.content)
 	}
 
 	if(ctx.stack.length === 0)
