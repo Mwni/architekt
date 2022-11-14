@@ -1,16 +1,13 @@
 import { ctx } from './context.js'
 
 
-export function render(scope, component, props){
+export function render(scope, node){
 	Object.assign(ctx, scope)
 
-	let node = { 
-		component,
-		factory: component.factory,
-		props
-	}
-
-	updateNodes(scope.node ? [scope.node] : undefined, [node])
+	updateNodes(
+		scope.node ? [scope.node] : undefined, 
+		[node]
+	)
 
 	Object.assign(ctx, { node })
 }
@@ -32,37 +29,31 @@ function updateNodes(nodes, newNodes){
 	let commonLength = Math.min(nodes.length, newNodes.length)
 
 	for (let i=0; i<commonLength; i++){
-		let o = nodes[i]
-		let v = newNodes[i]
-
-		if (o === v || (!o && !v))
-			continue
-
-		if(o)
-			updateNode(o, v)
-		else if(v)
-			createNode(v)
-		else
-			removeNode(o)
+		updateNode(nodes[i], newNodes[i])
 	}
 
-	if(nodes.length > commonLength)
-		removeNodes(nodes, commonLength)
+	if(nodes.length > commonLength){
+		removeNodes(nodes.slice(commonLength))
+		nodes.splice(commonLength)
+	}
 
-	if(newNodes.length > commonLength)
-		createNodes(newNodes, commonLength)
-	
+	if(newNodes.length > commonLength){
+		let newNodesSlice = newNodes.slice(commonLength)
+
+		createNodes(newNodesSlice)
+		nodes.push(...newNodesSlice)
+	}
 }
 
 
-function createNodes(nodes, offset){
-	for(let i=offset || 0; i<nodes.length; i++){
-		createNode(nodes[i])
+function createNodes(nodes){
+	for(let node of nodes){
+		createNode(node)
 	}
 }
 
 function createNode(node){
-	if(node.factory){
+	if(node.construct){
 		createComponent(node)
 	}else if(node.element){
 		createElement(node)
@@ -70,29 +61,44 @@ function createNode(node){
 }
 
 function createComponent(node){
+	if(node.constructLock)
+		return
+
 	node.state = {}
-	node.instance = []
+	node.children = []
 
 	ctx.node = node
 	ctx.downstream = { ...ctx.downstream }
 	ctx.stack = []
 
-	let potentialRender = node.factory(node.props, node.content)
+	let potentialRender = node.construct(node.props, node.content)
 
 	if(typeof potentialRender === 'function'){
 		node.render = potentialRender
 		node.render(node.props, node.content)
+	}else if(potentialRender instanceof Promise){
+		node.constructLock = true
+		
+		potentialRender
+			.then(render => {
+				node.constructLock = false
+				node.render = render
+				updateComponent(node, node)
+			})
+			.catch(error => {
+				console.error(error)
+			})
 	}else{
-		node.render = node.factory
+		node.render = node.construct
 	}
 
 	if(ctx.stack.length === 0)
 		return
 	
-	node.instance = ctx.stack
+	node.children = ctx.stack
 
-	interlinkNodes(node.instance, node)
-	createNodes(node.instance)
+	interlinkNodes(node.children, node)
+	createNodes(node.children)
 }
 
 function createElement(node){
@@ -120,8 +126,8 @@ function createElement(node){
 
 
 function updateNode(node, newNode){
-	if (node.factory === newNode.factory){
-		if(node.factory){
+	if (node.construct === newNode.construct){
+		if(node.construct){
 			updateComponent(node, newNode)
 		}else if(node.element){
 			updateElement(node, newNode)
@@ -136,20 +142,16 @@ function updateNode(node, newNode){
 }
 
 function updateComponent(node, newNode){
-	let newInstance = []
+	let newChildren = []
 
 	ctx.node = node
-	ctx.stack = newInstance
+	ctx.downstream = { ...ctx.downstream }
+	ctx.stack = newChildren
 
 	node.render(newNode.props, newNode.content)
-	interlinkNodes(newInstance)
 
-	if(!node.instance){
-		createNodes(newInstance)
-		node.instance = newInstance
-	}else{
-		updateNodes(node.instance, newInstance)
-	}
+	interlinkNodes(newChildren, node)
+	updateNodes(node.children, newChildren)
 }
 
 function updateElement(node, newNode){
@@ -169,18 +171,18 @@ function updateElement(node, newNode){
 	}
 }
 
-function removeNodes(nodes, offset){
-	for(let i=offset || 0; i<nodes.length; i++){
-		removeNode(nodes[i])
+function removeNodes(nodes){
+	for(let node of nodes){
+		removeNode(node)
 	}
 }
 
 function removeNode(node){
 	if(node.dom){
 		ctx.removeElement(node.dom)
-	}else if(node.instance){
-		for(let subNode of node.instance){
-			removeNode(subNode)
+	}else if(node.children){
+		for(let child of node.children){
+			removeNode(child)
 		}
 	}
 }
@@ -212,8 +214,8 @@ function findNextSiblingElement(node){
 	while(sibling){
 		let target = sibling
 
-		while(target.instance)
-			target = target.instance[0]
+		while(target.children)
+			target = target.children[0]
 
 		if(target?.dom)
 			return target.dom

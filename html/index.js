@@ -17,5 +17,8 @@ export function mount(dom, component, props){
 		document: dom.ownerDocument,
 	}
 
-	render(ctx, component, props)
+	render(ctx, {
+		construct: component.construct,
+		props
+	})
 }

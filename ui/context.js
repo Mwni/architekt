@@ -8,7 +8,10 @@ export function getContext(){
 		downstream: scope.downstream,
 		upstream: scope.upstream,
 		redraw: () => {
-			render(scope, scope.node.component, scope.node.props)
+			render(scope, {
+				construct: scope.node.construct, 
+				props: scope.node.props
+			})
 		}
 	}
 }

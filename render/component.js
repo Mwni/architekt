@@ -1,6 +1,6 @@
 import { ctx } from './context.js'
 
-export default factory => {
+export default construct => {
 	let component = (props, content) => {
 		if(!props){
 			props = {}
@@ -10,14 +10,13 @@ export default factory => {
 		}
 
 		ctx.stack.push({
-			component,
-			factory,
+			construct,
 			props,
 			content
 		})
 	}
 
-	component.factory = factory
+	component.construct = construct
 
 	return component
 }
