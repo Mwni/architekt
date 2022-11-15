@@ -41,11 +41,11 @@ function serveApp({ router, clientApp, bootstrapCode }){
 			route: '/'
 		}
 
-		mountComponent(
+		/*mountComponent(
 			dom.window.document.body, 
 			clientApp, 
 			{ page }
-		)
+		)*/
 
 		writeDocument({
 			ctx,

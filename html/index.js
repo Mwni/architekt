@@ -13,12 +13,14 @@ export function mount(dom, component, props){
 		insertElement,
 		removeElement,
 		setAttrs,
-		parentDom: dom,
 		document: dom.ownerDocument,
 	}
 
 	render(ctx, {
 		construct: component.construct,
-		props
+		props,
+		parentNode: {
+			dom
+		}
 	})
 }

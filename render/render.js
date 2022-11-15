@@ -2,14 +2,12 @@ import { ctx } from './context.js'
 
 
 export function render(scope, node){
-	Object.assign(ctx, scope)
+	Object.assign(ctx, scope, { node })
 
 	updateNodes(
 		scope.node ? [scope.node] : undefined, 
 		[node]
 	)
-
-	Object.assign(ctx, { node })
 }
 
 function updateNodes(nodes, newNodes){
@@ -29,12 +27,13 @@ function updateNodes(nodes, newNodes){
 	let commonLength = Math.min(nodes.length, newNodes.length)
 
 	for (let i=0; i<commonLength; i++){
-		updateNode(nodes[i], newNodes[i])
+		nodes[i] = updateNode(nodes[i], newNodes[i])
 	}
 
 	if(nodes.length > commonLength){
 		removeNodes(nodes.slice(commonLength))
 		nodes.splice(commonLength)
+		nodes[commonLength - 1].nextSibling = undefined
 	}
 
 	if(newNodes.length > commonLength){
@@ -42,6 +41,7 @@ function updateNodes(nodes, newNodes){
 
 		createNodes(newNodesSlice)
 		nodes.push(...newNodesSlice)
+		nodes[commonLength - 1].nextSibling = newNodesSlice[0]
 	}
 }
 
@@ -66,20 +66,14 @@ function createComponent(node){
 
 	node.state = {}
 	node.children = []
+	node.render = node.construct(node.props, node.content)
 
-	ctx.node = node
-	ctx.downstream = { ...ctx.downstream }
-	ctx.stack = []
-
-	let render = node.construct(node.props, node.content)
-
-	if(!render)
+	if(!node.render)
 		return
 
-	if(render instanceof Promise){
+	if(node.render instanceof Promise){
 		node.constructLock = true
-		
-		render
+		node.render
 			.then(render => {
 				node.constructLock = false
 				node.render = render
@@ -88,88 +82,96 @@ function createComponent(node){
 			.catch(error => {
 				console.error(error)
 			})
-	}else{
-		node.render = render
-		node.render(node.props, node.content)
+
+		return
 	}
 
-	if(ctx.stack.length === 0)
-		return
-	
-	node.children = ctx.stack
+	node.children = collectChildren(
+		node, 
+		node.render, 
+		node.props, 
+		node.content
+	)
 
-	interlinkNodes(node.children, node)
 	createNodes(node.children)
 }
 
 function createElement(node){
+	let parentElement = findParentElement(node)
+	let siblingElement = findNextSiblingElement(node, parentElement)
+
 	node.dom = ctx.createElement(node.element)
 
 	ctx.setAttrs(node, node.attrs)
-	ctx.insertElement(
-		ctx.parentDom,
-		node.dom, 
-		findNextSiblingElement(node)
-	)
+	ctx.insertElement(parentElement, node.dom, siblingElement)
 
 	if(node.content){
-		let previousParentDom = ctx.parentDom
-
-		ctx.node = node
-		ctx.parentDom = node.dom
-
-		node.children = collectNodes(node.content)
+		node.children = collectChildren(node, node.content)
 		createNodes(node.children)
-
-		ctx.parentDom = previousParentDom
+	}else{
+		node.children = []
 	}
 }
 
 
 function updateNode(node, newNode){
-	if (node.construct === newNode.construct){
+	let needsTeardown = node.construct !== newNode.construct
+		|| node.element !== newNode.element
+
+	if (!needsTeardown){
 		if(node.construct){
 			updateComponent(node, newNode)
 		}else if(node.element){
 			updateElement(node, newNode)
 		}
+
+		return node
 	}else{
-		newNode.prevSibling = node.prevSibling
-		newNode.nextSibling = node.nextSibling
-		removeNode(node)
-		createNode(newNode, true)
-		Object.assign(node, newNode)
+		replaceNode(node, newNode)
+		return newNode
 	}
 }
 
 function updateComponent(node, newNode){
-	let newChildren = []
+	node.props = newNode.props
+	node.content = newNode.content
 
-	ctx.node = node
-	ctx.downstream = { ...ctx.downstream }
-	ctx.stack = newChildren
+	let newChildren = collectChildren(
+		node,
+		node.render,
+		newNode.props,
+		newNode.content
+	)
 
-	node.render(newNode.props, newNode.content)
-
-	interlinkNodes(newChildren, node)
 	updateNodes(node.children, newChildren)
 }
 
 function updateElement(node, newNode){
 	ctx.setAttrs(node, newNode.attrs, node.attrs)
 
+	node.attrs = newNode.attrs
+
 	if(node.content){
-		let previousParentDom = ctx.parentDom
-
-		ctx.parentDom = node.dom
-
 		updateNodes(
 			node.children, 
-			collectNodes(node.content)
+			collectChildren(node, node.content)
 		)
-
-		ctx.parentDom = previousParentDom
 	}
+}
+
+function replaceNode(node, newNode){
+	newNode.parentNode = node.parentNode
+	newNode.prevSibling = node.prevSibling
+	newNode.nextSibling = node.nextSibling
+	
+	removeNode(node)
+	createNode(newNode)
+
+	if(node.prevSibling)
+		node.prevSibling.nextSibling = newNode
+
+	if(node.nextSibling)
+		node.nextSibling.prevSibling = newNode
 }
 
 function removeNodes(nodes){
@@ -188,39 +190,44 @@ function removeNode(node){
 	}
 }
 
-function interlinkNodes(nodes, parentNode){
-	for(let i=0; i<nodes.length; i++){
-		nodes[i].prevSibling = nodes[i-1]
-		nodes[i].nextSibling = nodes[i+1]
+function collectChildren(node, render, props, content){
+	let children = []
+
+	ctx.node = node
+	ctx.downstream = { ...ctx.downstream }
+	ctx.stack = children
+
+	render(props, content)
+
+	for(let i=0; i<children.length; i++){
+		children[i].parentNode = node
+		children[i].prevSibling = children[i-1]
+		children[i].nextSibling = children[i+1]
 	}
 
-	if(parentNode){
-		nodes[0].prevSibling = parentNode.prevSibling
-		nodes[nodes.length-1].nextSibling = parentNode.nextSibling
+	return children
+}
+
+function findParentElement(node){
+	while(node.parentNode){
+		node = node.parentNode
+
+		if(node.dom)
+			return node.dom
 	}
 }
 
-function collectNodes(viewFunc){
-	ctx.stack = []
+function findNextSiblingElement(node, upToElement){
+	while(node && node.dom !== upToElement){
+		let sibling = node.nextSibling
 
-	viewFunc()
-	interlinkNodes(ctx.stack)
-	
-	return ctx.stack
-}
+		while(sibling){
+			if(sibling.dom)
+				return sibling.dom
+			else
+				sibling = sibling.children?.[0]
+		}
 
-function findNextSiblingElement(node){
-	let sibling = node.nextSibling
-
-	while(sibling){
-		let target = sibling
-
-		while(target.children)
-			target = target.children[0]
-
-		if(target?.dom)
-			return target.dom
-		
-		sibling = sibling.nextSibling
+		node = node.parentNode
 	}
 }
