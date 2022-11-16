@@ -136,6 +136,9 @@ function updateComponent(node, newNode){
 	node.props = newNode.props
 	node.content = newNode.content
 
+	if(!node.render)
+		return
+
 	let newChildren = collectChildren(
 		node,
 		node.render,
@@ -208,7 +211,7 @@ function collectChildren(node, render, props, content){
 	return children
 }
 
-function findParentElement(node){
+export function findParentElement(node){
 	while(node.parentNode){
 		node = node.parentNode
 

@@ -6,12 +6,14 @@ import { fileURLToPath } from 'url'
 import { JSDOM } from 'jsdom'
 import { mount as mountComponent } from '@architekt/html'
 import { writeDocument } from './document.js'
+import { imports } from './importer.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const mimes = {
 	default: 'text/plain',
 	'.js': 'text/javascript',
+	'.css': 'text/css'
 }
 
 export default ({ port, clientApp }) => {
@@ -21,9 +23,9 @@ export default ({ port, clientApp }) => {
 	let router = new Router()
 	let bootstrapCode = readFile({ filePath: 'bootstrap.js' })
 
-	serveDir({ router, fileDir: './js', webPath: '/js' })
-	//serveDir({ router, fileDir: './css', webPath: '/css' })
-	//serveDir({ router, fileDir: './res', webPath: '/res' })
+	serveDir({ router, fileDir: './client', webPath: '/app' })
+	serveDir({ router, fileDir: './static', webPath: '/app' })
+	serveWellKnown({ router })
 	serveApp({ router, clientApp, bootstrapCode })
 
 	koa.use(router.routes(), router.allowedMethods())
@@ -41,18 +43,25 @@ function serveApp({ router, clientApp, bootstrapCode }){
 			route: '/'
 		}
 
-		/*mountComponent(
+		mountComponent(
 			dom.window.document.body, 
 			clientApp, 
 			{ page }
-		)*/
+		)
 
 		writeDocument({
 			ctx,
 			dom,
 			page,
+			imports,
 			bootstrapCode,
 		})
+	})
+}
+
+function serveWellKnown({ router }){
+	router.get('/favicon.ico', async ctx => {
+		ctx.throw(404)
 	})
 }
 

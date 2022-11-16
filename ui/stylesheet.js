@@ -1,5 +1,8 @@
-import { Component } from '@architekt/render'
+import { ctx, findParentElement, Component } from '@architekt/render'
 
 export default Component(({ xid }) => {
-	console.log('YES!', xid)
+	let { node } = ctx
+	let dom = findParentElement(node)
+	
+	dom.classList.add(xid)
 })

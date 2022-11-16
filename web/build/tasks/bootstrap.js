@@ -1,8 +1,8 @@
 import fs from 'fs'
 import path from 'path'
 import { esbuild } from '@architekt/builder'
-import template from '../template.js'
-import { deriveVariants, reconcileVariants } from '../variants.js'
+import template from '../lib/template.js'
+import { deriveVariants, reconcileVariants } from '../lib/variants.js'
 
 
 export default async ({ config, procedure, data, plugins }) => {

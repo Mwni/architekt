@@ -31,6 +31,8 @@ async function perform(config){
 		cache,
 		plugins,
 		procedure: async ({ execute, ...descriptor }) => {
+			let result 
+
 			await new Promise(resolve => setTimeout(resolve, 10))
 
 			process.send({
@@ -40,7 +42,7 @@ async function perform(config){
 			})
 
 			try{
-				await execute()
+				result = await execute()
 
 				process.send({
 					subject: 'procedure',
@@ -56,6 +58,8 @@ async function perform(config){
 
 				throw error
 			}
+
+			return result
 		},
 		data: new Proxy(data, {
 			get: (_, prop) => {

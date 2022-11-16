@@ -1,6 +1,6 @@
 import fs from 'fs'
 import path from 'path'
-import { libPath } from '../paths.js'
+import { libPath } from '../../paths.js'
 
 
 

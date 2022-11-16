@@ -1,7 +1,7 @@
 import fs from 'fs'
 import pu from 'path'
 import Handlebars from 'handlebars'
-import { libPath } from '../paths.js'
+import { libPath } from '../../paths.js'
 
 export default function({ file, fields }){
 	let src = fs.readFileSync(pu.join(libPath, 'build', 'templates', file), 'utf-8')

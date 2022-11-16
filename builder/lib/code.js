@@ -24,7 +24,7 @@ export function extractImports(src){
 
 export function stripImports(src){
 	return src.replace(
-		/import\s+?(?:(?:(?:[\w*\s{},]*)\s+from\s+?)|)(?:(?:".*?")|(?:'.*?'))[\s]*?(?:;|$|)/g,
+		/import\s+?(?:(?:(?:[\w*\s{},]*)\s+from\s+?)|)(?:"\.\/[A-Z0-9]+-chunk-[A-Z0-9]+\.js")[\s]*?(?:;|$|)/g,
 		''
 	)
 }

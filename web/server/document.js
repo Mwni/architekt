@@ -6,10 +6,11 @@ const httpCodes = {
 	notFound: 404
 }
 
-export function writeDocument({ ctx, dom, page, bootstrapCode }){
+export function writeDocument({ ctx, dom, page, imports, bootstrapCode }){
 	let { document } = dom.window
 	
 	writeDefaultMeta({ document })
+	writeImports({ document, imports })
 	writeBootstrapCode({ document, bootstrapCode })
 
 	ctx.status = httpCodes[page.status] || 400
@@ -37,6 +38,36 @@ function writeDefaultMeta({ document }){
 
 	document.head.appendChild(charsetTag)
 	document.head.appendChild(viewportTag)
+}
+
+function writeImports({ document, imports }){
+	let tags = []
+
+	for(let bundleName of ['main', ...imports]){
+		let manifest = global.assetManifest[bundleName]
+
+		if(!manifest)
+			continue
+
+		if(manifest.stylesheet){
+			let tag = document.createElement('link')
+
+			tag.setAttribute('rel', 'stylesheet')
+			tag.setAttribute('href', manifest.stylesheet)
+
+			tags.push(tag)
+		}
+	}
+
+	if(tags.length > 0){
+		let noscript = document.createElement('noscript')
+
+		for(let tag of tags){
+			noscript.appendChild(tag)
+		}
+
+		document.head.appendChild(noscript)
+	}
 }
 
 function writeBootstrapCode({ document, bootstrapCode }){

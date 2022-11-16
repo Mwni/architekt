@@ -1,36 +1,45 @@
 import fs from 'fs'
 import path from 'path'
 import { bundle } from '@architekt/builder'
-import { deriveVariants } from '../variants.js'
-import template from '../template.js'
+import { deriveVariants } from '../lib/variants.js'
 import { libPath } from '../../paths.js'
+import template from '../lib/template.js'
+import bundleAssets from '../assets/index.js'
+import { rewriteImports } from '../lib/imports.js'
 
 
 export default async ({ config, plugins, procedure, watch }) => {
 	let { platform, rootPath, clientEntry, outputPath } = config
-	let finalChunksDir = path.join(outputPath, 'js')
-	let assetBundles = {}
+	let finalChunksDir = path.join(outputPath, 'client')
+
+	let { mainChunk, asyncChunks, watchFiles } = await procedure({
+		id: `build-client`,
+		description: `building client app`,
+		execute: async () => await bundle({
+			platform,
+			rootPath,
+			entry: {
+				code: template({
+					file: 'client.js',
+					fields: { clientEntry }
+				}),
+				file: './client.js'
+			},
+			importerImpl: path.join(
+				libPath, 
+				'client', 
+				'importer.js'
+			)
+		})
+	})
 
 	await procedure({
 		id: `bundle-client`,
-		description: `creating client runtime`,
+		description: `bundling client assets`,
 		execute: async () => {
-			let { mainChunk, asyncChunks, watchFiles } = await bundle({
-				platform,
-				rootPath,
-				entry: {
-					code: template({
-						file: 'client.js',
-						fields: { clientEntry }
-					}),
-					file: './client.js'
-				},
-				importerImpl: path.join(libPath, 'client', 'importer.js')
-			})
-
-			console.log(mainChunk)
-		
-			watch(watchFiles)
+			for(let chunk of [mainChunk, ...asyncChunks]){
+				chunk.assetBundle = await bundleAssets(chunk)
+			}
 		
 			if(!fs.existsSync(finalChunksDir))
 				fs.mkdirSync(finalChunksDir, { recursive: true })
@@ -38,38 +47,24 @@ export default async ({ config, plugins, procedure, watch }) => {
 			for(let { bundleSuffix, chunkTransforms } of deriveVariants('js', plugins)){
 				let mainChunkMod = structuredClone(mainChunk)
 				let asyncChunksMod = structuredClone(asyncChunks)
+				let hasAssets = {}
 		
-				mainChunkMod.local = './app.js'
-				mainChunkMod.file = `app${bundleSuffix}.js`
-		
+				if(mainChunkMod.assetBundle)
+					hasAssets.main = 1
+
+				await rewriteImports({
+					mainChunk: mainChunkMod,
+					asyncChunks: asyncChunksMod,
+					mainPath: `/app/main${bundleSuffix}.js`
+				})
+
 				for(let chunk of asyncChunksMod){
-					let dirtyName = chunk.file
-					let cleanName = `${dirtyName.slice(9, -12)}.js`
-
-					chunk.file = cleanName
-					chunk.dirtyName = dirtyName
-					chunk.code = chunk.code.replaceAll(
-						'./stdin.js',
-						`/js/app${bundleSuffix}.js`
-					)
-			
-					mainChunkMod.code = mainChunkMod.code.replaceAll(
-						chunk.local, 
-						`/js/${cleanName}`
-					)
+					if(chunk.assetBundle)
+						hasAssets[chunk.file] = 1
 				}
 
-				for(let c1 of asyncChunksMod){
-					for(let c2 of asyncChunksMod){
-						if(c1 === c2)
-							continue
-
-						c1.code = c1.code.replaceAll(
-							`./${c2.dirtyName}`,
-							`/js/${c2.file}`
-						)
-					}
-				}
+				mainChunkMod.file = `main${bundleSuffix}`
+				mainChunkMod.code = `var architektAssets = ${JSON.stringify(hasAssets)}\n\n${mainChunkMod.code}`
 				
 				if(chunkTransforms.length > 0){
 					await procedure({
@@ -88,14 +83,23 @@ export default async ({ config, plugins, procedure, watch }) => {
 				}
 		
 				for(let chunk of [mainChunkMod, ...asyncChunksMod]){
+					let fileName = `${chunk.file}${bundleSuffix}`
+
 					fs.writeFileSync(
-						path.join(finalChunksDir, `${chunk.file.slice(0, -3)}${bundleSuffix}.js`), 
+						path.join(finalChunksDir, `${fileName}.js`), 
 						chunk.code
 					)
+
+					if(chunk.assetBundle){
+						fs.writeFileSync(
+							path.join(finalChunksDir, `${fileName}.json`), 
+							JSON.stringify(chunk.assetBundle)
+						)
+					}
 				}
 			}
 		}
 	})
 
-
+	watch(watchFiles)
 }
