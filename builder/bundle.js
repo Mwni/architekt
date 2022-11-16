@@ -1,15 +1,20 @@
 import path from 'path'
 import esbuild from 'esbuild'
 import { NodeModulesPolyfillPlugin as polyfill } from '@esbuild-plugins/node-modules-polyfill'
-import { resolve, transform } from './pipeline/index.js'
+import shorthands from './pipeline/shorthands.js'
+import externals from './pipeline/externals.js'
 import { stripExports, stripImports } from './lib/code.js'
 import { isFromPackage } from './lib/modules.js'
 import { repoPath } from './paths.js'
+import stylesheets from './pipeline/stylesheets.js'
+import transforms from './pipeline/transforms.js'
 import defaultTransforms from './transforms/index.js'
 
 
-export default async function({ platform, rootPath, entry, splitting }){
-	let meta = {}
+export default async function({ platform, rootPath, entry, importerImpl }){
+	let capturedExternals = []
+	let capturedTransforms = []
+	let capturedStylesheets = []
 	let ephemeral = Math.random()
 		.toString(32)
 		.slice(2, 10)
@@ -24,23 +29,25 @@ export default async function({ platform, rootPath, entry, splitting }){
 			resolveDir: entryDir
 		},
 		plugins: [
-			resolve({
-				isExternal: async args => !await isFromPackage({
-					filePath: args.path,
-					compare: p => p === rootPath 
-						|| path.resolve(path.join(p, '..')) === repoPath
-				}),
-				rootPath,
-				yields: meta
+			shorthands({
+				rootPath
 			}),
-			transform({
-				platform,
-				pipeline: defaultTransforms,
+			externals({
+				rootPath, 
+				captures: capturedExternals
+			}),
+			stylesheets({
+				captures: capturedStylesheets
+			}),
+			transforms({
 				rootPath,
-				yields: meta,
+				platform,
+				transforms: defaultTransforms,
+				captures: capturedTransforms,
 			}),
 			polyfill()
 		],
+		inject: [importerImpl],
 		platform: 'node',
 		target: 'es2020',
 		format: 'esm',
@@ -48,7 +55,7 @@ export default async function({ platform, rootPath, entry, splitting }){
 		metafile: true,
 		write: false,
 		treeShaking: true,
-		splitting,
+		splitting: true,
 		chunkNames: `${ephemeral}-[name]-[hash]`,
 		logLevel: 'silent',
 		outdir: `__temp__`
@@ -63,19 +70,17 @@ export default async function({ platform, rootPath, entry, splitting }){
 				.find(([f, _]) => path.basename(f) === file)
 				[1]
 
-			let transforms = Object.keys(build.inputs)
-				.map(src => meta.transforms
-					.find(t => path.resolve(t.path) === path.resolve(path.join(rootPath, src))))
-
-			let includes = transforms
-				.map(transform => transform?.includes)
-				.filter(Boolean)
-				.reduce((incs, i) => [...incs, ...i], [])
-				.map(i => 
-					i.startsWith('~')
-						? path.join(rootPath, i.slice(1))
-						: i
+			let stylesheets = Object.keys(build.inputs)
+				.map(
+					src => capturedStylesheets.find(
+						({ path: sf }) => path.resolve(sf) === path.resolve(path.join(rootPath, src))
+					)
 				)
+				.filter(Boolean)
+
+			let transforms = Object.keys(build.inputs)
+				.map(src => capturedTransforms
+					.find(t => path.resolve(t.path) === path.resolve(path.join(rootPath, src))))
 
 			let apis = transforms
 				.map(transform => transform?.apis)
@@ -86,11 +91,8 @@ export default async function({ platform, rootPath, entry, splitting }){
 				file,
 				local,
 				code: f.text,
-				meta: {
-					...build,
-					includes,
-					apis
-				}
+				stylesheets,
+				build
 			}
 		})
 
@@ -101,7 +103,7 @@ export default async function({ platform, rootPath, entry, splitting }){
 				if(chunk === otherChunk)
 					return false
 
-				return otherChunk.meta.imports
+				return otherChunk.build.imports
 					.filter(i => i.kind === 'dynamic-import')
 					.some(i => path.basename(i.path) === chunk.file)
 			}
@@ -124,7 +126,7 @@ export default async function({ platform, rootPath, entry, splitting }){
 	return {
 		mainChunk,
 		asyncChunks,
-		bundleMeta: meta,
+		externals: capturedExternals,
 		watchFiles: Object.keys(metafile.inputs)
 			.map(f => path.join(rootPath, f))
 	}
@@ -132,7 +134,7 @@ export default async function({ platform, rootPath, entry, splitting }){
 
 function mergeSharedChunksIntoMain({ mainChunk, sharedChunks }){
 	let sharedExports = sharedChunks
-		.reduce((e, chunk) => [...e, ...chunk.meta.exports], [])
+		.reduce((e, chunk) => [...e, ...chunk.build.exports], [])
 
 	let mergedCode = ``
 

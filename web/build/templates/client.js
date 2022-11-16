@@ -1,4 +1,4 @@
 import App from '{{{clientEntry}}}'
-import { mount } from '@architekt/html'
+import { startClient } from '@architekt/web'
 
-mount(document.body, App)
+startClient({ App })

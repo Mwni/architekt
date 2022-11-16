@@ -11,6 +11,8 @@ export default async ({ config, procedure, watch }) => {
 	let serverConfig = { port: serverPort }
 	let externals
 
+	return
+
 	await procedure({
 		id: `bundle-server`,
 		description: `creating server runtime`,
@@ -18,7 +20,6 @@ export default async ({ config, procedure, watch }) => {
 			let { mainChunk, watchFiles, bundleMeta } = await bundle({
 				platform,
 				rootPath,
-				splitting: false,
 				entry: {
 					code: template({
 						file: 'server.js',
@@ -28,6 +29,9 @@ export default async ({ config, procedure, watch }) => {
 						}
 					}),
 					file: './server.js'
+				},
+				internals: {
+					importer: `export default path => import(path)`
 				}
 			})
 		

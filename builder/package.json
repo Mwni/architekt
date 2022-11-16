@@ -6,6 +6,7 @@
 	"dependencies": {
 		"@esbuild-plugins/node-modules-polyfill": "^0.1.4",
 		"esbuild": "^0.15.13",
-		"handlebars": "^4.7.7"
+		"handlebars": "^4.7.7",
+		"node-sass": "^8.0.0"
 	}
 }
