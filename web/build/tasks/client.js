@@ -1,13 +1,15 @@
 import fs from 'fs'
 import path from 'path'
 import { bundle } from '@architekt/builder'
-import template from '../template.js'
 import { deriveVariants } from '../variants.js'
+import template from '../template.js'
+import { libPath } from '../../paths.js'
 
 
 export default async ({ config, plugins, procedure, watch }) => {
 	let { platform, rootPath, clientEntry, outputPath } = config
 	let finalChunksDir = path.join(outputPath, 'js')
+	let assetBundles = {}
 
 	await procedure({
 		id: `bundle-client`,
@@ -16,15 +18,17 @@ export default async ({ config, plugins, procedure, watch }) => {
 			let { mainChunk, asyncChunks, watchFiles } = await bundle({
 				platform,
 				rootPath,
-				splitting: true,
 				entry: {
 					code: template({
 						file: 'client.js',
 						fields: { clientEntry }
 					}),
 					file: './client.js'
-				}
+				},
+				importerImpl: path.join(libPath, 'client', 'importer.js')
 			})
+
+			console.log(mainChunk)
 		
 			watch(watchFiles)
 		
@@ -92,4 +96,6 @@ export default async ({ config, plugins, procedure, watch }) => {
 			}
 		}
 	})
+
+
 }
