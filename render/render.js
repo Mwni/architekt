@@ -8,6 +8,16 @@ export function render(scope, node){
 		scope.node ? [scope.node] : undefined, 
 		[node]
 	)
+
+	walkNodes(
+		node,
+		node => {
+			if(node.afterDraw){
+				node.afterDraw()
+				node.afterDraw = undefined
+			}
+		}
+	)
 }
 
 function updateNodes(nodes, newNodes){
@@ -232,5 +242,16 @@ function findNextSiblingElement(node, upToElement){
 		}
 
 		node = node.parentNode
+	}
+}
+
+export function walkNodes(node, func){
+	func(node)
+
+	if(!node.children)
+		return
+
+	for(let child of node.children){
+		walkNodes(child, func)
 	}
 }

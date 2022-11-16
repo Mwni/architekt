@@ -9,6 +9,9 @@ export function getContext(){
 		upstream: scope.upstream,
 		redraw: () => {
 			render(scope, scope.node)
+		},
+		afterDraw: callback => {
+			scope.node.afterDraw = callback
 		}
 	}
 }

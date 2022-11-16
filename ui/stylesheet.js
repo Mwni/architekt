@@ -1,8 +1,20 @@
-import { ctx, findParentElement, Component } from '@architekt/render'
+import { ctx, Component } from '@architekt/render'
 
 export default Component(({ xid }) => {
 	let { node } = ctx
-	let dom = findParentElement(node)
-	
-	dom.classList.add(xid)
+
+	return () => {
+		node.afterDraw = () => apply(node, xid)
+	}
 })
+
+function apply(node, xid){
+	if(node.dom){
+		node.dom.classList.add(xid)
+		return
+	}
+
+	for(let child of node.children){
+		apply(child, xid)
+	}
+}

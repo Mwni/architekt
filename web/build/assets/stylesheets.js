@@ -2,8 +2,8 @@ import fs from 'fs'
 import sass from 'node-sass'
 
 const tags = {
-	VStack: 'div.v-stack',
-	Text: 'span.text'
+	VStack: '.v-stack',
+	Text: '.text'
 }
 
 const replacers = Object.entries(tags)
