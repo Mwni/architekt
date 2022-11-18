@@ -16,7 +16,8 @@ const replacers = Object.entries(tags)
 
 export default async chunk => {
 	let scss = chunk.stylesheets
-		.map(({ path, xid }) => `.${xid}{\n${fs.readFileSync(path, 'utf-8')}\n}`)
+		.map(({ scss, path, ...props }) => ({ scss: scss || fs.readFileSync(path, 'utf-8'), ...props }))
+		.map(({ scss, xid }) => xid ? `.${xid}{\n${scss}\n}` : scss)
 		.join('\n\n')
 
 	for(let { regex, repl } of replacers){

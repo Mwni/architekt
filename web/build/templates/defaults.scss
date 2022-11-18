@@ -1,0 +1,100 @@
+html{
+	height: 100%;
+}
+
+body{
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	align-items: center;
+	min-height: 100%;
+	min-height: 100vh;
+	min-height: -webkit-fill-available;
+	padding: 0;
+	margin: 0;
+	touch-action: manipulation;
+	font-family: -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+}
+
+h1.headline{
+	display: block;
+}
+
+label{
+	display: block;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+a.link{
+	color: inherit;
+	text-decoration: none;
+}
+
+span.text{
+	display: block;
+	margin: 0;
+}
+
+img.image,
+img.icon{
+	display: block;
+	width: auto;
+	height: auto;
+}
+
+div.v-stack,
+div.h-stack{
+	display: flex;
+	justify-content: flex-start;
+	align-items: center;
+}
+
+div.h-flex{
+	flex-direction: row;
+}
+
+div.v-stack{
+	flex-direction: column;
+}
+
+div.absolute{
+	position: relative;
+	width: 100%;
+	height: 100%;
+}
+
+div.absolute > *{
+	position: absolute !important;
+	top: 0;
+	left: 0;
+}
+
+div.v-scroll{
+	overflow-y: auto;
+	position: relative;
+	width: 100%;
+}
+
+div.v-scroll > div{
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+}
+
+div.page{
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	height: 100%;
+}
+
+div.overlay{
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+}

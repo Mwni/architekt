@@ -38,6 +38,10 @@ export default async ({ config, plugins, procedure, watch }) => {
 		})
 	})
 
+	mainChunk.stylesheets.unshift({
+		scss: template({ file: 'defaults.scss' })
+	})
+
 	await procedure({
 		id: `bundle-server`,
 		description: `bundling server assets`,
@@ -62,7 +66,7 @@ export default async ({ config, plugins, procedure, watch }) => {
 
 			if(mainChunk.assetBundle && mainChunk.assetBundle.stylesheet){
 				assetManifest.main = {
-					stylesheet: './static/main.css'
+					stylesheet: '/static/main.css'
 				}
 
 				fs.writeFileSync(
@@ -79,7 +83,7 @@ export default async ({ config, plugins, procedure, watch }) => {
 
 				if(chunk.assetBundle && chunk.assetBundle.stylesheet){
 					assetManifest[chunk.file] = {
-						stylesheet: `./static/${chunk.file}.css`
+						stylesheet: `/static/${chunk.file}.css`
 					}
 
 					fs.writeFileSync(

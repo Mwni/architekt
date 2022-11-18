@@ -33,6 +33,10 @@ export default async ({ config, plugins, procedure, watch }) => {
 		})
 	})
 
+	mainChunk.stylesheets.unshift({
+		scss: template({ file: 'defaults.scss' })
+	})
+
 	await procedure({
 		id: `bundle-client`,
 		description: `bundling client assets`,
