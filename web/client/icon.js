@@ -5,6 +5,7 @@ export const repo = {}
 
 export default Component(({ icon }) => {
 	let { node, teardown, afterDraw } = getContext()
+	let watchStyles
 	
 	Object.assign(icon, repo[icon.xid])
 
@@ -16,18 +17,32 @@ export default Component(({ icon }) => {
 			? window.getComputedStyle(img)
 			: null
 
-		let variant = multivariant
+		let { svg, replace } = multivariant
 			? pickVariant(icon.variants, style)
 			: icon.variants[0]
 
-		img.src = toDataURL(variant.svg)
+		if(replace){
+			for(let [target, repl] of Object.entries(replace)){
+				svg = svg.replaceAll(
+					target,
+					style.getPropertyValue(repl) || style.getPropertyValue(`--${repl}`)
+				)
+			}
+		}
+
+		console.log(replace, svg)
+
+		img.src = toDataURL(svg)
 	})
 
 	return ({ icon: newIcon }) => {
 		if(icon.xid !== newIcon.xid)
-			teardown()
+			return teardown()
 
-		Element('img', {})
+		if(watchStyles && watchStyles())
+			return teardown()
+
+		Element('img', { class: 'icon' })
 	}
 })
 

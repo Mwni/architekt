@@ -9,15 +9,11 @@ import stylesheets from './pipeline/stylesheets.js'
 import icons from './pipeline/icons.js'
 import transforms from './pipeline/transforms.js'
 import defaultTransforms from './transforms/index.js'
+import { generateXid } from './lib/xid.js'
 
 
 export default async function({ platform, rootPath, entry, importerImpl, pipeline }){
-	let ephemeral = Math.random()
-		.toString(32)
-		.slice(2, 10)
-		.padStart(8, 'x')
-		.toUpperCase()
-
+	let ephemeral = generateXid(8)
 	let capturedExternals = []
 	let capturedTransforms = []
 	let capturedStylesheets = []

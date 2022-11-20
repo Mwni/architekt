@@ -1,5 +1,6 @@
 import template from '../template.js'
 import path from 'path'
+import { generateXid } from '../lib/xid.js'
 
 export default opts => ({
 	name: 'architekt-stylesheets',
@@ -37,11 +38,7 @@ export default opts => ({
 				namespace: 'stylesheet'
 			}, 
 			async ({ path, ...args }) => {
-				let xid = Math.random()
-					.toString(32)
-					.slice(2, 7)
-					.padStart(5, 'x')
-					.toLowerCase()
+				let xid = generateXid(5)
 
 				opts.captures.push({
 					path,
