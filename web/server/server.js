@@ -7,6 +7,7 @@ import { JSDOM } from 'jsdom'
 import { mount as mountComponent } from '@architekt/html'
 import { writeDocument } from './document.js'
 import { imports } from './importer.js'
+import clientComponent from './client.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -45,8 +46,8 @@ function serveApp({ router, clientApp, bootstrapCode }){
 
 		mountComponent(
 			dom.window.document.body, 
-			clientApp, 
-			{ page }
+			clientComponent, 
+			{ page, clientApp }
 		)
 
 		writeDocument({

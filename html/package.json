@@ -4,6 +4,7 @@
 	"version": "1.0.0",
 	"main": "index.js",
 	"dependencies": {
-		"@architekt/render": "1.0.0"
+		"@architekt/render": "1.0.0",
+		"@architekt/ui": "1.0.0"
 	}
 }

@@ -1,5 +1,5 @@
 import { render } from '@architekt/render'
-import { createElementWrap as createElement, insertElement, removeElement, setAttrs } from './dom.js'
+import { createElementWrap as createElement, insertElement, removeElement, setAttrs, Element } from './dom.js'
 import * as components from './components/index.js'
 
 
@@ -24,3 +24,5 @@ export function mount(dom, component, props){
 		}
 	})
 }
+
+export { Element }

@@ -1,25 +1,27 @@
 import path from 'path'
 import esbuild from 'esbuild'
 import { NodeModulesPolyfillPlugin as polyfill } from '@esbuild-plugins/node-modules-polyfill'
+import namespaces from './pipeline/namespaces.js'
 import shorthands from './pipeline/shorthands.js'
 import externals from './pipeline/externals.js'
 import { stripExports, stripImports } from './lib/code.js'
-import { isFromPackage } from './lib/modules.js'
-import { repoPath } from './paths.js'
 import stylesheets from './pipeline/stylesheets.js'
+import icons from './pipeline/icons.js'
 import transforms from './pipeline/transforms.js'
 import defaultTransforms from './transforms/index.js'
 
 
-export default async function({ platform, rootPath, entry, importerImpl }){
-	let capturedExternals = []
-	let capturedTransforms = []
-	let capturedStylesheets = []
+export default async function({ platform, rootPath, entry, importerImpl, pipeline }){
 	let ephemeral = Math.random()
 		.toString(32)
 		.slice(2, 10)
 		.padStart(8, 'x')
 		.toUpperCase()
+
+	let capturedExternals = []
+	let capturedTransforms = []
+	let capturedStylesheets = []
+	let capturedIcons = []
 
 	let { dir: entryDir, base: entryFile } = path.parse(entry.file)
 	let { outputFiles, metafile } = await esbuild.build({
@@ -29,15 +31,20 @@ export default async function({ platform, rootPath, entry, importerImpl }){
 			resolveDir: entryDir
 		},
 		plugins: [
+			namespaces(),
 			shorthands({
 				rootPath
+			}),
+			stylesheets({
+				rootPath,
+				captures: capturedStylesheets
+			}),
+			icons({
+				captures: capturedIcons
 			}),
 			externals({
 				rootPath, 
 				captures: capturedExternals
-			}),
-			stylesheets({
-				captures: capturedStylesheets
 			}),
 			transforms({
 				rootPath,
@@ -71,11 +78,11 @@ export default async function({ platform, rootPath, entry, importerImpl }){
 				[1]
 
 			let stylesheets = Object.keys(build.inputs)
-				.map(
-					src => capturedStylesheets.find(
-						({ path: sf }) => path.resolve(sf) === path.resolve(path.join(rootPath, src))
-					)
-				)
+				.map(src => capturedStylesheets.find(({ path }) => `stylesheet:${path}` === src))
+				.filter(Boolean)
+
+			let icons = Object.keys(build.inputs)
+				.map(src => capturedIcons.find(({ path }) => `icon:${path}` === src))
 				.filter(Boolean)
 
 			let transforms = Object.keys(build.inputs)
@@ -92,6 +99,7 @@ export default async function({ platform, rootPath, entry, importerImpl }){
 				local,
 				code: f.text,
 				stylesheets,
+				icons,
 				build
 			}
 		})

@@ -12,10 +12,7 @@ export function render(scope, node){
 	walkNodes(
 		node,
 		node => {
-			if(node.afterDraw){
-				node.afterDraw()
-				node.afterDraw = undefined
-			}
+			dispatchCallbacks(node, 'afterDraw')
 		}
 	)
 }
@@ -73,6 +70,9 @@ function createNode(node){
 function createComponent(node){
 	if(node.constructLock)
 		return
+
+	ctx.node = node
+	ctx.downstream = { ...ctx.downstream }
 
 	node.state = {}
 	node.children = []
@@ -253,5 +253,20 @@ export function walkNodes(node, func){
 
 	for(let child of node.children){
 		walkNodes(child, func)
+	}
+}
+
+function dispatchCallbacks(node, type, value){
+	if(!node.callbacks)
+		return
+
+	for(let i=0; i<node.callbacks.length; i++){
+		let e = node.callbacks[i]
+
+		if(e.type === type){
+			node.callbacks.splice(i, 1)
+			e.callback(value)
+			i--
+		}
 	}
 }
