@@ -3,7 +3,9 @@ import sass from 'node-sass'
 
 const tags = {
 	VStack: '.v-stack',
-	Text: '.text'
+	HStack: '.h-stack',
+	Text: '.text',
+	Icon: '.icon'
 }
 
 const replacers = Object.entries(tags)
