@@ -1,10 +1,10 @@
-import { ctx, Component } from '@architekt/render'
+import { getContext, Component } from './index.js'
 
 export default Component(({ xid }) => {
-	let { node } = ctx
+	let { node, afterDraw } = getContext()
 
 	return () => {
-		node.afterDraw = () => apply(node, xid)
+		afterDraw(() => apply(node.parentNode, xid))
 	}
 })
 
