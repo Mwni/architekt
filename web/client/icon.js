@@ -5,7 +5,6 @@ export const repo = {}
 
 export default Component(({ icon }) => {
 	let { node, teardown, afterDraw } = getContext()
-	let watchStyles
 	
 	Object.assign(icon, repo[icon.xid])
 
@@ -30,16 +29,11 @@ export default Component(({ icon }) => {
 			}
 		}
 
-		console.log(replace, svg)
-
 		img.src = toDataURL(svg)
 	})
 
 	return ({ icon: newIcon }) => {
 		if(icon.xid !== newIcon.xid)
-			return teardown()
-
-		if(watchStyles && watchStyles())
 			return teardown()
 
 		Element('img', { class: 'icon' })

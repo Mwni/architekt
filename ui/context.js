@@ -5,6 +5,7 @@ export function getContext(){
 	let scope = { ...ctx }
 
 	return {
+		...scope.downstream,
 		node: scope.node,
 		components: scope.components,
 		downstream: scope.downstream,

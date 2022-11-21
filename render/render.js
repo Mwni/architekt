@@ -5,7 +5,7 @@ export function render(scope, node){
 	Object.assign(ctx, scope, { node })
 
 	updateNodes(
-		scope.node ? [scope.node] : undefined, 
+		scope.node ? [scope.node] : [], 
 		[node]
 	)
 
@@ -18,19 +18,6 @@ export function render(scope, node){
 }
 
 function updateNodes(nodes, newNodes){
-	if(newNodes === nodes || (!newNodes && !nodes))
-		return
-
-	if(!nodes || nodes.length === 0){
-		createNodes(newNodes)
-		return
-	}
-
-	if(!newNodes || newNodes.length === 0){
-		removeNodes(nodes)
-		return
-	}
-
 	let commonLength = Math.min(nodes.length, newNodes.length)
 
 	for (let i=0; i<commonLength; i++){
@@ -40,15 +27,17 @@ function updateNodes(nodes, newNodes){
 	if(nodes.length > commonLength){
 		removeNodes(nodes.slice(commonLength))
 		nodes.splice(commonLength)
-		nodes[commonLength - 1].nextSibling = undefined
-	}
 
-	if(newNodes.length > commonLength){
+		if(commonLength)
+			nodes[commonLength - 1].nextSibling = undefined
+	}else if(newNodes.length > commonLength){
 		let newNodesSlice = newNodes.slice(commonLength)
 
 		createNodes(newNodesSlice)
 		nodes.push(...newNodesSlice)
-		nodes[commonLength - 1].nextSibling = newNodesSlice[0]
+
+		if(commonLength)
+			nodes[commonLength - 1].nextSibling = newNodesSlice[0]
 	}
 }
 
