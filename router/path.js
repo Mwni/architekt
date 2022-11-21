@@ -1,8 +1,9 @@
 export function join(...parts){
 	return normalize(
 		parts
-			.filter(part => part)
-			.filter((part, i) => i === 0 || part !== '*' || parts[i-1].slice(-1) !== part)
+			.filter(Boolean)
+			.reduce((parts, part) => [...parts, ...part.split('/')], [])
+			.filter((part, i, parts) => part !== '*' || i === parts.length - 1)
 			.join('/')
 	)
 }

@@ -60,12 +60,15 @@ function createComponent(node){
 	if(node.constructLock)
 		return
 
+	let prevDownstream = ctx.downstream
+
 	ctx.node = node
 	ctx.downstream = { ...ctx.downstream }
 
 	node.state = {}
 	node.children = []
 	node.render = node.construct(node.props, node.content)
+	node.downstream = ctx.downstream
 
 	if(!node.render)
 		return
@@ -93,6 +96,8 @@ function createComponent(node){
 	)
 
 	createNodes(node.children)
+
+	ctx.downstream = prevDownstream
 }
 
 function createElement(node){
@@ -137,6 +142,8 @@ function updateComponent(node, newNode){
 
 	if(!node.render)
 		return
+
+	ctx.downstream = { ...ctx.downstream, ...node.downstream }
 
 	let newChildren = collectChildren(
 		node,
@@ -194,6 +201,7 @@ function removeNode(node){
 
 function collectChildren(node, render, props, content){
 	let children = []
+	let prevDownstream = ctx.downstream
 
 	ctx.node = node
 	ctx.downstream = { ...ctx.downstream }
@@ -206,6 +214,8 @@ function collectChildren(node, render, props, content){
 		children[i].prevSibling = children[i-1]
 		children[i].nextSibling = children[i+1]
 	}
+
+	ctx.downstream = prevDownstream
 
 	return children
 }

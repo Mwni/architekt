@@ -1,17 +1,15 @@
 import { getContext, Component } from '@architekt/ui'
+import { createRoute } from './routing.js'
 
 
-export default Component(() => {
-	let { router } = getContext()
-	let baseChain = router.currentResolve.chain.slice()
+export default Component(({ route, fallback, bad }) => {
+	let { route: parentNode, downstream } = getContext()
+	let routeNode = createRoute({ route, parentNode })
 
-	return ({ route, fallback, bad }, content) => {
-		if(route){
-			if(router.shouldEnterRoute([...baseChain, route]))
-				content()
-		}else if(fallback){
-			if(router.shouldEnterFallback(bad))
-				content()
-		}
+	downstream.route = routeNode
+
+	return (props, content) => {
+		if(routeNode.view())
+			content()
 	}
 })

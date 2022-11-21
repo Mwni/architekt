@@ -1,16 +1,15 @@
 import { getContext, Component, Interactive } from '@architekt/ui'
 
 export default Component(() => {
-	let { router } = getContext()
-	let path = router.getResolvingPath()
+	let { route } = getContext()
 
 	return (props, content) => {
 		Interactive(
 			{
-				href: props.route,
+				href: route.resolve(props),
 				tapAction: event => {
 					event.preventDefault()
-					router.setRoute({ ...props, fromPath: path })
+					route.set(props)
 				}
 			},
 			content || props.text
