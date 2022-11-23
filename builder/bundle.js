@@ -126,7 +126,7 @@ export default async function({ platform, rootPath, entry, importerImpl, pipelin
 			vendorFile: mainChunk.local 
 		})
 	}
-
+	
 	return {
 		mainChunk,
 		asyncChunks,
@@ -134,7 +134,8 @@ export default async function({ platform, rootPath, entry, importerImpl, pipelin
 			.filter((dir, i, list) => list.indexOf(dir) === i)
 			.sort((a, b) => a.length - b.length),
 		watchFiles: Object.keys(metafile.inputs)
-			.map(f => path.join(rootPath, f))
+			.map(f => f.replace(/^[a-zA-Z0-9_-]+:/, ''))
+			.map(f => path.resolve(f))
 	}
 }
 

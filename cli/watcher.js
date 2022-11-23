@@ -6,12 +6,12 @@ import { info } from './log.js'
 
 const sections = [
 	{id: 'js', filter: /\.(xjs|jsx|js|ts|tsx|xts)$/},
-	{id: 'css', filter: /\.(css|xcss)$/},
+	{id: 'css', filter: /\.(css|scss|xcss)$/},
 ]
 
 
 export default class extends EventEmitter{
-	constructor(files){
+	constructor(){
 		super()
 		this.watching = {}
 		this.timeouts = {}
@@ -37,7 +37,6 @@ export default class extends EventEmitter{
 		let removed = []
 
 		for(let section of sections){
-			
 			let filtered = files
 				.filter(file => section.filter.test(file))
 				//.filter(file => !file.includes('node_modules'))
