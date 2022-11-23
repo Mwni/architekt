@@ -3,5 +3,6 @@ export function generateXid(length){
 		.toString(32)
 		.slice(2, length + 2)
 		.padStart(length, 'x')
+		.replace(/^\d/, 'x')
 		.toLowerCase()
 }
