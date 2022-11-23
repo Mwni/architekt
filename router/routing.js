@@ -44,7 +44,6 @@ export function createRouter({ window, redraw }){
 			popQueue.shift()()
 		}
 
-		console.log('draw after pop')
 		redraw()
 	})
 
@@ -52,13 +51,10 @@ export function createRouter({ window, redraw }){
 		setRoute,
 		resolveRoute,
 		shouldEnterRoute(chain){
-			console.log('should enter?', chain, join(...chain))
 			let matched = match(join(...chain), location.pathname)
 
 			if(!matched)
 				return false
-
-			console.log('yes')
 			
 			return true
 		},
