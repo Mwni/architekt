@@ -2,10 +2,11 @@ import fs from 'fs'
 import path from 'path'
 import { bundle } from '@architekt/builder'
 import { libPath } from '../../paths.js'
-import { createDevPackage } from '../lib/package.js'
+import { createDevPackage, createDistPackage } from '../lib/package.js'
 import template from '../lib/template.js'
 import bundleAssets from '../assets/index.js'
 import { rewriteImports } from '../lib/imports.js'
+import { resolveExternals } from '../lib/externals.js'
 
 
 export default async ({ config, plugins, procedure, watch }) => {
@@ -14,7 +15,7 @@ export default async ({ config, plugins, procedure, watch }) => {
 	let chunksDir = path.join(outputPath, 'server')
 	let staticDir = path.join(outputPath, 'static')
 
-	let { mainChunk, asyncChunks, watchFiles } = await procedure({
+	let { mainChunk, asyncChunks, externals, watchFiles } = await procedure({
 		id: `build-server`,
 		description: `building server app`,
 		execute: async () => await bundle({
@@ -109,12 +110,14 @@ export default async ({ config, plugins, procedure, watch }) => {
 			if(config.dev){
 				await createDevPackage({ rootPath, outputPath })
 			}else{
-				let dependencies = resolveExternals({
+				let dependencies = await resolveExternals({
 					externals: [
 						rootPath, 
 						...externals.map(p => path.dirname(p))
 					]
 				})
+
+				await createDistPackage({ rootPath, outputPath, dependencies })
 			}
 		}
 	})

@@ -130,7 +130,9 @@ export default async function({ platform, rootPath, entry, importerImpl, pipelin
 	return {
 		mainChunk,
 		asyncChunks,
-		externals: capturedExternals,
+		externals: capturedExternals
+			.filter((dir, i, list) => list.indexOf(dir) === i)
+			.sort((a, b) => a.length - b.length),
 		watchFiles: Object.keys(metafile.inputs)
 			.map(f => path.join(rootPath, f))
 	}

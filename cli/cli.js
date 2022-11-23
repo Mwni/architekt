@@ -94,6 +94,49 @@ switch(args._[0]){
 		}
 	}
 
+	case 'dist': {
+		Object.assign(config, config.dist)
+
+		let timers = []
+		let rootPath = process.cwd()
+		let outputPath = dirs.ensureDist(rootPath, 'dist')
+
+		dirs.clean(outputPath)
+
+		let startTime = Date.now()
+		let handle = build({
+			...config,
+			platform,
+			rootPath: process.cwd(),
+			outputPath
+		})
+
+		handle.on('procedure', procedure => {
+			let stop = log.timed(procedure.description)
+
+			timers.push(stop)
+
+			procedure.promise
+				.then(() => stop(true))
+				.catch(() => stop(false))
+				.then(() => timers.splice(timers.indexOf(stop), 1))
+		})
+
+		handle.on('complete', build => {
+			let duration = Date.now() - startTime
+
+			log.info(`distribution build complete after ${duration.toLocaleString('en')} ms`)
+			process.exit()
+		})
+
+		handle.on('error', error => {
+			timers.forEach(stop => stop())
+			log.error(error)
+			process.exit()
+		})
+		break
+	}
+
 	case 'clean': {
 		let dir = dirs.createTemp(process.cwd())
 
