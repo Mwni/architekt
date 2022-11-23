@@ -2,5 +2,11 @@ import { Fragment } from '@architekt/render'
 import { Element } from '../dom.js'
 
 export default Fragment((props, content) => {
-	Element('div', {class: 'v-stack'}, content)
+	Element(
+		'div', 
+		{
+			class: ['v-stack', props.class]
+		}, 
+		content
+	)
 })
