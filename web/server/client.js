@@ -6,6 +6,7 @@ export default Component(({ page, clientApp }) => {
 
 	components.Icon = ServerIcon
 
+	downstream.isServer = true
 	downstream.page = page
 	downstream.icons = {}
 
