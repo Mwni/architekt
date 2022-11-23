@@ -18,6 +18,9 @@ export function getContext(){
 		},
 		afterDomCreation: callback => {
 			registerCallback(scope.node, 'afterDomCreation', callback)
+		},
+		teardown: () => {
+			scope.node.teardown = true
 		}
 	}
 }

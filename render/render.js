@@ -98,6 +98,8 @@ function createComponent(node){
 	createNodes(node.children)
 
 	ctx.downstream = prevDownstream
+
+	dispatchCallbacks(node, 'afterDomCreation', getChildElements(node))
 }
 
 function createElement(node){
@@ -128,12 +130,14 @@ function updateNode(node, newNode){
 		}else if(node.element){
 			updateElement(node, newNode)
 		}
+	}
 
-		return node
-	}else{
+	if(needsTeardown || node.teardown){
 		replaceNode(node, newNode)
 		return newNode
 	}
+
+	return node
 }
 
 function updateComponent(node, newNode){
@@ -152,7 +156,8 @@ function updateComponent(node, newNode){
 		newNode.content
 	)
 
-	updateNodes(node.children, newChildren)
+	if(!node.teardown)
+		updateNodes(node.children, newChildren)
 }
 
 function updateElement(node, newNode){
@@ -242,6 +247,21 @@ function findNextSiblingElement(node, upToElement){
 
 		node = node.parentNode
 	}
+}
+
+function getChildElements(node){
+	let elements = []
+
+	if(node.children){
+		for(let child of node.children){
+			if(child.dom)
+				elements.push(child.dom)
+			else
+				elements.push(...getChildElements(child.children))
+		}
+	}
+
+	return elements
 }
 
 export function walkNodes(node, func){
