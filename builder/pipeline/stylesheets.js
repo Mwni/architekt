@@ -10,9 +10,11 @@ export default opts => ({
 				filter: /\.(css|scss|sass)$/,
 				namespace: 'file'
 			},
-			async ({ path: stylesheetPath }) => ({
-				path: path.resolve(stylesheetPath),
-				namespace: 'stylesheet'
+			async ({ path: stylesheetPath, resolveDir }) => ({
+				path: path.resolve(
+					path.join(resolveDir, stylesheetPath)
+				),
+				namespace: 'stylesheet',
 			})
 		)
 
