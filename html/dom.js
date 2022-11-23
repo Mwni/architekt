@@ -6,6 +6,9 @@ export const Element = (tag, attrs, content) => {
 		content = undefined
 	}
 
+	if(attrs.class)
+		attrs.class = flattenClass(attrs.class)
+
 	ctx.stack.push({ element: tag, attrs, content })
 }
 
@@ -239,4 +242,10 @@ function updateEvent(node, key, value) {
 		node.dom.addEventListener(key.slice(2), node.events, false)
 		node.events[key] = value
 	}
+}
+
+function flattenClass(c){
+	return Array.isArray(c)
+		? c.filter(Boolean).map(flattenClass).join(' ')
+		: c
 }
