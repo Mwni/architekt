@@ -5,7 +5,8 @@ const tags = {
 	VStack: '.v-stack',
 	HStack: '.h-stack',
 	Text: '.text',
-	Icon: '.icon'
+	Icon: '.icon',
+	WebLink: '.weblink',
 }
 
 const replacers = Object.entries(tags)
