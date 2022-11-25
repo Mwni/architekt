@@ -11,9 +11,7 @@ export function render(scope, node){
 
 	walkNodes(
 		node,
-		node => {
-			dispatchCallbacks(node, 'afterDraw')
-		}
+		node => dispatchCallbacks(node, 'afterDraw')
 	)
 }
 
@@ -70,21 +68,27 @@ function createComponent(node){
 	node.render = node.construct(node.props, node.content)
 	node.downstream = ctx.downstream
 
-	if(!node.render)
+	if(!node.render){
+		ctx.downstream = prevDownstream
 		return
+	}
 
 	if(node.render instanceof Promise){
+		let pinnedCtx = { ...ctx }
+		
 		node.constructLock = true
 		node.render
-			.then(render => {
+			.then(f => {
 				node.constructLock = false
-				node.render = render
-				updateComponent(node, node)
+				node.render = f
+				render(pinnedCtx, node)
+				dispatchCallbacks(node, 'afterDomCreation', getChildElements(node))
 			})
 			.catch(error => {
 				console.error(error)
 			})
 
+		ctx.downstream = prevDownstream
 		return
 	}
 
@@ -236,16 +240,32 @@ export function findParentElement(node){
 
 function findNextSiblingElement(node, upToElement){
 	while(node && node.dom !== upToElement){
-		let sibling = node.nextSibling
+		let sibling
+		let element
 
-		while(sibling){
-			if(sibling.dom)
-				return sibling.dom
-			else
-				sibling = sibling.children?.[0]
+		while(sibling = node.nextSibling){
+			element = findFirstElement(sibling)
+
+			if(element)
+				return element
+			
+			// todo: fix endless loop
+			break
 		}
 
 		node = node.parentNode
+	}
+}
+
+function findFirstElement(node){
+	if(!node.children)
+		return
+
+	for(let child of node.children){
+		if(child.dom)
+			return child.dom
+		else
+			return findFirstElement(child)
 	}
 }
 
@@ -266,9 +286,6 @@ function getChildElements(node){
 
 export function walkNodes(node, func){
 	func(node)
-
-	if(!node.children)
-		return
 
 	for(let child of node.children){
 		walkNodes(child, func)
