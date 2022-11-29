@@ -13,6 +13,8 @@ export function render(scope, node){
 		node,
 		node => dispatchCallbacks(node, 'afterDraw')
 	)
+
+	tryDispatchAsync(node)
 }
 
 function updateNodes(nodes, newNodes){
@@ -76,10 +78,9 @@ function createComponent(node){
 	if(node.render instanceof Promise){
 		let pinnedCtx = { ...ctx }
 		
-		node.constructLock = true
-		node.render
+		node.constructPromise = node.render
 			.then(f => {
-				node.constructLock = false
+				node.constructPromise = undefined
 				node.render = f
 				render(pinnedCtx, node)
 				dispatchCallbacks(node, 'afterDomCreation', getChildElements(node))
@@ -208,15 +209,15 @@ function removeNode(node){
 	}
 }
 
-function collectChildren(node, render, props, content){
+function collectChildren(node, view, props, content){
 	let children = []
 	let prevDownstream = ctx.downstream
 
 	ctx.node = node
-	ctx.downstream = { ...ctx.downstream }
+	//ctx.downstream = { ...ctx.downstream }
 	ctx.stack = children
 
-	render(props, content)
+	view(props, content)
 
 	for(let i=0; i<children.length; i++){
 		children[i].parentNode = node
@@ -224,7 +225,7 @@ function collectChildren(node, render, props, content){
 		children[i].nextSibling = children[i+1]
 	}
 
-	ctx.downstream = prevDownstream
+	//ctx.downstream = prevDownstream
 
 	return children
 }
@@ -289,6 +290,29 @@ export function walkNodes(node, func){
 
 	for(let child of node.children){
 		walkNodes(child, func)
+	}
+}
+
+function tryDispatchAsync(node){
+	let promises = []
+
+	walkNodes(
+		node,
+		node => {
+			if(node.constructPromise)
+				promises.push(node.constructPromise)
+		}
+	)
+
+	if(promises.length > 0){
+		Promise
+			.all(promises)
+			.then(() => tryDispatchAsync(node))
+	}else{
+		walkNodes(
+			node,
+			node => dispatchCallbacks(node, 'afterAsync')
+		)
 	}
 }
 
