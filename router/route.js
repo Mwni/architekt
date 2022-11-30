@@ -1,15 +1,18 @@
-import { getContext, Component } from '@architekt/ui'
-import { createRoute } from './routing.js'
+import { ctx } from '@architekt/render'
+import { Fragment, Component } from '@architekt/ui'
 
 
-export default Component(({ route, fallback, bad }) => {
-	let { route: parentNode, downstream } = getContext()
-	let routeNode = createRoute({ route, parentNode })
+export default Fragment(({ route, fallback, bad }, content) => {
+	let routeChild = ctx.downstream.route.maybeEnter({ route, fallback, bad })
 
-	downstream.route = routeNode
+	if(routeChild){
+		Holder({ route: routeChild }, content)
+	}
+})
 
-	return (props, content) => {
-		if(routeNode.view())
-			content()
+const Holder = Component(() => {
+	return ({ route }, content) => {
+		ctx.downstream.route = route
+		content()
 	}
 })

@@ -6,14 +6,16 @@ export function createRouter({ window, redraw }){
 	let log = [location.pathname]
 	let popping = false
 	let popQueue = []
+	let fullyMatched
+	let fallbackOnPath
 
-	function setRoute({ route, replace, chain }){
+	function go({ route, replace, baseRoute }){
 		if(popping){
-			popQueue.push(() => setRoute({ route, replace, chain }))
+			popQueue.push(() => go({ route, replace, baseRoute }))
 			return
 		}
 
-		let url = resolveRoute({ route, chain })
+		let url = resolve({ route, baseRoute })
 
 		if(replace){
 			history.replaceState(null, null, url)
@@ -26,12 +28,9 @@ export function createRouter({ window, redraw }){
 		redraw()
 	}
 
-	function resolveRoute({ route, chain }){
-		return relate(route, join(...chain))
-	}
-
-	function conclude(){
-
+	function resolve({ route, baseRoute }){
+		return relate(route, baseRoute)
+			.replace(/\/\*[^$]/g, '/')
 	}
 
 	window.addEventListener('popstate', e => {
@@ -48,43 +47,74 @@ export function createRouter({ window, redraw }){
 	})
 
 	return {
-		setRoute,
-		resolveRoute,
-		shouldEnterRoute(chain){
-			let matched = match(join(...chain), location.pathname)
+		go,
+		resolve,
+		startResolve(){
+			if(fallbackOnPath === location.pathname){
+				fullyMatched = true
+			}else{
+				fullyMatched = false
+				fallbackOnPath = undefined
+			}
+		},
+		endResolve(){
+			if(!fullyMatched){
+				fallbackOnPath = location.pathname
+				redraw()
+			}
+		},
+		shouldEnter(route){
+			if(fallbackOnPath)
+				return false
+
+			let matched = match(route, location.pathname)
 
 			if(!matched)
 				return false
 			
+			if(!matched.wildcard)
+				fullyMatched = true
+			
 			return true
 		},
-		shouldEnterFallback(bad){
-			
+		shouldFallback(){
+			return !!fallbackOnPath
 		}
 	}
 }
 
-export function createRoute({ route, fallback, bad, router, parentNode }){
-	let chain
-	
-	if(parentNode){
-		router = parentNode.router
-		chain = [...parentNode.chain, route]
-	}else{
-		chain = [route]
-	}
-
+export function createRoute({ route, fallback, bad, router }){
 	return {
+		route,
 		router,
-		chain,
 		set(params){
-			return router.setRoute({ ...params, chain })
+			return router.go({ 
+				...params,
+				baseRoute: route
+			})
 		},
 		resolve(params){
-			return router.resolveRoute({ ...params, chain })
+			return router.resolve({ 
+				...params,
+				baseRoute: route
+			})
 		},
-		view(){
-			return router.shouldEnterRoute(chain)
+		maybeEnter({ route: nextRoute, fallback, bad }){
+			if(nextRoute){
+				let fullRoute = join(route, nextRoute)
+					.replace(/\/\*[^$]/g, '/')
+
+				if(nextRoute === '/')
+					fullRoute = fullRoute.replace(/\*$/, '')
+
+				console.log('resolve', route, '+', nextRoute, '->', fullRoute)
+	
+				if(router.shouldEnter(fullRoute))
+					return createRoute({ route: fullRoute, router })
+			}else{
+				if(router.shouldFallback())
+					return createRoute({ fallback, bad, router })
+			}
 		}
 	}
 }

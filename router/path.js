@@ -3,7 +3,7 @@ export function join(...parts){
 		parts
 			.filter(Boolean)
 			.reduce((parts, part) => [...parts, ...part.split('/')], [])
-			.filter((part, i, parts) => part !== '*' || i === parts.length - 1)
+			//.filter((part, i, parts) => part !== '*' || i === parts.length - 1)
 			.join('/')
 	)
 }
@@ -46,8 +46,9 @@ export function relate(path, basePath){
 
 export function match(route, path){
 	let params = {}
-	let routeSegments = route.split('/').filter(Boolean)
 	let pathSegments = path.split('/').filter(Boolean)
+	let routeSegments = route.split('/').filter(Boolean)
+	let routeWildcard = routeSegments[routeSegments.length - 1] === '*'
 
 	for(let i=0; i<routeSegments.length; i++){
 		let routeSegment = routeSegments[i]
@@ -67,11 +68,12 @@ export function match(route, path){
 			return
 	}
 
-	if(pathSegments.length > routeSegments.length && routeSegments[routeSegments.length - 1] !== '*')
+	if(pathSegments.length > routeSegments.length && !routeWildcard)
 		return
 
 	return {
 		params, 
-		unresolved: pathSegments.slice(routeSegments.length) 
+		unresolved: pathSegments.slice(routeSegments.length),
+		wildcard: routeWildcard
 	}
 }
