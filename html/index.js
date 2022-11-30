@@ -16,13 +16,17 @@ export function mount(dom, component, props){
 		document: dom.ownerDocument,
 	}
 
-	render(ctx, {
+	let node = {
 		construct: component.construct,
 		props,
 		parentNode: {
 			dom
 		}
-	})
+	}
+
+	render(ctx, node)
+
+	return node
 }
 
 export { Element }

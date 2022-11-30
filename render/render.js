@@ -13,8 +13,6 @@ export function render(scope, node){
 		node,
 		node => dispatchCallbacks(node, 'afterDraw')
 	)
-
-	tryDispatchAsync(node)
 }
 
 function updateNodes(nodes, newNodes){
@@ -293,7 +291,7 @@ export function walkNodes(node, func){
 	}
 }
 
-function tryDispatchAsync(node){
+export function awaitAsyncNodes(node, callback){
 	let promises = []
 
 	walkNodes(
@@ -307,12 +305,9 @@ function tryDispatchAsync(node){
 	if(promises.length > 0){
 		Promise
 			.all(promises)
-			.then(() => tryDispatchAsync(node))
+			.then(() => awaitAsyncNodes(node, callback))
 	}else{
-		walkNodes(
-			node,
-			node => dispatchCallbacks(node, 'afterAsync')
-		)
+		callback()
 	}
 }
 

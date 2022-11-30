@@ -4,6 +4,7 @@ import Koa from 'koa'
 import Router from '@koa/router'
 import { fileURLToPath } from 'url'
 import { JSDOM } from 'jsdom'
+import { awaitAsyncNodes } from '@architekt/render'
 import { mount as mountComponent } from '@architekt/html'
 import { writeDocument } from './document.js'
 import { imports } from './importer.js'
@@ -40,15 +41,22 @@ function serveApp({ router, clientApp, bootstrapCode }){
 		let dom = new JSDOM()
 		let page = {
 			status: 'ok',
-			title: undefined,
-			route: '/'
+			title: undefined
 		}
 
-		mountComponent(
+		dom.reconfigure({ 
+			url: `http://app${ctx.path}`
+		})
+
+		let node = mountComponent(
 			dom.window.document.body, 
 			clientComponent, 
 			{ page, clientApp }
 		)
+
+		await new Promise(resolve => {
+			awaitAsyncNodes(node, resolve)
+		})
 
 		writeDocument({
 			ctx,
