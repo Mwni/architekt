@@ -247,9 +247,6 @@ function findNextSiblingElement(node, upToElement){
 
 			if(element)
 				return element
-			
-			// todo: fix endless loop
-			break
 		}
 
 		node = node.parentNode
@@ -257,14 +254,14 @@ function findNextSiblingElement(node, upToElement){
 }
 
 function findFirstElement(node){
-	if(!node.children)
-		return
+	if(node.dom)
+		return node.dom
 
 	for(let child of node.children){
-		if(child.dom)
-			return child.dom
-		else
-			return findFirstElement(child)
+		let element = findFirstElement(child)
+		
+		if(element)
+			return element
 	}
 }
 
