@@ -13,10 +13,15 @@ export const Element = (tag, attrs, content) => {
 }
 
 export function createElementWrap(tag){
-	return ctx.document.createElement(tag)
+	return tag === 'body'
+		? ctx.document.body
+		: ctx.document.createElement(tag)
 }
 
 export function insertElement(parent, element, nextSibling){
+	if(element === ctx.document.body)
+		return
+
 	if(nextSibling)
 		parent.insertBefore(element, nextSibling)
 	else
@@ -24,6 +29,9 @@ export function insertElement(parent, element, nextSibling){
 }
 
 export function removeElement(element){
+	if(element === ctx.document.body)
+		return
+	
 	element.parentNode.removeChild(element)
 }
 

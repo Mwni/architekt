@@ -1,5 +1,6 @@
 import { ctx } from '@architekt/render'
 
+export const Root = (...args) => ctx.components.Root(...args)
 export const VStack = (...args) => ctx.components.VStack(...args)
 export const HStack = (...args) => ctx.components.HStack(...args)
 export const Headline = (...args) => ctx.components.Headline(...args)

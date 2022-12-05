@@ -2,8 +2,10 @@ import fs from 'fs'
 import sass from 'node-sass'
 
 const tags = {
+	Root: '.root',
 	VStack: '.v-stack',
 	HStack: '.h-stack',
+	Headline: '.headline',
 	Text: '.text',
 	Icon: '.icon',
 	WebLink: '.weblink',
