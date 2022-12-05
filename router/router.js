@@ -10,7 +10,7 @@ export default Component(({}) => {
 	})
 
 	downstream.route = createRoute({
-		route: '/',
+		path: '/',
 		router
 	})
 

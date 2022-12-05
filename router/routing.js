@@ -9,13 +9,13 @@ export function createRouter({ window, redraw }){
 	let fullyMatched
 	let fallbackOnPath
 
-	function go({ route, replace, baseRoute }){
+	function go({ path, replace, baseRoute }){
 		if(popping){
-			popQueue.push(() => go({ route, replace, baseRoute }))
+			popQueue.push(() => go({ path, replace, baseRoute }))
 			return
 		}
 
-		let url = resolve({ route, baseRoute })
+		let url = resolve({ path, baseRoute })
 
 		if(replace){
 			history.replaceState(null, null, url)
@@ -28,8 +28,8 @@ export function createRouter({ window, redraw }){
 		redraw()
 	}
 
-	function resolve({ route, baseRoute }){
-		return relate(route, baseRoute)
+	function resolve({ path = '/', baseRoute }){
+		return relate(path, baseRoute)
 			.replace(/\/\*[^$]/g, '/')
 	}
 
@@ -49,6 +49,9 @@ export function createRouter({ window, redraw }){
 	return {
 		go,
 		resolve,
+		match(route){
+			return match(resolve(route), location.pathname)
+		},
 		startResolve(){
 			if(fallbackOnPath === location.pathname){
 				fullyMatched = true
@@ -83,34 +86,38 @@ export function createRouter({ window, redraw }){
 	}
 }
 
-export function createRoute({ route, fallback, bad, router }){
+export function createRoute({ path: basePath, fallback, bad, router }){
 	return {
-		route,
+		basePath,
 		router,
 		set(params){
 			return router.go({ 
 				...params,
-				baseRoute: route
+				basePath
 			})
 		},
 		resolve(params){
 			return router.resolve({ 
 				...params,
-				baseRoute: route
+				basePath
 			})
 		},
-		maybeEnter({ route: nextRoute, fallback, bad }){
-			if(nextRoute){
-				let fullRoute = join(route, nextRoute)
+		match(params){
+			return router.match({ 
+				...params,
+				basePath
+			})
+		},
+		maybeEnter({ path, fallback, bad }){
+			if(path){
+				let fullPath = join(basePath, path)
 					.replace(/\/\*[^$]/g, '/')
 
-				if(nextRoute === '/')
-					fullRoute = fullRoute.replace(/\*$/, '')
-
-				console.log('resolve', route, '+', nextRoute, '->', fullRoute)
+				if(path === '/')
+					fullPath = fullPath.replace(/\*$/, '')
 	
-				if(router.shouldEnter(fullRoute))
-					return createRoute({ route: fullRoute, router })
+				if(router.shouldEnter(fullPath))
+					return createRoute({ path: fullPath, router })
 			}else{
 				if(router.shouldFallback())
 					return createRoute({ fallback, bad, router })

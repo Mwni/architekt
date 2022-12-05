@@ -2,11 +2,11 @@ import { ctx } from '@architekt/render'
 import { Fragment, Component } from '@architekt/ui'
 
 
-export default Fragment(({ route, fallback, bad }, content) => {
-	let routeChild = ctx.downstream.route.maybeEnter({ route, fallback, bad })
+export default Fragment(({ path, fallback, bad }, content) => {
+	let route = ctx.downstream.route.maybeEnter({ path, fallback, bad })
 
-	if(routeChild){
-		Holder({ route: routeChild }, content)
+	if(route){
+		Holder({ route }, content)
 	}
 })
 
