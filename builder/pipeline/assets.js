@@ -4,48 +4,45 @@ import { generateXid } from '../lib/xid.js'
 
 
 export default ({ captures }) => ({
-	name: 'architekt-icons',
+	name: 'architekt-assets',
 	setup(build){
 		build.onResolve(
 			{ 
-				filter: /\.svg$/,
+				filter: /\.(svg|png|jpg)$/,
 				namespace: 'file'
 			},
-			async ({ path: iconPath, resolveDir }) => ({
+			async ({ path: assetPath, resolveDir }) => ({
 				path: path.resolve(
-					path.join(resolveDir, iconPath)
+					path.join(resolveDir, assetPath)
 				),
-				namespace: 'icon',
+				namespace: 'asset',
 			})
 		)
 
 		build.onLoad(
 			{ 
 				filter: /.*/,
-				namespace: 'icon'
+				namespace: 'asset'
 			},
-			async ({ path: manifestOrIconPath }) => {
+			async ({ path: manifestOrAssetPath }) => {
+				let { ext } = path.parse(manifestOrAssetPath)
 				let xid = generateXid(5)
 				let manifest
 
-				if(manifestOrIconPath.endsWith('.json')){
+				if(ext === '.json'){
 					manifest = JSON.parse(
-						fs.readFileSync(manifestOrIconPath, 'utf-8')
+						fs.readFileSync(manifestOrAssetPath, 'utf-8')
 					)
 				}else{
 					manifest = {
-						variants: [
-							{
-								file: manifestOrIconPath
-							}
-						]
+						file: manifestOrAssetPath
 					}
 				}
 
 				captures.push({
 					xid,
 					manifest,
-					path: manifestOrIconPath
+					path: manifestOrAssetPath
 				})
 
 				return {

@@ -6,7 +6,7 @@ import shorthands from './pipeline/shorthands.js'
 import externals from './pipeline/externals.js'
 import { stripExports, stripImports } from './lib/code.js'
 import stylesheets from './pipeline/stylesheets.js'
-import icons from './pipeline/icons.js'
+import assets from './pipeline/assets.js'
 import transforms from './pipeline/transforms.js'
 import defaultTransforms from './transforms/index.js'
 import { generateXid } from './lib/xid.js'
@@ -17,7 +17,7 @@ export default async function({ platform, rootPath, entry, importerImpl, pipelin
 	let capturedExternals = []
 	let capturedTransforms = []
 	let capturedStylesheets = []
-	let capturedIcons = []
+	let capturedAssets = []
 
 	let { dir: entryDir, base: entryFile } = path.parse(entry.file)
 	let { outputFiles, metafile } = await esbuild.build({
@@ -35,8 +35,8 @@ export default async function({ platform, rootPath, entry, importerImpl, pipelin
 				rootPath,
 				captures: capturedStylesheets
 			}),
-			icons({
-				captures: capturedIcons
+			assets({
+				captures: capturedAssets
 			}),
 			externals({
 				rootPath, 
@@ -77,8 +77,8 @@ export default async function({ platform, rootPath, entry, importerImpl, pipelin
 				.map(src => capturedStylesheets.find(({ path }) => `stylesheet:${path}` === src))
 				.filter(Boolean)
 
-			let icons = Object.keys(build.inputs)
-				.map(src => capturedIcons.find(({ path }) => `icon:${path}` === src))
+			let assets = Object.keys(build.inputs)
+				.map(src => capturedAssets.find(({ path }) => `asset:${path}` === src))
 				.filter(Boolean)
 
 			let transforms = Object.keys(build.inputs)
@@ -95,7 +95,8 @@ export default async function({ platform, rootPath, entry, importerImpl, pipelin
 				local,
 				code: f.text,
 				stylesheets,
-				icons,
+				assets,
+				files: [],
 				build
 			}
 		})

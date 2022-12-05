@@ -13,7 +13,7 @@ export async function importAssets(path){
 	delete architektAssets[path]
 
 	let res = await fetch(`/app/${path}.json`)
-	let { stylesheet, icons } = await res.json()
+	let { stylesheet, images } = await res.json()
 
 	if(stylesheet){
 		let tag = document.createElement('style')
@@ -23,7 +23,7 @@ export async function importAssets(path){
 		document.head.appendChild(tag)
 	}
 	
-	if(icons){
-		Object.assign(iconRepo, icons)
+	if(images){
+		Object.assign(iconRepo, images)
 	}
 }

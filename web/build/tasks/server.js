@@ -94,6 +94,15 @@ export default async ({ config, plugins, procedure, watch }) => {
 				}
 			}
 
+			for(let chunk of [mainChunk, ...asyncChunks]){
+				for(let { src, dest } of chunk.files){
+					fs.copyFileSync(
+						src,
+						path.join(staticDir, dest)
+					)
+				}
+			}
+
 			mainChunk.code = `global.assetManifest = ${JSON.stringify(assetManifest)}\n\n${mainChunk.code}`
 
 			fs.writeFileSync(
