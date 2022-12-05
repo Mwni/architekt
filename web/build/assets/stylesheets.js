@@ -9,6 +9,7 @@ const tags = {
 	Text: '.text',
 	Icon: '.icon',
 	WebLink: '.weblink',
+	Link: '.link'
 }
 
 const replacers = Object.entries(tags)

@@ -6,6 +6,8 @@ export default Component(() => {
 	return (props, content) => {
 		Interactive(
 			{
+				...props,
+				class: ['link', props.class],
 				href: route.resolve(props),
 				tapAction: event => {
 					event.preventDefault()
