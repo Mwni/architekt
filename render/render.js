@@ -253,7 +253,7 @@ function findNextSiblingElement(node, upToElement){
 	}
 }
 
-function findFirstElement(node){
+export function findFirstElement(node){
 	if(node.dom)
 		return node.dom
 
