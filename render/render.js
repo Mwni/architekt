@@ -239,10 +239,10 @@ export function findParentElement(node){
 
 function findNextSiblingElement(node, upToElement){
 	while(node && node.dom !== upToElement){
-		let sibling
+		let sibling = node
 		let element
 
-		while(sibling = node.nextSibling){
+		while(sibling = sibling.nextSibling){
 			element = findFirstElement(sibling)
 
 			if(element)
@@ -256,6 +256,9 @@ function findNextSiblingElement(node, upToElement){
 function findFirstElement(node){
 	if(node.dom)
 		return node.dom
+
+	if(!node.children)
+		return
 
 	for(let child of node.children){
 		let element = findFirstElement(child)
