@@ -8,7 +8,7 @@ export default ({ captures }) => ({
 	setup(build){
 		build.onResolve(
 			{ 
-				filter: /\.(svg|png|jpg)$/,
+				filter: /\.(json|svg|png|jpg)$/,
 				namespace: 'file'
 			},
 			async ({ path: assetPath, resolveDir }) => ({
@@ -33,6 +33,15 @@ export default ({ captures }) => ({
 					manifest = JSON.parse(
 						fs.readFileSync(manifestOrAssetPath, 'utf-8')
 					)
+
+					if(manifest.file){
+						manifest.file = path.resolve(
+							path.join(
+								path.dirname(manifestOrAssetPath),
+								manifest.file
+							)
+						)
+					}
 				}else{
 					manifest = {
 						file: manifestOrAssetPath

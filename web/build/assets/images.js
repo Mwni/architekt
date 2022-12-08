@@ -11,7 +11,8 @@ export default async ({ assets, files }) => {
 
 		if(ext === '.svg'){
 			images[xid] = {
-				svg: fs.readFileSync(file, 'utf-8')
+				svg: fs.readFileSync(manifest.file, 'utf-8'),
+				replace: manifest.replace
 			}
 		}else{
 			let { width, height } = getImageSize(manifest.file)

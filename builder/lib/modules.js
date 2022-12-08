@@ -21,15 +21,3 @@ export async function findParentPackageDescriptor(path){
 		dir = pu.dirname(dir)
 	}
 }
-
-export async function isFromPackage({ filePath, packagePath, compare }){
-	let descriptorPath = await findParentPackageDescriptor(filePath)
-
-	if(!descriptorPath)
-		return false
-
-	if(packagePath)
-		return pu.dirname(descriptorPath) === packagePath
-	else
-		return compare(pu.dirname(descriptorPath))
-}

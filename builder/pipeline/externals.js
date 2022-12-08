@@ -1,5 +1,6 @@
+import fs from 'fs/promises'
 import path from 'path'
-import { isFromPackage } from '../lib/modules.js'
+import { findParentPackageDescriptor } from '../lib/modules.js'
 import { repoPath } from '../paths.js'
 
 
@@ -53,16 +54,30 @@ export default opts => ({
 					f = defaultResolve.path
 				}
 			
-				let isNative = await isFromPackage({
-					filePath: f,
-					compare: p => p === opts.rootPath 
-						|| path.resolve(path.join(p, '..')) === repoPath
-				})
+				let descriptorPath = await findParentPackageDescriptor(f)
+				
+				
+				if(descriptorPath){
+					let packagePath = path.dirname(descriptorPath)
+					let isForeignPackage = packagePath !== opts.rootPath
+					let isArchitektPackage = path.resolve(path.join(packagePath, '..')) === repoPath
 
-				if(!isNative){
+					if(!isArchitektPackage && isForeignPackage){
+						let descriptor = JSON.parse(
+							await fs.readFile(descriptorPath, 'utf-8')
+						)
+						
+						if(!descriptor?.architekt?.bundle)
+							external = true
+					}
+				}else{
+					external = true
+				}
+
+
+				if(external){
 					opts.captures.push(f)
 					f = ''
-					external = true
 				}
 
 				return {
