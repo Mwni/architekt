@@ -26,11 +26,11 @@ export default Component(({ asset }) => {
 			applyRemote(img, icon, style)
 	})
 
-	return ({ asset: newAsset }) => {
+	return ({ asset: newAsset, ...props }) => {
 		if(asset.xid !== newAsset.xid)
 			return teardown()
 
-		Element('img', { class: 'icon' })
+		Element('img', { class: ['icon', props.class] })
 	}
 })
 
