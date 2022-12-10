@@ -9,13 +9,13 @@ export function createRouter({ window, redraw }){
 	let fullyMatched
 	let fallbackOnPath
 
-	function go({ path, replace, baseRoute }){
+	function go({ path, replace, basePath }){
 		if(popping){
 			popQueue.push(() => go({ path, replace, baseRoute }))
 			return
 		}
 
-		let url = resolve({ path, baseRoute })
+		let url = resolve({ path, basePath })
 
 		if(replace){
 			history.replaceState(null, null, url)
@@ -28,8 +28,8 @@ export function createRouter({ window, redraw }){
 		redraw()
 	}
 
-	function resolve({ path = '/', baseRoute }){
-		return relate(path, baseRoute)
+	function resolve({ path = '/', basePath }){
+		return relate(path, basePath)
 			.replace(/\/\*[^$]/g, '/')
 	}
 
