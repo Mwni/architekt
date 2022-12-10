@@ -38,7 +38,7 @@ export function relate(path, basePath){
 	if(path.startsWith('/'))
 		return path
 
-	if(path.startsWith('~'))
+	if(path.startsWith('%'))
 		return join(basePath, path.slice(1))
 
 	return join(pop(basePath), path)
