@@ -168,10 +168,10 @@ function updateElement(node, newNode){
 
 	node.attrs = newNode.attrs
 
-	if(node.content){
+	if(newNode.content){
 		updateNodes(
 			node.children, 
-			collectChildren(node, node.content)
+			collectChildren(node, newNode.content)
 		)
 	}
 }
