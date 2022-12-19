@@ -3,6 +3,25 @@ export default opts => ({
 	setup(build){
 		build.onResolve(
 			{ 
+				filter: /.*$/
+			},
+			async ({ path, pluginData, ...args }) => pluginData?.resolveOverride
+				? await build.resolve(
+					path,
+					{
+						...args,
+						...pluginData?.resolveOverride,
+						pluginData: {
+							...pluginData,
+							resolveOverride: undefined
+						}
+					}
+				)
+				: undefined
+		)
+
+		build.onResolve(
+			{ 
 				filter: /^[a-zA-Z0-9\_\-]+:/,
 				namespace: 'file'
 			}, 

@@ -18,28 +18,12 @@ export default opts => ({
 			})
 		)
 
-		// this is because stylesheet files get replaced with a .js file importing the stylesheet component
-		build.onResolve(
-			{ 
-				filter: /.*$/,
-				namespace: 'stylesheet'
-			},
-			async ({ path, ...args }) => await build.resolve(
-				path,
-				{
-					...args,
-					namespace: 'file',
-					resolveDir: opts.rootPath
-				}
-			)
-		)
-
 		build.onLoad(
 			{ 
 				filter: /.*/,
 				namespace: 'stylesheet'
 			}, 
-			async ({ path, ...args }) => {
+			async ({ path, pluginData, ...args }) => {
 				let xid = generateXid(5)
 
 				opts.captures.push({
@@ -52,7 +36,14 @@ export default opts => ({
 						file: 'stylesheet.js',
 						fields: { xid }
 					}),
-					loader: 'js'
+					resolveDir: opts.rootPath,
+					loader: 'js',
+					pluginData: {
+						...pluginData,
+						resolveOverride: {
+							namespace: 'file'
+						}
+					}
 				}
 			}
 		)
