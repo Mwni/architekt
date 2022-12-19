@@ -115,36 +115,35 @@ function compileServerAST({ functions }){
 					)
 				],
 				undefined,
-				ts.factory.createBlock([
-					ts.factory.createReturnStatement(
-						ts.factory.createObjectLiteralExpression(
-							functions.map(
-								f => {
-									let methodDecorator = f.illegalDecorators.find(
-										decorator => methods.includes(decorator.expression.expression.escapedText)
-									)
-							
-									methodDecorator.expression.arguments.push(
-										ts.factory.createFunctionExpression(
-											undefined,
-											undefined,
-											undefined,
-											undefined,
-											f.parameters,
-											undefined,
-											f.body
-										)
-									)
-	
-									return ts.factory.createPropertyAssignment(
-										f.name.escapedText,
-										methodDecorator.expression
-									)
-								}
+				ts.factory.createBlock(
+					functions.map(
+						f => {
+							let methodDecorator = f.illegalDecorators.find(
+								decorator => methods.includes(decorator.expression.expression.escapedText)
 							)
-						)
+
+							methodDecorator.expression.arguments.push(
+								ts.factory.createIdentifier('router')
+							)
+					
+							methodDecorator.expression.arguments.push(
+								ts.factory.createFunctionExpression(
+									undefined,
+									undefined,
+									undefined,
+									undefined,
+									f.parameters,
+									undefined,
+									f.body
+								)
+							)
+
+							return ts.factory.createBlock([
+								methodDecorator.expression
+							])
+						}
 					)
-				])
+				)
 			)
 		)
 	])
