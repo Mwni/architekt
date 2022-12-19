@@ -4,6 +4,7 @@ import Koa from 'koa'
 import Router from '@koa/router'
 import { fileURLToPath } from 'url'
 import { JSDOM } from 'jsdom'
+import { fetch } from '@architekt/api'
 import { awaitAsyncNodes } from '@architekt/render'
 import { mount as mountComponent } from '@architekt/html'
 import { writeDocument } from './document.js'
@@ -18,12 +19,14 @@ const mimes = {
 	'.css': 'text/css'
 }
 
-export default ({ port, clientApp }) => {
+export default async ({ port, clientApp }) => {
 	log('starting')
 
 	let koa = new Koa()
 	let router = new Router()
 	let bootstrapCode = readFile({ filePath: 'bootstrap.js' })
+
+	await serveFunctions({ router })
 
 	serveDir({ router, fileDir: './client', webPath: '/app' })
 	serveDir({ router, fileDir: './static', webPath: '/app' })
@@ -32,6 +35,10 @@ export default ({ port, clientApp }) => {
 
 	koa.use(router.routes(), router.allowedMethods())
 	koa.listen(port)
+
+	fetch.config({
+		urlBase: `http://localhost:${port}`
+	})
 
 	log(`listening on port ${port}`)
 }
@@ -48,23 +55,27 @@ function serveApp({ router, clientApp, bootstrapCode }){
 			url: `http://app${ctx.path}`
 		})
 
-		let node = mountComponent(
-			dom.window.document.body, 
-			clientComponent, 
-			{ page, clientApp }
-		)
+		try{
+			let node = mountComponent(
+				dom.window.document.body, 
+				clientComponent, 
+				{ page, clientApp }
+			)
 
-		await new Promise(resolve => {
-			awaitAsyncNodes(node, resolve)
-		})
+			await new Promise(resolve => {
+				awaitAsyncNodes(node, resolve)
+			})
 
-		writeDocument({
-			ctx,
-			dom,
-			page,
-			imports,
-			bootstrapCode,
-		})
+			writeDocument({
+				ctx,
+				dom,
+				page,
+				imports,
+				bootstrapCode,
+			})
+		}catch(error){
+			error(`encountered error while rendering ${ctx.path}:\n`, error)
+		}
 	})
 }
 
@@ -89,6 +100,18 @@ function serveDir({ router, fileDir, webPath }){
 			ctx.type = mime
 		})
 	}
+}
+
+async function serveFunctions({ router }){
+	let file = path.join(__dirname, 'functions.js')
+
+	if(!fs.existsSync(file))
+		return
+
+	let { default: init } = await import(`file://${file}`)
+
+	init(router)
+	log(`server functions initialized`)
 }
 
 function readFile({ filePath }){

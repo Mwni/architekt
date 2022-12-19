@@ -84,7 +84,8 @@ function createComponent(node){
 				dispatchCallbacks(node, 'afterDomCreation', getChildElements(node))
 			})
 			.catch(error => {
-				console.error(error)
+				node.constructPromise = undefined
+				node.error = error
 			})
 
 		ctx.downstream = prevDownstream
