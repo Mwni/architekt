@@ -15,10 +15,11 @@ export default async ({ config, plugins, procedure, watch }) => {
 	let chunksDir = path.join(outputPath, 'server')
 	let staticDir = path.join(outputPath, 'static')
 
-	let { mainChunk, asyncChunks, externals, watchFiles } = await procedure({
+	let { mainChunk, asyncChunks, standaloneChunks, externals, watchFiles } = await procedure({
 		id: `build-server`,
 		description: `building server app`,
 		execute: async () => await bundle({
+			isServer: true,
 			platform,
 			rootPath,
 			entry: {
@@ -109,6 +110,13 @@ export default async ({ config, plugins, procedure, watch }) => {
 				path.join(outputPath, 'server.js'), 
 				mainChunk.code
 			)
+
+			for(let chunk of standaloneChunks){
+				fs.writeFileSync(
+					path.join(outputPath, 'functions.js'), 
+					chunk.code
+				)
+			}
 		}
 	})
 

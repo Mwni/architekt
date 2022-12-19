@@ -10,14 +10,18 @@ import assets from './pipeline/assets.js'
 import transforms from './pipeline/transforms.js'
 import defaultTransforms from './transforms/index.js'
 import { generateXid } from './lib/xid.js'
+import serverfuncs from './pipeline/serverfuncs.js'
+import template from './template.js'
+import virtual from './pipeline/virtual.js'
 
 
-export default async function({ platform, rootPath, entry, importerImpl, pipeline }){
+export default async function({ platform, rootPath, entry, importerImpl, isServer }){
 	let ephemeral = generateXid(8)
 	let capturedExternals = []
 	let capturedTransforms = []
 	let capturedStylesheets = []
 	let capturedAssets = []
+	let capturedServerFunctions = []
 
 	let { dir: entryDir, base: entryFile } = path.parse(entry.file)
 	let { outputFiles, metafile } = await esbuild.build({
@@ -41,6 +45,10 @@ export default async function({ platform, rootPath, entry, importerImpl, pipelin
 			externals({
 				rootPath, 
 				captures: capturedExternals
+			}),
+			serverfuncs({
+				isServer,
+				captures: capturedServerFunctions
 			}),
 			transforms({
 				rootPath,
@@ -81,15 +89,6 @@ export default async function({ platform, rootPath, entry, importerImpl, pipelin
 				.map(src => capturedAssets.find(({ path }) => `asset:${path}` === src))
 				.filter(Boolean)
 
-			let transforms = Object.keys(build.inputs)
-				.map(src => capturedTransforms
-					.find(t => path.resolve(t.path) === path.resolve(path.join(rootPath, src))))
-
-			let apis = transforms
-				.map(transform => transform?.apis)
-				.filter(Boolean)
-				.reduce((apis, i) => [...apis, ...i], [])
-
 			return {
 				file,
 				local,
@@ -127,10 +126,63 @@ export default async function({ platform, rootPath, entry, importerImpl, pipelin
 			vendorFile: mainChunk.local 
 		})
 	}
+
+	let standaloneChunks = []
+
+	if(capturedServerFunctions.length > 0){
+		let { outputFiles, metafile } = await esbuild.build({
+			stdin: {
+				contents: template({
+					file: 'svfuncs.js',
+					fields: {
+						modules: capturedServerFunctions.map(
+							({ }, i) => `svf${i}`
+						)
+					}
+				}),
+				sourcefile: 'functions.js',
+				resolveDir: entryDir
+			},
+			plugins: [
+				namespaces(),
+				virtual({
+					modules: capturedServerFunctions.map(
+						({ code }, i) => ({
+							name: `svf${i}`,
+							code
+						})
+					)
+				}),
+				externals({
+					rootPath, 
+					captures: capturedExternals
+				}),
+			],
+			platform: 'node',
+			target: 'es2020',
+			format: 'esm',
+			bundle: true,
+			metafile: true,
+			write: false,
+			treeShaking: true,
+			splitting: false,
+			logLevel: 'silent',
+			outdir: `__temp__`
+		})
+
+		standaloneChunks.push({
+			type: 'serverfuncs',
+			file: 'functions.js',
+			local: './functions.js',
+			code: outputFiles[0].text,
+			build: metafile.outputs[0]
+		})
+	}
 	
 	return {
 		mainChunk,
 		asyncChunks,
+		standaloneChunks,
 		externals: capturedExternals
 			.filter((dir, i, list) => list.indexOf(dir) === i)
 			.sort((a, b) => a.length - b.length),
