@@ -10,7 +10,7 @@ import { resolveExternals } from '../lib/externals.js'
 
 
 export default async ({ config, plugins, procedure, watch }) => {
-	let { platform, rootPath, clientEntry, outputPath, serverPort } = config
+	let { platform, rootPath, envFile, serverInit, clientEntry, outputPath, serverPort } = config
 	let serverConfig = { port: serverPort }
 	let chunksDir = path.join(outputPath, 'server')
 	let staticDir = path.join(outputPath, 'static')
@@ -27,7 +27,9 @@ export default async ({ config, plugins, procedure, watch }) => {
 					file: 'server.js',
 					fields: { 
 						clientEntry, 
-						serverConfig: JSON.stringify(serverConfig)
+						serverConfig: JSON.stringify(serverConfig),
+						serverInit,
+						envFile
 					}
 				}),
 				file: './server.js'
