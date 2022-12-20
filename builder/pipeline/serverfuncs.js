@@ -26,13 +26,16 @@ export default opts => ({
 							modifier => ts.SyntaxKind[modifier.kind] === 'ExportKeyword'
 						)
 				)
+				let setup = srcAST.statements.filter(
+					statement => !functions.includes(statement)
+				)
 
 				let resultAST = compileClientAST({ functions })
 				let printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed })
 				let code = printer.printNode(ts.EmitHint.Unspecified, resultAST, resultAST)
 
 				if(opts.isServer){
-					let serverAST = compileServerAST({ functions })
+					let serverAST = compileServerAST({ setup, functions })
 					let code = printer.printNode(ts.EmitHint.Unspecified, serverAST, serverAST)
 
 					opts.captures.push({
@@ -98,9 +101,10 @@ function compileClientAST({ functions }){
 	])
 }
 
-function compileServerAST({ functions }){
+function compileServerAST({ setup, functions }){
 	return ts.factory.createSourceFile([
 		createMethodsImport('@architekt/api/server'),
+		...setup,
 		ts.factory.createExportDefault(
 			ts.factory.createFunctionExpression(
 				undefined,
@@ -115,34 +119,33 @@ function compileServerAST({ functions }){
 					)
 				],
 				undefined,
-				ts.factory.createBlock(
-					functions.map(
-						f => {
-							let methodDecorator = f.illegalDecorators.find(
-								decorator => methods.includes(decorator.expression.expression.escapedText)
-							)
+				ts.factory.createBlock(functions.map(
+					f => {
+						let methodDecorator = f.illegalDecorators.find(
+							decorator => methods.includes(decorator.expression.expression.escapedText)
+						)
 
-							methodDecorator.expression.arguments.push(
-								ts.factory.createIdentifier('router')
+						methodDecorator.expression.arguments.push(
+							ts.factory.createIdentifier('router')
+						)
+				
+						methodDecorator.expression.arguments.push(
+							ts.factory.createFunctionExpression(
+								undefined,
+								undefined,
+								undefined,
+								undefined,
+								f.parameters,
+								undefined,
+								f.body
 							)
-					
-							methodDecorator.expression.arguments.push(
-								ts.factory.createFunctionExpression(
-									undefined,
-									undefined,
-									undefined,
-									undefined,
-									f.parameters,
-									undefined,
-									f.body
-								)
-							)
+						)
 
-							return ts.factory.createBlock([
-								methodDecorator.expression
-							])
-						}
-					)
+						return ts.factory.createSourceFile([
+							methodDecorator.expression
+						])
+					}
+				)
 				)
 			)
 		)
