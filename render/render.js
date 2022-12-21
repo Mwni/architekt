@@ -86,6 +86,7 @@ function createComponent(node){
 			.catch(error => {
 				node.constructPromise = undefined
 				node.error = error
+				console.warn(`error while rendering async component:\n`, error)
 			})
 
 		ctx.downstream = prevDownstream
