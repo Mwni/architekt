@@ -73,8 +73,8 @@ function serveApp({ router, clientApp, bootstrapCode }){
 				imports,
 				bootstrapCode,
 			})
-		}catch(error){
-			error(`encountered error while rendering ${ctx.path}:\n`, error)
+		}catch(e){
+			error(`encountered error while rendering ${ctx.path}:\n`, e)
 		}
 	})
 }
