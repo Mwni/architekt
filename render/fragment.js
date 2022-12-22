@@ -1,8 +1,6 @@
 import { ctx } from './context.js'
 
 export default render => {
-	let childPatch
-
 	return (props, content) => {
 		if(!props){
 			props = {}
@@ -11,15 +9,17 @@ export default render => {
 			props = {}
 		}
 
+		let renderFunc = render
+		let childPatch
+
 		if(ctx.node.childPatch){
-			childPatch = ctx.node.childPatch;
-
-			[render, props, content] = childPatch(render, props, content)
-
+			childPatch = ctx.node.childPatch
 			ctx.node.childPatch = undefined
+
+			;[renderFunc, props, content] = childPatch(renderFunc, props, content)
 		}
 
-		render(props, content)
+		renderFunc(props, content)
 
 		if(childPatch)
 			ctx.node.childPatch = childPatch
