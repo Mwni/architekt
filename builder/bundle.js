@@ -43,6 +43,7 @@ export default async function({ platform, rootPath, entry, importerImpl, isServe
 				captures: capturedAssets
 			}),
 			externals({
+				isServer,
 				rootPath, 
 				captures: capturedExternals
 			}),
@@ -154,6 +155,7 @@ export default async function({ platform, rootPath, entry, importerImpl, isServe
 					)
 				}),
 				externals({
+					isServer: true,
 					rootPath, 
 					captures: capturedExternals
 				}),
