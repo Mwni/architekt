@@ -39,8 +39,8 @@ export default class extends EventEmitter{
 		for(let section of sections){
 			let filtered = files
 				.filter(file => section.filter.test(file))
-				//.filter(file => !file.includes('node_modules'))
-				//.filter(file => !file.includes('architekt'))
+				.filter(file => !file.includes('node_modules'))
+				.filter(file => !file.includes('architekt'))
 				.filter((file, i, list) => list.indexOf(file) === i)
 
 			for(let file of filtered){
