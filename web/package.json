@@ -18,5 +18,10 @@
 		"jsdom": "^20.0.2",
 		"koa": "^2.13.4",
 		"node-sass": "^8.0.0"
+	},
+	"exports": {
+		".": "./index.js",
+		"./server": "./server/server.js",
+		"./client": "./client/client.js"
 	}
 }

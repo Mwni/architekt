@@ -10,7 +10,7 @@ serverInit()
 
 import clientApp from '{{{clientEntry}}}'
 import { Component, getContext } from '@architekt/ui'
-import { startServer } from '@architekt/web'
+import start from '@architekt/web/server'
 
 const config = {{{serverConfig}}}
-startServer({ ...config, clientApp })
+start({ ...config, clientApp })

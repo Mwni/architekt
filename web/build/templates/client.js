@@ -1,4 +1,4 @@
 import App from '{{{clientEntry}}}'
-import { startClient } from '@architekt/web'
+import start from '@architekt/web/client'
 
-startClient({ App })
+start({ App })
