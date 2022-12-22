@@ -5,6 +5,7 @@ export default Fragment((props, content) => {
 	Element(
 		'body', 
 		{
+			...props,
 			class: ['root', props.class]
 		}, 
 		content

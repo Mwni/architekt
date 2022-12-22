@@ -1,4 +1,4 @@
-import { ctx, Fragment } from '@architekt/render'
+import { Fragment } from '@architekt/render'
 import { Element } from '../dom.js'
 
 export default Fragment(({ tapAction, ...props }, content) => {

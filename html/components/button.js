@@ -6,6 +6,7 @@ export default Fragment(
 		Element(
 			'button', 
 			{
+				...props,
 				class: 'a-button',
 				onclick: action
 			}, 

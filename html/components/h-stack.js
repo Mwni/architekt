@@ -5,6 +5,7 @@ export default Fragment((props, content) => {
 	Element(
 		'div', 
 		{
+			...props,
 			class: ['h-stack', props.class]
 		}, 
 		content
