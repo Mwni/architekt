@@ -146,6 +146,10 @@ function isFormAttribute(vnode, attr) {
 	return attr === 'value' || attr === 'checked' || attr === 'selectedIndex' || attr === 'selected' && vnode.dom === activeElement() || vnode.tag === 'option' && vnode.dom.parentNode === $doc.activeElement
 }
 
+function activeElement(){
+	return window.activeElement
+}
+
 function hasPropertyKey(vnode, key) {
 	// Filter out namespaced keys
 	return(
