@@ -1,3 +1,4 @@
+import pa from 'path'
 import fs from 'fs'
 import sass from 'node-sass'
 
@@ -8,8 +9,13 @@ const tags = {
 	Headline: '.headline',
 	Text: '.text',
 	Icon: '.icon',
+	Button: '.a-button',
 	WebLink: '.weblink',
-	Link: '.link'
+	Link: '.link',
+	TextInput: '.text-input',
+
+	//SCSS compiler being retarded
+	'.textInput': '.text-input'
 }
 
 const replacers = Object.entries(tags)
@@ -20,20 +26,31 @@ const replacers = Object.entries(tags)
 
 
 
-export default async ({ stylesheets }) => {
+export default async ({ chunk, watch }) => {
+	let { stylesheets } = chunk
+
 	let scss = stylesheets
 		.map(({ scss, path, ...props }) => ({ scss: scss || fs.readFileSync(path, 'utf-8'), ...props }))
 		.map(({ scss, xid }) => xid ? `.${xid}{\n${scss}\n}` : scss)
 		.join('\n\n')
 
-	for(let { regex, repl } of replacers){
-		scss = scss.replace(regex, repl)
-	}
+	let includePaths = stylesheets
+		.filter(({ path }) => !!path)
+		.map(({ path }) => pa.dirname(path))
 
-	let { css } = sass.renderSync({
+	let { css, stats } = sass.renderSync({
 		data: scss,
-		outputStyle: 'compressed'
+		outputStyle: 'compressed',
+		includePaths
 	})
 
-	return css.toString()
+	for(let { regex, repl } of replacers){
+		css = css.toString().replace(regex, repl)
+	}
+	
+	if(stats.includedFiles.length > 0){
+		watch(stats.includedFiles)
+	}
+
+	return css
 }

@@ -42,7 +42,7 @@ export default async ({ config, plugins, procedure, watch }) => {
 		description: `bundling client assets`,
 		execute: async () => {
 			for(let chunk of [mainChunk, ...asyncChunks]){
-				chunk.assetBundle = await bundleAssets(chunk)
+				chunk.assetBundle = await bundleAssets({ rootPath, chunk, watch })
 			}
 		
 			if(!fs.existsSync(finalChunksDir))

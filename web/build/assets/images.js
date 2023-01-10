@@ -3,7 +3,8 @@ import path from 'path'
 import getImageSize from 'image-size'
 
 
-export default async ({ assets, files }) => {
+export default async ({ chunk }) => {
+	let { assets, files } = chunk
 	let images = {}
 
 	for(let { xid, manifest } of assets){

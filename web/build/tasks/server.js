@@ -53,7 +53,7 @@ export default async ({ config, plugins, procedure, watch }) => {
 			let assetManifest = {}
 
 			for(let chunk of [mainChunk, ...asyncChunks]){
-				chunk.assetBundle = await bundleAssets(chunk)
+				chunk.assetBundle = await bundleAssets({ rootPath, chunk, watch })
 			}
 
 			await rewriteImports({
