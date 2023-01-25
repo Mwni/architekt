@@ -2,13 +2,13 @@ import { Fragment } from '@architekt/render'
 import { Element } from '../dom.js'
 
 export default Fragment(
-	({ text, action, ...props }, content) => {
+	({ text, onTap, ...props }, content) => {
 		Element(
 			'button', 
 			{
 				...props,
 				class: ['a-button', props.class],
-				onclick: action
+				onclick: onTap
 			}, 
 			text ? text : content
 		)
