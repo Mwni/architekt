@@ -10,10 +10,12 @@ const tags = {
 	Headline: '.headline',
 	Text: '.text',
 	Icon: '.icon',
+	Image: '.image',
 	Button: '.a-button',
 	WebLink: '.weblink',
 	Link: '.link',
 	TextInput: '.text-input',
+	FileInput: '.file-input',
 
 	//SCSS compiler being retarded
 	'.textInput': '.text-input'
