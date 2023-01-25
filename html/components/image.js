@@ -7,7 +7,7 @@ export default Fragment((props, content) => {
 	if(props.svg)
 		src = toDataURL(props.svg)
 	else
-		src = props.src
+		src = props.url
 
 	Element(
 		'img', 
