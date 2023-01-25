@@ -6,6 +6,7 @@ const tags = {
 	Root: '.root',
 	VStack: '.v-stack',
 	HStack: '.h-stack',
+	Absolute: '.absolute',
 	Headline: '.headline',
 	Text: '.text',
 	Icon: '.icon',
