@@ -16,6 +16,7 @@ const tags = {
 	Link: '.link',
 	TextInput: '.text-input',
 	FileInput: '.file-input',
+	Canvas: '.a-canvas',
 
 	//SCSS compiler being retarded
 	'.textInput': '.text-input'
