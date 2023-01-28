@@ -44,6 +44,12 @@ a.weblink{
 	cursor: pointer;
 }
 
+.a-button{
+	&[disabled]{
+		pointer-events: none;
+	}
+}
+
 span.text{
 	display: block;
 	margin: 0;
