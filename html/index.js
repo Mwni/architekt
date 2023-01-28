@@ -24,6 +24,8 @@ export function mount(dom, component, props){
 		}
 	}
 
+	node.parentNode.children = [node]
+
 	render(ctx, node)
 
 	return node

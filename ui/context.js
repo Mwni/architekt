@@ -10,8 +10,23 @@ export function getContext(){
 		components: scope.components,
 		downstream: scope.downstream,
 		upstream: scope.upstream,
-		redraw: () => {
-			render(scope, scope.node)
+		redraw: ({ all } = {}) => {
+			let node = scope.node
+			let renderScope = scope
+
+			if(all){
+				while(node.parentNode)
+					node = node.parentNode
+
+				node = node.children[0]
+				renderScope = {
+					...scope,
+					node,
+					downstream: node.downstream
+				}
+			}
+
+			render(renderScope, node)
 		},
 		afterDraw: callback => {
 			registerCallback(scope.node, 'afterDraw', callback)
