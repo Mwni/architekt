@@ -4,7 +4,7 @@ import { Element } from '../dom.js'
 
 
 export default Component(({ controller, autoResize }) => {
-	let { afterDomCreation, afterDraw, isServer } = getContext()
+	let { afterDomCreation, afterDraw, isServer, teardown } = getContext()
 	let wrap
 	let canvas
 
@@ -26,7 +26,10 @@ export default Component(({ controller, autoResize }) => {
 		})
 	}
 
-	return ({ ...props }) => {
+	return ({ controller: newController, ...props }) => {
+		if(newController !== controller)
+			return teardown()
+
 		Element(
 			'div',
 			{
