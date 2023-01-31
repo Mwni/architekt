@@ -29,9 +29,24 @@ switch(args._[0]){
 		let watcher = new Watcher()
 		let outputPath = dirs.createTemp(process.cwd())
 
+		let rebuildOnKey = exit => {
+			process.stdin.setRawMode(true)
+			process.stdin.once('data', data => {
+				if(data[0] === 3){
+					log.info(`closing dev server`)
+					process.exit(0)
+				}else{
+					exit()
+				}
+			})
+
+			log.info(`press any key to rebuild`)
+		}
+
 		while(true){
 			let startTime = Date.now()
 			let timers = []
+			let postBuildTimer
 			let handle = build({
 				...config,
 				platform,
@@ -53,8 +68,9 @@ switch(args._[0]){
 
 			await new Promise(resolve => {
 				handle.on('complete', build => {
-					let duration = Date.now() - startTime
 					let server
+					let duration = Date.now() - startTime
+					let exit = () => server.kill() & resolve()
 
 					watcher.update(build.watch)
 
@@ -63,10 +79,9 @@ switch(args._[0]){
 
 					server = fork(path.join(outputPath, 'server.js'))
 
-					watcher.once('change', () => {
-						server.kill()
-						resolve()
-					})
+					watcher.once('change', exit)
+
+					postBuildTimer = setTimeout(rebuildOnKey, 1000, exit)
 				})
 
 				handle.on('error', error => {
@@ -80,6 +95,7 @@ switch(args._[0]){
 					if(!watcher.blank){
 						log.info(`waiting for file changes to retry...`)
 						watcher.once('change', resolve)
+						rebuildOnKey(resolve)
 					}else{
 						log.error(`error was fatal - cannot watch for changes`)
 						process.exit()
@@ -87,6 +103,8 @@ switch(args._[0]){
 				})
 			})
 
+			process.stdin.setRawMode(false)
+			clearTimeout(postBuildTimer)
 
 			log.info(`=================================`)
 			log.info(`rebuilding due to file changes...`)
