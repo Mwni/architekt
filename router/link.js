@@ -9,7 +9,7 @@ export default Component(() => {
 				...props,
 				class: ['link', props.class],
 				href: route.resolve(props),
-				tapAction: event => {
+				onTap: event => {
 					event.preventDefault()
 					route.set(props)
 				}
