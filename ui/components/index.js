@@ -14,3 +14,5 @@ export const WebLink = (...args) => ctx.components.WebLink(...args)
 export const TextInput = (...args) => ctx.components.TextInput(...args)
 export const FileInput = (...args) => ctx.components.FileInput(...args)
 export const Canvas = (...args) => ctx.components.Canvas(...args)
+
+export { default as Select } from './select.js'
