@@ -19,6 +19,7 @@ body{
 	touch-action: manipulation;
 	font-family: -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
 	line-height: 1.45;
+	font-size: 18px;
 }
 
 h1.headline,
@@ -36,11 +37,15 @@ label{
 	text-overflow: ellipsis;
 }
 
-a.interactive,
+
 a.link,
 a.weblink{
 	color: inherit;
 	text-decoration: none;
+	cursor: pointer;
+}
+
+.interactive{
 	cursor: pointer;
 }
 
