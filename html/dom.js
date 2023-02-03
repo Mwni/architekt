@@ -31,6 +31,9 @@ export function insertElement(parent, element, nextSibling){
 export function removeElement(element){
 	if(element === ctx.document.body)
 		return
+
+	if(!element.parentNode)
+		return
 	
 	element.parentNode.removeChild(element)
 }
