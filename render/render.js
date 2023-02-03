@@ -207,6 +207,8 @@ function removeNode(node){
 			removeNode(child)
 		}
 	}
+
+	dispatchCallbacks(node, 'afterRemove')
 }
 
 function collectChildren(node, view, props, content){
