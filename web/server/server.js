@@ -66,13 +66,22 @@ function serveApp({ router, clientApp, bootstrapCode }){
 				awaitAsyncNodes(node, resolve)
 			})
 
-			writeDocument({
-				ctx,
-				dom,
-				page,
-				imports,
-				bootstrapCode,
-			})
+			let destinationPath = dom.window.document.location.href.slice(
+				'http://app'.length
+			)
+
+
+			if(destinationPath === ctx.path){
+				writeDocument({
+					ctx,
+					dom,
+					page,
+					imports,
+					bootstrapCode,
+				})
+			}else{
+				ctx.redirect(destinationPath)
+			}
 		}catch(e){
 			error(`encountered error while rendering ${ctx.path}:\n`, e)
 		}
