@@ -3,8 +3,8 @@ import { getContext } from '@architekt/ui'
 import { Element } from '../dom.js'
 
 
-export default Component(({ controller, autoResize }) => {
-	let { afterDomCreation, afterDraw, isServer, teardown } = getContext()
+export default Component(({ controller }) => {
+	let { afterDomCreation, afterRemove, afterDraw, isServer, teardown } = getContext()
 	let wrap
 	let canvas
 
@@ -23,6 +23,10 @@ export default Component(({ controller, autoResize }) => {
 
 			window.addEventListener('resize', resize)
 			controller(canvas)
+
+			afterRemove(() => {
+				canvas.dispatchEvent(new Event('remove'))
+			})
 		})
 	}
 
