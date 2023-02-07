@@ -7,7 +7,7 @@ export default Fragment(({ text, onInput, onChange, ...props }) => {
 		{
 			type: 'text',
 			...props,
-			class: ['text-input', props.class],
+			class: ['a-textinput', props.class],
 			value: text,
 			oninput: onInput,
 			onchange: onChange

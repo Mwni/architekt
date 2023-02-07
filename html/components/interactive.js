@@ -6,7 +6,7 @@ export default Component(({ onTap, ...props }, content) => {
 	
 	afterDomCreation(dom => {
 		for(let element of dom){
-			element.classList.add('interactive')
+			element.classList.add('a-interactive')
 			element.addEventListener('click', onTap)
 		}
 	})

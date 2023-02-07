@@ -6,7 +6,7 @@ export default Fragment((props, content) => {
 		'div', 
 		{
 			...props,
-			class: ['absolute', props.class]
+			class: ['a-absolute', props.class]
 		}, 
 		content
 	)

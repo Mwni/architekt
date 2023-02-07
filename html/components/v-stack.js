@@ -6,7 +6,7 @@ export default Fragment((props, content) => {
 		'div', 
 		{
 			...props,
-			class: ['v-stack', props.class]
+			class: ['a-vstack', props.class]
 		}, 
 		content
 	)

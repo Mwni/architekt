@@ -13,7 +13,7 @@ export default Fragment((props, content) => {
 		'img', 
 		{
 			...props,
-			class: ['image', props.class],
+			class: ['a-image', props.class],
 			src
 		}
 	)

@@ -6,7 +6,7 @@ export default Fragment(({ text, ...props }) => {
 		'span', 
 		{
 			...props,
-			class: ['text', props.class]
+			class: ['a-text', props.class]
 		}, 
 		text
 	)

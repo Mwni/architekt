@@ -29,7 +29,7 @@ export default async ({ config, procedure, plugins }) => {
 
 	await procedure({
 		id: `bootstrap`,
-		description: `creating browser bootstrap`,
+		description: `building browser bootstrap`,
 		execute: async () => {
 			let { outputFiles } = await esbuild.build({
 				stdin: {

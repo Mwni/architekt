@@ -6,7 +6,7 @@ export default Fragment(({ text, tier, ...props }) => {
 		`h${tier || 1}`, 
 		{
 			...props,
-			class: ['headline', props.class]
+			class: ['a-headline', props.class]
 		}, 
 		text
 	)

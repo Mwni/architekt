@@ -14,7 +14,7 @@ export default Component(() => {
 			() => WebLink(
 				{
 					...props,
-					class: ['link', props.class],
+					class: ['a-link', props.class],
 					url: route.resolve(props),
 				},
 				content || props.text

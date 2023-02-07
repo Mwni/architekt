@@ -1,25 +1,24 @@
-import pa from 'path'
 import fs from 'fs'
-import sass from 'node-sass'
+import postcss from 'postcss'
+import postcssImport from 'postcss-import'
+import postcssUnnest from 'postcss-nested'
+
 
 const tags = {
-	Root: '.root',
-	VStack: '.v-stack',
-	HStack: '.h-stack',
-	Absolute: '.absolute',
-	Headline: '.headline',
-	Text: '.text',
-	Icon: '.icon',
-	Image: '.image',
+	Root: '.a-root',
+	VStack: '.a-vstack',
+	HStack: '.a-hstack',
+	Absolute: '.a-absolute',
+	Headline: '.a-headline',
+	Text: '.a-text',
+	Icon: '.a-icon',
+	Image: '.a-image',
 	Button: '.a-button',
-	WebLink: '.weblink',
-	Link: '.link',
-	TextInput: '.text-input',
-	FileInput: '.file-input',
+	WebLink: '.a-weblink',
+	Link: '.a-link',
+	TextInput: '.a-textinput',
+	FileInput: '.a-fileinput',
 	Canvas: '.a-canvas',
-
-	//SCSS compiler being retarded
-	'.textInput': '.text-input'
 }
 
 const replacers = Object.entries(tags)
@@ -28,9 +27,65 @@ const replacers = Object.entries(tags)
 		repl: `$1${to}$2`
 	}))
 
+const postcssScope = ({ xid }) => ({
+	postcssPlugin: 'postcss-scope',
+	Rule(rule){
+		let newSelectors = []
+
+		for(let selector of rule.selectors){
+			let tagEndIndex = selector.match(/^(\w|(&\.))+/)?.[0].length
+
+			newSelectors.push(`.${xid} ${selector}`)
+			newSelectors.push(
+				tagEndIndex
+					? selector.slice(0, tagEndIndex) + `.${xid}` + selector.slice(tagEndIndex)
+					: `.${xid}${selector}`
+			)
+		}
+
+		rule.selectors = newSelectors
+	}
+})
 
 
-export default async ({ chunk, watch }) => {
+export default async ({ rootPath, plugins, chunk, watch }) => {
+	let { stylesheets } = chunk
+	let compiledCss = ''
+
+	for(let { content, path, xid } of stylesheets){
+		let processor = postcss([
+			postcssImport,
+			postcssUnnest,
+			xid && postcssScope({ xid })
+		].filter(Boolean))
+
+		let { css, messages } = await processor.process(
+			content || fs.readFileSync(path, 'utf-8'),
+			{
+				from: path || rootPath,
+				map: false
+			}
+		)
+
+		for(let { regex, repl } of replacers){
+			css = css.toString().replace(regex, repl)
+		}
+
+		compiledCss += `${css}\n`
+
+		watch(
+			messages
+				.filter(msg => msg.type === 'dependency')
+				.map(msg => msg.file)
+		)
+	}
+
+	
+	return compiledCss
+}
+
+
+/*export default async ({ chunk, watch }) => {
 	let { stylesheets } = chunk
 
 	let scss = stylesheets
@@ -57,4 +112,4 @@ export default async ({ chunk, watch }) => {
 	}
 
 	return css
-}
+}*/

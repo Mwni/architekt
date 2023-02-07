@@ -30,7 +30,7 @@ export default Component(({ asset }) => {
 		if(asset.xid !== newAsset.xid)
 			return teardown()
 
-		Element('img', { class: ['icon', props.class] })
+		Element('img', { class: ['a-icon', props.class] })
 	}
 })
 

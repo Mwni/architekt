@@ -15,38 +15,30 @@ export default async ({ config, procedure, watch }) => {
 	let { mainChunk, asyncChunks, standaloneChunks, externals, watchFiles } = await procedure({
 		id: `build-server`,
 		description: `building server app`,
-		execute: async () => await bundle({
-			isServer: true,
-			platform,
-			rootPath,
-			entry: {
-				code: template({
-					file: 'server.js',
-					fields: { 
-						clientEntry, 
-						serverConfig: JSON.stringify(serverConfig),
-						serverInit,
-						envFile
-					}
-				}),
-				file: './server.js'
-			},
-			importerImpl: path.join(
-				libPath, 
-				'server', 
-				'importer.js'
-			)
-		})
-	})
-
-	mainChunk.stylesheets.unshift({
-		scss: template({ file: 'defaults.scss' })
-	})
-
-	await procedure({
-		id: `bundle-server`,
-		description: `bundling server assets`,
 		execute: async () => {
+			let { mainChunk, asyncChunks, standaloneChunks, externals, watchFiles } = await bundle({
+				isServer: true,
+				platform,
+				rootPath,
+				entry: {
+					code: template({
+						file: 'server.js',
+						fields: { 
+							clientEntry, 
+							serverConfig: JSON.stringify(serverConfig),
+							serverInit,
+							envFile
+						}
+					}),
+					file: './server.js'
+				},
+				importerImpl: path.join(
+					libPath, 
+					'server', 
+					'importer.js'
+				)
+			})
+
 			await rewriteImports({
 				mainChunk,
 				asyncChunks,
@@ -61,8 +53,11 @@ export default async ({ config, procedure, watch }) => {
 			for(let chunk of standaloneChunks){
 				chunk.file = 'server/functions.js'
 			}
+
+			return { mainChunk, asyncChunks, standaloneChunks, externals, watchFiles }
 		}
 	})
+
 
 	await procedure({
 		id: `package`,

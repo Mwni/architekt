@@ -6,7 +6,7 @@ export default Fragment(({ url, external, ...props }, content) => {
 		'a', 
 		{
 			...props,
-			class: ['weblink', props.class],
+			class: ['a-weblink', props.class],
 			href: url,
 			target: external
 				? '_blank'

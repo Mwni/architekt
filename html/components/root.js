@@ -6,7 +6,7 @@ export default Fragment((props, content) => {
 		'body', 
 		{
 			...props,
-			class: ['root', props.class]
+			class: ['a-root', props.class]
 		}, 
 		content
 	)

@@ -10,7 +10,7 @@ export default Fragment(({ onChange, multiple, ...props }, content) => {
 		Element(
 			'label', 
 			{ 
-				class: 'file-input',
+				class: 'a-fileinput',
 				for: xid,
 				ondragover: event => {
 					event.preventDefault()
@@ -40,7 +40,7 @@ export default Fragment(({ onChange, multiple, ...props }, content) => {
 			...props,
 			id: xid,
 			class: [
-				'file-input', 
+				'a-fileinput', 
 				content && 'custom',
 				props.class
 			],
