@@ -26,7 +26,7 @@ export default async ({ chunk }) => {
 
 			files.push({
 				src: manifest.file,
-				dest: `./${name}${ext}`
+				dest: `./static/${name}${ext}`
 			})
 		}
 	}

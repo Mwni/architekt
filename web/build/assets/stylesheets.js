@@ -44,7 +44,7 @@ export default async ({ chunk, watch }) => {
 
 	let { css, stats } = sass.renderSync({
 		data: scss,
-		outputStyle: 'compressed',
+		outputStyle: 'expanded',
 		includePaths
 	})
 

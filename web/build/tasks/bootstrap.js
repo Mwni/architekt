@@ -5,9 +5,9 @@ import template from '../lib/template.js'
 import { deriveVariants, reconcileVariants } from '../lib/variants.js'
 
 
-export default async ({ config, procedure, data, plugins }) => {
+export default async ({ config, procedure, plugins }) => {
 	let { rootPath, outputPath, splashScript } = config
-	let [ baseVariant ] = deriveVariants('js', plugins)
+	let [ baseVariant ] = deriveVariants(plugins)
 	let alternatives = reconcileVariants(plugins)
 	let alternativesCode = ''
 
@@ -25,15 +25,7 @@ export default async ({ config, procedure, data, plugins }) => {
 	}
 
 	
-	let bootstrapChunk
-	let bootstrapDest = path.join(outputPath, 'bootstrap.js')
-	let bootstrapCode = template({
-		file: 'bootstrap.js',
-		fields: {
-			splashScript, 
-			alternatives: alternativesCode
-		}
-	})
+	let bootstrapChunks = []
 
 	await procedure({
 		id: `bootstrap`,
@@ -41,7 +33,13 @@ export default async ({ config, procedure, data, plugins }) => {
 		execute: async () => {
 			let { outputFiles } = await esbuild.build({
 				stdin: {
-					contents: bootstrapCode,
+					contents: template({
+						file: 'bootstrap.js',
+						fields: {
+							splashScript, 
+							alternatives: alternativesCode
+						}
+					}),
 					sourcefile: `bootstrap.js`,
 					resolveDir: rootPath
 				},
@@ -51,23 +49,12 @@ export default async ({ config, procedure, data, plugins }) => {
 				logLevel: 'silent'
 			})
 
-			bootstrapChunk = {
+			bootstrapChunks.push({
+				file: 'client/bootstrap.js',
 				code: outputFiles[0].text
-			}
+			})
 		}
 	})
 
-	if(baseVariant.chunkTransforms.length > 0){
-		await procedure({
-			id: `bootstrap-transforms`,
-			description: `applying plugin transforms to bootstrap`,
-			execute: async () => {
-				for(let transform of baseVariant.chunkTransforms){
-					Object.assign(bootstrapChunk, await transform(bootstrapChunk))
-				}
-			}
-		})
-	}
-
-	fs.writeFileSync(bootstrapDest, bootstrapChunk.code)
+	return { bootstrapChunks }
 }

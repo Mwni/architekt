@@ -1,7 +1,6 @@
-export function deriveVariants(division, plugins){
-	let relevantPlugins = plugins.filter(plugin => plugin[division])
-	let unconditionalPlugins = relevantPlugins.filter(plugin => !plugin.condition)
-	let conditionalPlugins = relevantPlugins.filter(plugin => plugin.condition)
+export function deriveVariants(plugins = []){
+	let unconditionalPlugins = plugins.filter(plugin => !plugin.condition)
+	let conditionalPlugins = plugins.filter(plugin => plugin.condition)
 	let baseVariant = {
 		bundleSuffix: '',
 		plugins: [],
@@ -13,29 +12,32 @@ export function deriveVariants(division, plugins){
 	]
 
 	for(let plugin of unconditionalPlugins){
-		let scope = plugin[division]
+		baseVariant.plugins.push(plugin)
 
-		baseVariant.plugins.push(...(scope.plugins || []))
-
-		if(scope.chunkTransform)
-			baseVariant.chunkTransforms.push(scope.chunkTransform)
+		if(plugin.transformChunks)
+			baseVariant.chunkTransforms.push(plugin.transformChunks)
 	}
 
 	for(let plugin of conditionalPlugins){
-		let scope = plugin[division]
-
 		variants.push({
-			bundleSuffix: `.${plugin.bundleSuffix}`,
-			plugins: [...baseVariant.plugins, ...(scope.plugins || [])],
+			bundleSuffix: `.${plugin.bundleSuffix || plugin.id}`,
+			plugins: [...baseVariant.plugins, plugin],
 			chunkTransforms: [
-				...(scope.chunkTransform ? [scope.chunkTransform] : []),
+				...(plugin.transformChunks ? [plugin.transformChunks] : []),
 				...baseVariant.chunkTransforms
 			],
 			condition: plugin.condition
 		})
 	}
 
-	return variants
+	return variants.map(
+		variant => ({
+			...variant,
+			name: variant.plugins
+				.map(plugin => plugin.id)
+				.join(' + ')
+		})
+	)
 }
 
 export function reconcileVariants(plugins){

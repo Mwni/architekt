@@ -10,7 +10,7 @@ export function writeDocument({ ctx, dom, page, imports, bootstrapCode }){
 	let { document } = dom.window
 	
 	writeDefaultMeta({ document })
-	writeImports({ document, imports })
+	//writeImports({ document, imports })
 	writeBootstrapCode({ document, bootstrapCode })
 
 	ctx.status = httpCodes[page.status] || 400

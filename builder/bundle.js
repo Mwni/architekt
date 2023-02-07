@@ -96,8 +96,8 @@ export default async function({ platform, rootPath, entry, importerImpl, isServe
 				code: f.text,
 				stylesheets,
 				assets,
+				build,
 				files: [],
-				build
 			}
 		})
 
@@ -177,7 +177,8 @@ export default async function({ platform, rootPath, entry, importerImpl, isServe
 			file: 'functions.js',
 			local: './functions.js',
 			code: outputFiles[0].text,
-			build: metafile.outputs[0]
+			build: metafile.outputs[0],
+			files: []
 		})
 	}
 	

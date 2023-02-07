@@ -24,7 +24,7 @@ export default async ({ port, clientApp }) => {
 
 	let koa = new Koa()
 	let router = new Router()
-	let bootstrapCode = readFile({ filePath: 'bootstrap.js' })
+	let bootstrapCode = readFile({ filePath: 'client/bootstrap.js' })
 
 	await serveFunctions({ router })
 
@@ -112,7 +112,7 @@ function serveDir({ router, fileDir, webPath }){
 }
 
 async function serveFunctions({ router }){
-	let file = path.join(__dirname, 'functions.js')
+	let file = path.join(__dirname, 'server', 'functions.js')
 
 	if(!fs.existsSync(file))
 		return
