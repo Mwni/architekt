@@ -35,7 +35,9 @@ async function spawn(instructions){
 
 	for(let script of scripts){
 		workers.push(
-			fork(workerPath, [`"${script}"`])
+			fork(workerPath, [`"${script}"`], {
+				stdio: 'pipe'
+			})
 		)
 	}
 
@@ -136,6 +138,14 @@ function cycle(instructions, handle){
 
 					break
 			}
+		})
+
+		worker.stdout.on('data', data => {
+			handle.emit('print', { text: data.toString() })
+		})
+
+		worker.stderr.on('data', data => {
+			handle.emit('print', { text: data.toString(), error: true })
 		})
 	}
 }

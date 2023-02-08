@@ -66,6 +66,13 @@ switch(args._[0]){
 					.then(() => timers.splice(timers.indexOf(stop), 1))
 			})
 
+			handle.on('print', ({ text, error }) => {
+				if(error)
+					log.error(text)
+				else
+					log.info(text)
+			})
+
 			await new Promise(resolve => {
 				handle.on('complete', build => {
 					let server
