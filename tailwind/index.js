@@ -63,7 +63,10 @@ export default config => ({
 							config,
 							root,
 							result,
-							nonCssContent: []
+							nonCssContent: [{
+								content: chunk.code,
+								extension: 'js'
+							}]
 						})
 					})(root, result)
 				}
