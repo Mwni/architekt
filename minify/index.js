@@ -1,15 +1,15 @@
 import { minify } from 'terser'
 
 export default config => ({
-	id: 'js-minify',
-	js: {
-		chunkTransform: async chunk => {
+	id: 'minify',
+	transformChunks: async chunks => {
+		for(let chunk of chunks){
 			let { code } = await minify(
 				chunk.code, 
 				{ sourceMap: false }
 			)
 			
-			return { code }
+			chunk.code = code
 		}
 	}
 })
