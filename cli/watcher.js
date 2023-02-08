@@ -56,7 +56,9 @@ export default class extends EventEmitter{
 		if(added.length === 0)
 			return
 
-		info('watching files for changes:')
+		info(`watching ${added.length} files for changes`)
+
+		/*info('watching files for changes:')
 
 		for(let file of added){
 			info(` - ${file}`)
@@ -64,6 +66,6 @@ export default class extends EventEmitter{
 
 		for(let file of removed){
 			info(` x ${file}`)
-		}
+		}*/
 	}
 }
