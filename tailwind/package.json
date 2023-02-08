@@ -1,0 +1,10 @@
+{
+  "name": "@architekt/tailwind",
+  "type": "module",
+  "version": "1.0.0",
+  "author": "mwni",
+  "main": "index.js",
+  "dependencies": {
+    "tailwindcss": "^3.2.4"
+  }
+}
