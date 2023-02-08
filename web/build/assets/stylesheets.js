@@ -80,36 +80,39 @@ export default async ({ rootPath, plugins, chunk, watch }) => {
 		)
 	}
 
+	let postcssPlugins = plugins.reduce(
+		(list, plugin) => [
+			...list, 
+			...(plugin.postcssPlugins || [])
+		],
+		[]
+	)
+
+	if(postcssPlugins.length > 0){
+		await procedure({
+			id: `stylesheet-plugins`,
+			description: `applying ${
+				plugins.map(({ id }) => id).join(' + ')
+			}`,
+			execute: async () => {
+				let processor = postcss(
+					postcssPlugins.map(
+						({ init }) => init({ rootPath, plugins, chunk, watch })
+					)
+				)
+		
+				let result = await processor.process(compiledCss, {
+					from: rootPath,
+					map: false
+				})
+		
+				compiledCss = result.css
+			}
+		})
+
+		
+	}
+
 	
 	return compiledCss
 }
-
-
-/*export default async ({ chunk, watch }) => {
-	let { stylesheets } = chunk
-
-	let scss = stylesheets
-		.map(({ scss, path, ...props }) => ({ scss: scss || fs.readFileSync(path, 'utf-8'), ...props }))
-		.map(({ scss, xid }) => xid ? `.${xid}{\n${scss}\n}` : scss)
-		.join('\n\n')
-
-	let includePaths = stylesheets
-		.filter(({ path }) => !!path)
-		.map(({ path }) => pa.dirname(path))
-
-	let { css, stats } = sass.renderSync({
-		data: scss,
-		outputStyle: 'expanded',
-		includePaths
-	})
-
-	for(let { regex, repl } of replacers){
-		css = css.toString().replace(regex, repl)
-	}
-	
-	if(stats.includedFiles.length > 0){
-		watch(stats.includedFiles)
-	}
-
-	return css
-}*/
