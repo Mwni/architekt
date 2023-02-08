@@ -2,11 +2,17 @@ import bundleStylesheets from './stylesheets.js'
 import bundleImages from './images.js'
 
 
-export default async ({ chunk, rootPath, watch }) => {
+export default async ({ chunk, rootPath, procedure, watch, plugins }) => {
 	let bundle = {}
 
 	if(chunk.stylesheets.length > 0){
-		bundle.stylesheet = await bundleStylesheets({ chunk, rootPath, watch })
+		bundle.stylesheet = await bundleStylesheets({ 
+			rootPath, 
+			chunk, 
+			procedure,
+			watch,
+			plugins
+		})
 	}
 
 	if(chunk.assets.length > 0){

@@ -40,7 +40,13 @@ export default async ({ config, plugins, procedure, watch }) => {
 			let hasAssets = {}
 
 			for(let chunk of [mainChunk, ...asyncChunks]){
-				chunk.assetBundle = await bundleAssets({ rootPath, chunk, watch })
+				chunk.assetBundle = await bundleAssets({ 
+					rootPath, 
+					chunk, 
+					procedure,
+					watch,
+					plugins
+				})
 			}
 		
 			if(mainChunk.assetBundle)

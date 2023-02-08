@@ -1,4 +1,5 @@
 import fs from 'fs'
+import path from 'path'
 import postcss from 'postcss'
 import postcssImport from 'postcss-import'
 import postcssUnnest from 'postcss-nested'
@@ -47,8 +48,40 @@ const postcssScope = ({ xid }) => ({
 	}
 })
 
+const postcssFonts = ({ from, chunk }) => ({
+	postcssPlugin: 'postcss-fonts',
+	AtRule(rule){
+		if(rule.name !== 'font-face')
+			return
 
-export default async ({ rootPath, plugins, chunk, watch }) => {
+		for(let node of rule.nodes){
+			if(node.type !== 'decl')
+				continue
+
+			if(node.prop !== 'src')
+				continue
+
+			let src = node.value.match(
+				/(?:\s*|,|^)url\s*\(\s*[\'\"](.+?)[\'\"]/
+			)?.[1]
+
+			let name = path.basename(src)
+
+			chunk.files.push({
+				src: path.join(
+					path.dirname(from), 
+					src
+				),
+				dest: `static/${name}`
+			})
+
+			node.value = node.value.replace(src, `/app/${name}`)
+		}
+	}
+})
+
+
+export default async ({ rootPath, plugins, chunk, procedure, watch }) => {
 	let { stylesheets } = chunk
 	let compiledCss = ''
 
@@ -56,7 +89,11 @@ export default async ({ rootPath, plugins, chunk, watch }) => {
 		let processor = postcss([
 			postcssImport,
 			postcssUnnest,
-			xid && postcssScope({ xid })
+			xid && postcssScope({ xid, chunk }),
+			postcssFonts({
+				from: path,
+				chunk,
+			}),
 		].filter(Boolean))
 
 		let { css, messages } = await processor.process(
