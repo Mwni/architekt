@@ -1,7 +1,5 @@
 import fs from 'fs-extra'
 import path from 'path'
-import { libPath } from '../../paths.js'
-
 
 
 export function createDistPackage({ rootPath, outputPath, dependencies: inputDependencies }){

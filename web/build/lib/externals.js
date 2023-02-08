@@ -33,7 +33,7 @@ export async function resolveExternals({ externals }){
 	}
 
 	for(let { manifest, manifestPath } of externalPackages){
-		let packagePath = path.basename(manifestPath)
+		let packagePath = path.dirname(manifestPath)
 
 		if(!manifest.dependencies)
 			continue
@@ -46,7 +46,7 @@ export async function resolveExternals({ externals }){
 				continue
 
 			if(version.startsWith('file:') || version.startsWith('.')){
-				version = 'file:' + path.resolve(path.join(packagePath, version.slice(5)))
+				version = 'file:' + path.resolve(path.join(packagePath, version.replace(/^file:/, '')))
 			}
 
 			let locator = null
