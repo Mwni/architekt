@@ -19,7 +19,19 @@ const mimes = {
 	'.css': 'text/css'
 }
 
+const descriptor = { 
+	name: 'architekt-server'
+}
+
 export default async ({ port, clientApp }) => {
+	Object.assign(
+		descriptor, 
+		readFile({ 
+			filePath: 'package.json',
+			json: true
+		})
+	)
+
 	log('starting')
 
 	let koa = new Koa()
@@ -123,14 +135,18 @@ async function serveFunctions({ router }){
 	log(`server functions initialized`)
 }
 
-function readFile({ filePath }){
-	return fs.readFileSync(path.join(__dirname, filePath), 'utf-8')
+function readFile({ filePath, json }){
+	let text = fs.readFileSync(path.join(__dirname, filePath), 'utf-8')
+
+	return json
+		? JSON.parse(text)
+		: text
 }
 
 function log(...args){
-	console.log('[\x1b[32marchitekt-server\x1b[0m]', ...args)
+	console.log(`[\x1b[32m${descriptor.name}\x1b[0m]`, ...args)
 }
 
 function error(...args){
-	console.error('[\x1b[31marchitekt-server\x1b[0m]', ...args)
+	console.error(`[\x1b[31m${descriptor.name}\x1b[0m]`, ...args)
 }
