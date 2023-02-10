@@ -18,7 +18,11 @@ export default Component(() => {
 				if(!element)
 					return
 
-				if(route.match(node.props))
+				let path = node.props.path === '/'
+					? '/'
+					: `${node.props.path}/*`
+
+				if(route.match({ path }))
 					element.setAttribute('active', 'active')
 				else
 					element.removeAttribute('active')
