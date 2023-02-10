@@ -11,8 +11,10 @@ export const Image = (...args) => ctx.components.Image(...args)
 export const Icon = (...args) => ctx.components.Icon(...args)
 export const Interactive = (...args) => ctx.components.Interactive(...args)
 export const WebLink = (...args) => ctx.components.WebLink(...args)
+export const Radio = (...args) => ctx.components.Radio(...args)
 export const TextInput = (...args) => ctx.components.TextInput(...args)
 export const FileInput = (...args) => ctx.components.FileInput(...args)
 export const Canvas = (...args) => ctx.components.Canvas(...args)
+export const Group = (...args) => ctx.components.Group(...args)
 
 export { default as Select } from './select.js'
