@@ -27,7 +27,7 @@ export default async ({ config, procedure, watch }) => {
 							clientEntry, 
 							serverConfig: JSON.stringify(serverConfig),
 							serverInit,
-							envFile
+							envFile: envFile && '.env'
 						}
 					}),
 					file: './server.js'
@@ -57,6 +57,13 @@ export default async ({ config, procedure, watch }) => {
 			return { mainChunk, asyncChunks, standaloneChunks, externals, watchFiles }
 		}
 	})
+
+	if(envFile){
+		mainChunk.files.push({
+			src: path.join(rootPath, envFile),
+			dest: '.env'
+		})
+	}
 
 
 	await procedure({
