@@ -24,13 +24,25 @@ const tags = {
 
 const replacers = Object.entries(tags)
 	.map(([from, to]) => ({
-		regex: new RegExp(`([^\w])${from}\s*(.|,|:|{)`, `g`),
-		repl: `$1${to}$2`
+		regex: new RegExp(`((^|\\s|\\>|\\+|\\~|\\,)+)${from}(($|\\s|\\>|\\+|\\~|\\,|\\.|\\:|\\[)+)`, `g`),
+		repl: `$1${to}$3`
 	}))
+
+const postcssTags = {
+	postcssPlugin: 'postcss-tags',
+	Rule(rule){
+		for(let { regex, repl } of replacers){
+			rule.selector = rule.selector.replace(regex, repl)
+		}
+	}
+}
 
 const postcssScope = ({ xid }) => ({
 	postcssPlugin: 'postcss-scope',
 	Rule(rule){
+		if(rule.parent?.type === 'atrule' && rule.parent?.name === 'keyframes')
+			return
+
 		let newSelectors = []
 
 		for(let selector of rule.selectors){
@@ -89,6 +101,7 @@ export default async ({ rootPath, plugins, chunk, procedure, watch }) => {
 		let processor = postcss([
 			postcssImport,
 			postcssUnnest,
+			postcssTags,
 			xid && postcssScope({ xid, chunk }),
 			postcssFonts({
 				from: path,
@@ -103,10 +116,6 @@ export default async ({ rootPath, plugins, chunk, procedure, watch }) => {
 				map: false
 			}
 		)
-
-		for(let { regex, repl } of replacers){
-			css = css.toString().replace(regex, repl)
-		}
 
 		compiledCss += `${css}\n`
 
