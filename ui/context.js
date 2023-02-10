@@ -1,4 +1,4 @@
-import { ctx, render } from '@architekt/render'
+import { ctx, render, registerCallback } from '@architekt/render'
 
 
 export function getContext(){
@@ -41,11 +41,4 @@ export function getContext(){
 			scope.node.teardown = true
 		}
 	}
-}
-
-function registerCallback(node, type, callback){
-	if(!node.callbacks)
-		node.callbacks = []
-
-	node.callbacks.push({ type, callback })
 }

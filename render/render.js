@@ -272,7 +272,7 @@ export function findFirstElement(node){
 	}
 }
 
-function getChildElements(node){
+export function getChildElements(node){
 	let elements = []
 
 	if(node.children){
@@ -315,7 +315,14 @@ export function awaitAsyncNodes(node, callback){
 	}
 }
 
-function dispatchCallbacks(node, type, value){
+export function registerCallback(node, type, callback){
+	if(!node.callbacks)
+		node.callbacks = []
+
+	node.callbacks.push({ type, callback })
+}
+
+export function dispatchCallbacks(node, type, value){
 	if(!node.callbacks)
 		return
 
