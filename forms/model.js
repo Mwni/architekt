@@ -55,8 +55,14 @@ export default ({ data: initalData, constraints }) => {
 			events.emit('change', { key, value })
 		},
 		isValid(key){
-			applyConstraint(key)
-			return !status[key]?.invalid
+			if(key){
+				return !status[key]?.invalid
+			}else{
+				return Object.values(status).every(
+					status => !status.invalid
+				)
+			}
+			
 		},
 		submit(){
 
