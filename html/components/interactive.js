@@ -1,5 +1,4 @@
 import { Component, getContext } from '@architekt/ui'
-import { Element } from '../dom.js'
 
 export default Component(({ onTap, ...props }, content) => {
 	let { afterDomCreation } = getContext()
