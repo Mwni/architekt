@@ -20,9 +20,7 @@ body{
 	font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
 }
 
-h1.a-headline,
-h2.a-headline,
-h3.a-headline{
+.a-headline{
 	margin-top: 0;
 	margin-bottom: 0.75em;
 	display: block;
@@ -36,8 +34,8 @@ label{
 }
 
 
-a.a-link,
-a.a-weblink{
+.a-link,
+.a-weblink{
 	color: inherit;
 	text-decoration: none;
 	cursor: pointer;
@@ -53,7 +51,7 @@ a.a-weblink{
 	}
 }
 
-span.a-text{
+.a-text{
 	display: block;
 	margin: 0;
 }
@@ -65,50 +63,50 @@ span.a-text{
 	height: auto;
 }
 
-div.a-vstack,
-div.a-hstack{
+.a-vstack,
+.a-hstack{
 	display: flex;
 	justify-content: flex-start;
 	align-items: flex-start;
 }
 
-div.a-vstack{
+.a-vstack{
 	flex-direction: column;
 }
 
-div.a-absolute{
+.a-absolute{
 	position: relative;
 	width: 100%;
 	height: 100%;
 }
 
-div.a-absolute > *{
+.a-absolute > *{
 	position: absolute !important;
 	top: 0;
 	left: 0;
 }
 
-div.a-vscroll{
+.a-vscroll{
 	overflow-y: auto;
 	position: relative;
 	width: 100%;
 }
 
-div.a-vscroll > div{
+.a-vscroll > div{
 	position: absolute;
 	top: 0;
 	left: 0;
 	right: 0;
 }
 
-div.a-page{
+.a-page{
 	display: flex;
 	flex-direction: column;
 	width: 100%;
 	height: 100%;
 }
 
-div.a-overlay{
+.a-overlay{
 	position: fixed;
 	top: 0;
 	left: 0;
@@ -116,16 +114,16 @@ div.a-overlay{
 	height: 100%;
 }
 
-input.a-file-input.custom{
+.a-fileinput.custom{
 	display: none;
 }
 
-label.a-file-input{
+.a-fileinput{
 	white-space: inherit;
 	overflow: visible;
 }
 
-div.a-canvas-wrap{
+.a-canvas-wrap{
 	position: relative;
 	width: 100%;
 	height: 100%;
