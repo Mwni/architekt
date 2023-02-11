@@ -7,7 +7,7 @@ export function getContext(){
 	return {
 		...scope.downstream,
 		node: scope.node,
-		components: scope.components,
+		runtime: scope.runtime,
 		downstream: scope.downstream,
 		upstream: scope.upstream,
 		redraw: ({ all } = {}) => {

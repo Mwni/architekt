@@ -14,12 +14,12 @@ export const Element = (tag, attrs, content) => {
 
 export function createElementWrap(tag){
 	return tag === 'body'
-		? ctx.document.body
-		: ctx.document.createElement(tag)
+		? ctx.runtime.document.body
+		: ctx.runtime.document.createElement(tag)
 }
 
 export function insertElement(parent, element, nextSibling){
-	if(element === ctx.document.body)
+	if(element === ctx.runtime.document.body)
 		return
 
 	if(nextSibling)
@@ -29,7 +29,7 @@ export function insertElement(parent, element, nextSibling){
 }
 
 export function removeElement(element){
-	if(element === ctx.document.body)
+	if(element === ctx.runtime.document.body)
 		return
 
 	if(!element.parentNode)

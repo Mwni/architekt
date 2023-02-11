@@ -111,10 +111,10 @@ function createElement(node){
 	let parentElement = findParentElement(node)
 	let siblingElement = findNextSiblingElement(node, parentElement)
 
-	node.dom = ctx.createElement(node.element)
+	node.dom = ctx.runtime.createElement(node.element)
 
-	ctx.setAttrs(node, node.attrs)
-	ctx.insertElement(parentElement, node.dom, siblingElement)
+	ctx.runtime.setAttrs(node, node.attrs)
+	ctx.runtime.insertElement(parentElement, node.dom, siblingElement)
 
 	if(node.content){
 		node.children = collectChildren(node, node.content)
@@ -166,7 +166,7 @@ function updateComponent(node, newNode){
 }
 
 function updateElement(node, newNode){
-	ctx.setAttrs(node, newNode.attrs, node.attrs)
+	ctx.runtime.setAttrs(node, newNode.attrs, node.attrs)
 
 	node.attrs = newNode.attrs
 
@@ -201,7 +201,7 @@ function removeNodes(nodes){
 
 function removeNode(node){
 	if(node.dom){
-		ctx.removeElement(node.dom)
+		ctx.runtime.removeElement(node.dom)
 	}else if(node.children){
 		for(let child of node.children){
 			removeNode(child)

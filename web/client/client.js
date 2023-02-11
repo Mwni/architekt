@@ -14,10 +14,9 @@ export default async ({ App }) => {
 	mount(
 		document.body, 
 		Component(() => {
-			let { components, downstream } = getContext()
+			let { runtime, downstream } = getContext()
 		
-			components.Icon = Icon
-
+			runtime.components.Icon = Icon
 			downstream.icons = iconRepo
 		
 			return App

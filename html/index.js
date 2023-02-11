@@ -8,12 +8,14 @@ export function mount(dom, component, props){
 	let ctx = {
 		downstream: {},
 		upstream: {},
-		components,
-		createElement, 
-		insertElement,
-		removeElement,
-		setAttrs,
-		document: dom.ownerDocument,
+		runtime: {
+			components,
+			createElement, 
+			insertElement,
+			removeElement,
+			setAttrs,
+			document: dom.ownerDocument,
+		}
 	}
 
 	let node = {
