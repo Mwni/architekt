@@ -3,8 +3,7 @@ import { createElementWrap as createElement, insertElement, removeElement, setAt
 import * as components from './components/index.js'
 
 
-
-export function mount(dom, component, props){
+export function mount(dom, component, props, ctxOverride){
 	let ctx = {
 		downstream: {},
 		upstream: {},
@@ -14,8 +13,10 @@ export function mount(dom, component, props){
 			insertElement,
 			removeElement,
 			setAttrs,
+			createOverlay,
 			document: dom.ownerDocument,
-		}
+		},
+		...ctxOverride
 	}
 
 	let node = {
@@ -32,5 +33,28 @@ export function mount(dom, component, props){
 
 	return node
 }
+
+function createOverlay(ctx, component, props){
+	let dom = createElement('div')
+	let overlay = {
+		close: () => {
+			ctx.runtime.document.body.removeChild(dom)
+		}
+	}
+
+	dom.className = 'a-overlay'
+	ctx.runtime.document.body.appendChild(dom)
+
+	mount(dom, component, props, {
+		downstream: {
+			...ctx.downstream,
+			overlay
+		},
+		upstream: ctx.upstream,
+	})
+
+	return overlay
+}
+
 
 export { Element }

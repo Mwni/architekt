@@ -39,6 +39,9 @@ export function getContext(){
 		},
 		teardown: () => {
 			scope.node.teardown = true
+		},
+		createOverlay: (component, props) => {
+			scope.runtime.createOverlay(scope, component, props)
 		}
 	}
 }
