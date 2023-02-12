@@ -25,14 +25,16 @@ export function post({ path }, router, func){
 	)
 }
 
-function execute(ctx, func){
+async function execute(ctx, func){
 	try{
 		ctx.type = 'json'
 		ctx.body = JSON.stringify(
-			func(ctx.state.payload)
+			await func(ctx.state.payload)
 		)
 	}catch(error){
 		let { expose, message, statusCode, ...extra } = error
+
+		console.warn(error)
 
 		if(expose){
 			ctx.status = statusCode || 400

@@ -131,7 +131,9 @@ function compileServerAST({ setup, functions }){
 				
 						methodDecorator.expression.arguments.push(
 							ts.factory.createFunctionExpression(
-								undefined,
+								[
+									ts.factory.createModifier(ts.SyntaxKind.AsyncKeyword)
+								],
 								undefined,
 								undefined,
 								undefined,
