@@ -1,12 +1,15 @@
 import { createEmitter } from '@mwni/events'
 
 export default ({ data: initalData, constraints }) => {
+	let model
 	let events = createEmitter()
 	let data = { ...initalData }
-	let status = {}
+	let fieldStatus = {}
+	let submitting = false
+	let submissionError
 
 	function applyConstraints(final){
-		status = {}
+		fieldStatus = {}
 
 		for(let { key, check, eager } of constraints){
 			if(!final && !eager)
@@ -14,37 +17,34 @@ export default ({ data: initalData, constraints }) => {
 
 			try{
 				check(data)
+				fieldStatus[key] = { valid: true }
 			}catch(error){
-				status[key] = {
-					invalid: true,
+				fieldStatus[key] = {
+					valid: false,
 					message: error.toString()
 				}
 			}
 		}
 	}
 
-	function applyConstraint(targetKey){
-		delete status[targetKey]
-
-		for(let { key, check } of constraints){
-			if(key !== targetKey)
-				continue
-
-			try{
-				check(data)
-			}catch(error){
-				status[key] = {
-					invalid: true,
-					message: error.toString()
-				}
-			}
-		}
-	}
-
-	return {
+	return model = {
 		...events,
-		get status(){
-			return status
+		get data(){
+			return data
+		},
+		get fieldStatus(){
+			return fieldStatus
+		},
+		get submissionError(){
+			return submissionError
+		},
+		get canSubmit(){
+			return constraints.every(
+				({ key }) => fieldStatus[key]?.valid
+			)
+		},
+		get submitting(){
+			return submitting
 		},
 		get(key){
 			return data[key]
@@ -52,20 +52,43 @@ export default ({ data: initalData, constraints }) => {
 		set(key, value){
 			data[key] = value
 			applyConstraints()
+			submissionError = undefined
 			events.emit('change', { key, value })
+			events.emit('update')
 		},
 		isValid(key){
-			if(key){
-				return !status[key]?.invalid
-			}else{
-				return Object.values(status).every(
-					status => !status.invalid
-				)
-			}
-			
+			return fieldStatus[key]?.valid
 		},
-		submit(){
+		async validate(){
+			await applyConstraints()
 
+			if(!model.canSubmit)
+				throw {
+					expose: true,
+					fields: fieldStatus
+				}
+		},
+		async submit(f){
+			submitting = true
+			events.emit('update')
+
+			try{
+				await model.validate()
+				return await f(data)
+			}catch(error){
+				if(error.fields)
+					Object.assign(fieldStatus, error.fields)
+
+				submissionError = {
+					...error,
+					message: error.message
+				}
+
+				throw error
+			}finally{
+				submitting = false
+				events.emit('update')
+			}
 		}
 	}
 }
