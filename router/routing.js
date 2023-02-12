@@ -77,8 +77,8 @@ export function createRouter({ window, redraw }){
 			
 			if(!matched.wildcard)
 				fullyMatched = true
-			
-			return true
+
+			return matched.params
 		},
 		shouldFallback(){
 			return !!fallbackOnPath
@@ -86,10 +86,11 @@ export function createRouter({ window, redraw }){
 	}
 }
 
-export function createRoute({ path: basePath, fallback, bad, router }){
+export function createRoute({ path: basePath, fallback, bad, router, params }){
 	return {
 		basePath,
 		router,
+		params,
 		set(params){
 			return router.go({ 
 				...params,
@@ -115,9 +116,15 @@ export function createRoute({ path: basePath, fallback, bad, router }){
 
 				if(path === '/')
 					fullPath = fullPath.replace(/\*$/, '')
+
+				let params = router.shouldEnter(fullPath)
 	
-				if(router.shouldEnter(fullPath))
-					return createRoute({ path: fullPath, router })
+				if(params)
+					return createRoute({ 
+						path: fullPath, 
+						router, 
+						params 
+					})
 			}else{
 				if(router.shouldFallback())
 					return createRoute({ fallback, bad, router })
