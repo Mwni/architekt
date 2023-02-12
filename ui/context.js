@@ -8,6 +8,7 @@ export function getContext(){
 		...scope.downstream,
 		node: scope.node,
 		runtime: scope.runtime,
+		cookies: scope.runtime.cookies,
 		downstream: scope.downstream,
 		upstream: scope.upstream,
 		redraw: ({ all } = {}) => {

@@ -10,6 +10,7 @@ import { mount as mountComponent } from '@architekt/html'
 import { writeDocument } from './document.js'
 import { imports } from './importer.js'
 import clientComponent from './client.js'
+import createCookies from './cookies.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -71,7 +72,11 @@ function serveApp({ router, clientApp, bootstrapCode }){
 			let node = mountComponent(
 				dom.window.document.body, 
 				clientComponent, 
-				{ page, clientApp }
+				{ 
+					page, 
+					clientApp,
+					cookies: createCookies(ctx)
+				}
 			)
 
 			await new Promise(resolve => {
