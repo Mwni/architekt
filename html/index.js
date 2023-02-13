@@ -34,11 +34,25 @@ export function mount(dom, component, props, ctxOverride){
 	return node
 }
 
+
+let activeOverlay
+let queuedOverlays = []
+
 function createOverlay(ctx, component, props){
+	if(activeOverlay){
+		queuedOverlays.push([ctx, component, props])
+		return
+	}
+
 	let dom = createElement('div')
-	let overlay = {
+	let overlay = activeOverlay = {
 		close: () => {
 			ctx.runtime.document.body.removeChild(dom)
+			activeOverlay = undefined
+			
+			if(queuedOverlays.length > 0){
+				createOverlay(...queuedOverlays.shift())
+			}
 		}
 	}
 
