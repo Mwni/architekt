@@ -1,27 +1,23 @@
 import { ctx } from './context.js'
 
-export default render => {
-	return (props, content) => {
-		if(!props){
-			props = {}
-		}else if(typeof props === 'function' && !content){
+
+export default view => {
+	let fragment = (props, content) => {
+		if(typeof props === 'function'){
 			content = props
 			props = {}
 		}
 
-		let renderFunc = render
-		let childPatch
-
-		if(ctx.node.childPatch){
-			childPatch = ctx.node.childPatch
-			ctx.node.childPatch = undefined
-
-			;[renderFunc, props, content] = childPatch(renderFunc, props, content)
+		let node = {
+			fragment,
+			props,
+			content
 		}
 
-		renderFunc(props, content)
+		ctx.stack.push(node)
 
-		if(childPatch)
-			ctx.node.childPatch = childPatch
+		return node
 	}
+
+	return Object.assign(fragment, { view })
 }

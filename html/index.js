@@ -20,7 +20,7 @@ export function mount(dom, component, props, ctxOverride){
 	}
 
 	let node = {
-		construct: component.construct,
+		component,
 		props,
 		parentNode: {
 			dom

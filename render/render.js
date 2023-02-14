@@ -1,4 +1,5 @@
 import { ctx } from './context.js'
+import Fragment from './fragment.js'
 
 
 export function render(scope, node){
@@ -13,6 +14,23 @@ export function render(scope, node){
 		node,
 		node => dispatchCallbacks(node, 'afterDraw')
 	)
+}
+
+
+function createNodes(nodes){
+	for(let node of nodes){
+		createNode(node)
+	}
+}
+
+function createNode(node){
+	if(node.fragment){
+		createFragment(node)
+	}else if(node.component){
+		createComponent(node)
+	}else if(node.element){
+		createElement(node)
+	}
 }
 
 function updateNodes(nodes, newNodes){
@@ -39,19 +57,91 @@ function updateNodes(nodes, newNodes){
 	}
 }
 
+function updateNode(node, newNode){
+	let needsTeardown = (
+		node.fragment !== newNode.fragment
+		|| node.component !== newNode.component
+		|| node.element !== newNode.element
+	)
 
-function createNodes(nodes){
+	if (!needsTeardown){
+		if(node.fragment){
+			updateFragment(node, newNode)
+		}else if(node.component){
+			updateComponent(node, newNode)
+		}else if(node.element){
+			updateElement(node, newNode)
+		}
+	}
+
+	if(needsTeardown || node.teardown){
+		replaceNode(node, newNode)
+		return newNode
+	}
+
+	return node
+}
+
+function removeNodes(nodes){
 	for(let node of nodes){
-		createNode(node)
+		removeNode(node)
 	}
 }
 
-function createNode(node){
-	if(node.construct){
-		createComponent(node)
-	}else if(node.element){
-		createElement(node)
+function removeNode(node){
+	if(node.dom){
+		ctx.runtime.removeElement(node.dom)
+	}else if(node.children){
+		for(let child of node.children){
+			removeNode(child)
+		}
 	}
+
+	dispatchCallbacks(node, 'afterRemove')
+}
+
+function replaceNode(node, newNode){
+	newNode.parentNode = node.parentNode
+	newNode.prevSibling = node.prevSibling
+	newNode.nextSibling = node.nextSibling
+	
+	removeNode(node)
+	createNode(newNode)
+
+	if(node.prevSibling)
+		node.prevSibling.nextSibling = newNode
+
+	if(node.nextSibling)
+		node.nextSibling.prevSibling = newNode
+}
+
+
+
+function createFragment(node){
+	node.children = collectChildren(
+		node, 
+		node.fragment.view, 
+		node.props, 
+		node.content
+	)
+
+	createNodes(node.children)
+}
+
+
+function updateFragment(node, newNode){
+	node.props = newNode.props
+	node.content = newNode.content
+
+	updateNodes(
+		node.children, 
+		collectChildren(
+			node,
+			node.fragment.view,
+			node.props,
+			node.content
+		)
+	)
 }
 
 function createComponent(node){
@@ -65,7 +155,7 @@ function createComponent(node){
 
 	node.state = {}
 	node.children = []
-	node.render = node.construct(node.props, node.content)
+	node.render = node.component.construct(node.props, node.content)
 	node.downstream = ctx.downstream
 
 	if(!node.render){
@@ -107,6 +197,29 @@ function createComponent(node){
 	dispatchCallbacks(node, 'afterDomCreation', getChildElements(node))
 }
 
+function updateComponent(node, newNode){
+	node.props = newNode.props
+	node.content = newNode.content
+
+	if(!node.render)
+		return
+
+	ctx.downstream = { 
+		...ctx.downstream, 
+		...node.downstream 
+	}
+
+	let newChildren = collectChildren(
+		node,
+		node.render,
+		node.props,
+		node.content
+	)
+
+	if(!node.teardown)
+		updateNodes(node.children, newChildren)
+}
+
 function createElement(node){
 	let parentElement = findParentElement(node)
 	let siblingElement = findNextSiblingElement(node, parentElement)
@@ -124,47 +237,6 @@ function createElement(node){
 	}
 }
 
-
-function updateNode(node, newNode){
-	let needsTeardown = node.construct !== newNode.construct
-		|| node.element !== newNode.element
-
-	if (!needsTeardown){
-		if(node.construct){
-			updateComponent(node, newNode)
-		}else if(node.element){
-			updateElement(node, newNode)
-		}
-	}
-
-	if(needsTeardown || node.teardown){
-		replaceNode(node, newNode)
-		return newNode
-	}
-
-	return node
-}
-
-function updateComponent(node, newNode){
-	node.props = newNode.props
-	node.content = newNode.content
-
-	if(!node.render)
-		return
-
-	ctx.downstream = { ...ctx.downstream, ...node.downstream }
-
-	let newChildren = collectChildren(
-		node,
-		node.render,
-		newNode.props,
-		newNode.content
-	)
-
-	if(!node.teardown)
-		updateNodes(node.children, newChildren)
-}
-
 function updateElement(node, newNode){
 	ctx.runtime.setAttrs(node, newNode.attrs, node.attrs)
 
@@ -178,48 +250,26 @@ function updateElement(node, newNode){
 	}
 }
 
-function replaceNode(node, newNode){
-	newNode.parentNode = node.parentNode
-	newNode.prevSibling = node.prevSibling
-	newNode.nextSibling = node.nextSibling
-	
-	removeNode(node)
-	createNode(newNode)
-
-	if(node.prevSibling)
-		node.prevSibling.nextSibling = newNode
-
-	if(node.nextSibling)
-		node.nextSibling.prevSibling = newNode
-}
-
-function removeNodes(nodes){
-	for(let node of nodes){
-		removeNode(node)
-	}
-}
-
-function removeNode(node){
-	if(node.dom){
-		ctx.runtime.removeElement(node.dom)
-	}else if(node.children){
-		for(let child of node.children){
-			removeNode(child)
-		}
-	}
-
-	dispatchCallbacks(node, 'afterRemove')
-}
+let killme = 0
 
 function collectChildren(node, view, props, content){
-	let children = []
-	let prevDownstream = ctx.downstream
+	if(killme)
+		console.log(view)
 
 	ctx.node = node
-	//ctx.downstream = { ...ctx.downstream }
-	ctx.stack = children
+	ctx.stack = []
 
-	view(props, content)
+	let children = view(
+		props, 
+		typeof content === 'function' && (() => content() || ctx.stack) || content
+	)
+
+	
+
+	if(!children || !Array.isArray(children))
+		children = ctx.stack
+
+	ctx.stack = undefined
 
 	for(let i=0; i<children.length; i++){
 		children[i].parentNode = node
@@ -227,10 +277,17 @@ function collectChildren(node, view, props, content){
 		children[i].nextSibling = children[i+1]
 	}
 
-	//ctx.downstream = prevDownstream
+	if(node.props?.flag){
+		console.log('cc', children)
+		killme = 1
+	}
+
+	if(killme)
+		console.log('yield', children)
 
 	return children
 }
+
 
 export function findParentElement(node){
 	while(node.parentNode){
@@ -280,7 +337,7 @@ export function getChildElements(node){
 			if(child.dom)
 				elements.push(child.dom)
 			else
-				elements.push(...getChildElements(child.children))
+				elements.push(...getChildElements(child))
 		}
 	}
 

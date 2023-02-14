@@ -1,17 +1,23 @@
 import { ctx } from './context.js'
-import Fragment from './fragment.js'
+
 
 export default construct => {
-	let component = Fragment(
-		(props, content) => ctx.stack.push({
+	let component = (props, content) => {
+		if(typeof props === 'function'){
+			content = props
+			props = {}
+		}
+
+		let node = {
 			component,
-			construct,
 			props,
 			content
-		})
-	)
+		}
 
-	component.construct = construct
+		ctx.stack.push(node)
 
-	return component
+		return node
+	}
+
+	return Object.assign(component, { construct })
 }
