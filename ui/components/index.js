@@ -16,5 +16,12 @@ export const TextInput = (...args) => ctx.runtime.components.TextInput(...args)
 export const FileInput = (...args) => ctx.runtime.components.FileInput(...args)
 export const Canvas = (...args) => ctx.runtime.components.Canvas(...args)
 export const Group = (...args) => ctx.runtime.components.Group(...args)
+export const Table = Object.defineProperty(
+	(...args) => ctx.runtime.components.Table(...args),
+	'Row',
+	{
+		get: () => ctx.runtime.components.Table.Row
+	}
+)
 
 export { default as Select } from './select.js'
