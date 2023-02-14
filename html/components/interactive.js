@@ -1,6 +1,6 @@
 import { Component, getContext } from '@architekt/ui'
 
-export default Component(({ onTap, ...props }, content) => {
+export default Component(({ onTap, ...props }) => {
 	let { afterDomCreation } = getContext()
 	
 	afterDomCreation(dom => {
@@ -10,5 +10,5 @@ export default Component(({ onTap, ...props }, content) => {
 		}
 	})
 
-	return content
+	return (_, content) => content()
 })

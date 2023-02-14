@@ -8,7 +8,7 @@ export default Fragment(({ checked, onChange, ...props }) => {
 		while(node){
 			let parent = node.parentNode
 			
-			if(parent?.component === Select){
+			if(parent?.fragment === Select){
 				checked = node.props.value === parent.props.value
 			}
 

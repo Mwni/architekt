@@ -1,5 +1,33 @@
-import { getContext, Component, Interactive } from '../index.js'
+import { Fragment, Interactive, Text } from '../index.js'
 
+export default Fragment(({ value, onSelect, selectedClass }, content) => {
+	return content().map(
+		node => Interactive(
+			{
+				value: node.props.value,
+				onTap: () => {
+					onSelect(node.props.value)
+				}
+			},
+			() => [
+				{
+					...node,
+					props: {
+						...node.props,
+						color: 'red',
+						selected: value === node.props.value,
+						class: [
+							node.props.class,
+							value === node.props.value && selectedClass
+						]
+					}
+				}
+			]
+		)
+	)
+})
+
+/*
 export default Component(({ value, onSelect, selectedClass }) => {
 	let { node } = getContext()
 
@@ -7,10 +35,7 @@ export default Component(({ value, onSelect, selectedClass }) => {
 		return [
 			Interactive,
 			{
-				value: props.value,
-				onTap: () => {
-					onSelect(props.value)
-				}
+				
 			},
 			() => render(
 				{
@@ -30,6 +55,10 @@ export default Component(({ value, onSelect, selectedClass }) => {
 		value = props.value
 		onSelect = props.onSelect
 		selectedClass = props.selectedClass
-		content()
+		
+		let nodes = content()
+
+		console.log(nodes.map(node => node.props))
 	}
 })
+*/
