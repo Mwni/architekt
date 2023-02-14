@@ -9,7 +9,11 @@ export const Element = (tag, attrs, content) => {
 	if(attrs.class)
 		attrs.class = flattenClass(attrs.class)
 
-	ctx.stack.push({ element: tag, attrs, content })
+	let node = { element: tag, attrs, content }
+
+	ctx.stack.push(node)
+
+	return node
 }
 
 export function createElementWrap(tag){
