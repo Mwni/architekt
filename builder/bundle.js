@@ -49,6 +49,7 @@ export default async function({ platform, rootPath, entry, importerImpl, isServe
 			}),
 			serverfuncs({
 				isServer,
+				rootPath,
 				captures: capturedServerFunctions
 			}),
 			transforms({
@@ -137,7 +138,11 @@ export default async function({ platform, rootPath, entry, importerImpl, isServe
 					file: 'svfuncs.js',
 					fields: {
 						modules: capturedServerFunctions.map(
-							({ }, i) => `svf${i}`
+							({ code, path }, i) => ({
+								name: `svf${i}`,
+								path,
+								code
+							})
 						)
 					}
 				}),
@@ -148,8 +153,9 @@ export default async function({ platform, rootPath, entry, importerImpl, isServe
 				namespaces(),
 				virtual({
 					modules: capturedServerFunctions.map(
-						({ code }, i) => ({
+						({ code, path }, i) => ({
 							name: `svf${i}`,
+							path,
 							code
 						})
 					)

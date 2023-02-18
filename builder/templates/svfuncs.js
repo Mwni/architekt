@@ -1,9 +1,9 @@
 {{#each modules}}
-import {{{this}}} from '{{{this}}}'
+import {{{this.name}}} from '{{{this.path}}}'
 {{/each}}
 
 export default router => {
 	{{#each modules}}
-	{{{this}}}(router)
+	{{{this.name}}}(router)
 	{{/each}}
 }

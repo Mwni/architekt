@@ -11,11 +11,11 @@ export default opts => ({
 				if(pluginData?.skipVirtual)
 					return
 
-				let isVirtual = opts.modules.some(
-					({ name }) => name === path
+				let virtual = opts.modules.find(
+					v => v.path === path
 				)
 
-				if(!isVirtual)
+				if(!virtual)
 					return await build.resolve(path, {
 						...args,
 						pluginData: {
@@ -42,7 +42,7 @@ export default opts => ({
 			}, 
 			async ({ path, pluginData }) => {
 				let { code } = opts.modules.find(
-					({ name }) => name === path
+					v => v.path === path
 				)
 
 				return {

@@ -37,10 +37,14 @@ export default opts => ({
 				if(opts.isServer){
 					let serverAST = compileServerAST({ setup, functions })
 					let code = printer.printNode(ts.EmitHint.Unspecified, serverAST, serverAST)
+					let relativePath = pa.relative(
+						opts.rootPath,
+						path
+					)
 
 					opts.captures.push({
 						code,
-						path
+						path: `./${relativePath.replace(/\\/g, '/')}`
 					})
 				}
 
@@ -105,6 +109,17 @@ function compileServerAST({ setup, functions }){
 	return ts.factory.createSourceFile([
 		createMethodsImport('@architekt/api/server'),
 		...setup,
+		...functions.map(
+			f => ts.factory.createFunctionDeclaration(
+				ts.getModifiers(f).slice(1),
+				undefined,
+				f.name,
+				undefined,
+				f.parameters,
+				undefined,
+				f.body
+			)
+		),
 		ts.factory.createExportDefault(
 			ts.factory.createFunctionExpression(
 				undefined,
@@ -130,17 +145,7 @@ function compileServerAST({ setup, functions }){
 						)
 				
 						methodDecorator.expression.arguments.push(
-							ts.factory.createFunctionExpression(
-								[
-									ts.factory.createModifier(ts.SyntaxKind.AsyncKeyword)
-								],
-								undefined,
-								undefined,
-								undefined,
-								f.parameters,
-								undefined,
-								f.body
-							)
+							f.name
 						)
 
 						return ts.factory.createSourceFile([
