@@ -7,7 +7,7 @@ export default Fragment(({ model, key, ...props }) => {
 		if(!status)
 			return
 
-		if(status.invalid){
+		if(status.valid === false){
 			Text({ 
 				class: props.class || 'status invalid', 
 				text: status.message 

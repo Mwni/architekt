@@ -15,6 +15,9 @@ export default ({ data: initalData, constraints }) => {
 			if(!final && !eager)
 				continue
 
+			if(fieldStatus[key]?.valid === false)
+				continue
+
 			try{
 				check(data)
 				fieldStatus[key] = { valid: true }
@@ -35,16 +38,20 @@ export default ({ data: initalData, constraints }) => {
 		get fieldStatus(){
 			return fieldStatus
 		},
-		get submissionError(){
-			return submissionError
+		get isEagerValid(){
+			return constraints
+				.filter(({ eager }) => eager)
+				.every(({ key }) => fieldStatus[key]?.valid)
 		},
 		get canSubmit(){
-			return constraints.every(
-				({ key }) => fieldStatus[key]?.valid
-			)
+			return constraints
+				.every(({ key }) => fieldStatus[key]?.valid)
 		},
 		get submitting(){
 			return submitting
+		},
+		get submissionError(){
+			return submissionError
 		},
 		get(key){
 			return data[key]
@@ -60,7 +67,7 @@ export default ({ data: initalData, constraints }) => {
 			return fieldStatus[key]?.valid
 		},
 		async validate(){
-			await applyConstraints()
+			await applyConstraints(true)
 
 			if(!model.canSubmit)
 				throw {
