@@ -1,9 +1,7 @@
 import path from 'path'
 import { bundle } from '@architekt/builder'
 import { libPath } from '../../paths.js'
-import { createDevPackage, createDistPackage } from '../lib/package.js'
 import template from '../lib/template.js'
-import bundleAssets from '../assets/index.js'
 import { rewriteImports } from '../lib/imports.js'
 import { resolveExternals } from '../lib/externals.js'
 
@@ -65,29 +63,10 @@ export default async ({ config, procedure, watch }) => {
 		})
 	}
 
-
-	await procedure({
-		id: `package`,
-		description: `writing npm package`,
-		execute: async () => {
-			if(config.dev){
-				await createDevPackage({ rootPath, outputPath })
-			}else{
-				let dependencies = await resolveExternals({
-					externals: [
-						rootPath, 
-						...externals.map(p => path.dirname(p))
-					]
-				})
-
-				await createDistPackage({ rootPath, outputPath, dependencies })
-			}
-		}
-	})
-
 	watch(watchFiles)
 
 	return {
+		externals,
 		serverChunks: [
 			mainChunk, 
 			...asyncChunks, 

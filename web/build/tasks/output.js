@@ -1,11 +1,13 @@
-import fs from 'fs'
+import fs from 'fs-extra'
 import path from 'path'
 import { deriveVariants } from '../lib/variants.js'
+import { createDevPackage, createDistPackage } from '../lib/package.js'
 
 
 export default async ({ config, plugins, procedure, data }) => {
-	let { outputPath } = config
+	let { rootPath, outputPath } = config
 	let files = []
+	let externals = await data.externals
 	let chunks = [
 		...await data.bootstrapChunks,
 		...await data.clientChunks,
@@ -47,6 +49,14 @@ export default async ({ config, plugins, procedure, data }) => {
 		id: `output`,
 		description: `writing files`,
 		execute: async () => {
+			fs.emptyDirSync(outputPath)
+
+			if(config.dev){
+				await createDevPackage({ rootPath, outputPath })
+			}else{
+				await createDistPackage({ rootPath, outputPath, externals })
+			}
+
 			for(let { src, dest, content } of files){
 				let absoluteDest = path.join(outputPath, dest)
 				let dir = path.dirname(absoluteDest)

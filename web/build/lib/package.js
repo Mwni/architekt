@@ -1,15 +1,24 @@
 import fs from 'fs-extra'
 import path from 'path'
+import { resolveExternals } from './externals.js'
 
 
-export function createDistPackage({ rootPath, outputPath, dependencies: inputDependencies }){
+export async function createDistPackage({ rootPath, outputPath, externals }){
 	let projectDescriptor = JSON.parse(
 		fs.readFileSync(
 			path.join(rootPath, 'package.json')
 		)
 	)
+
+	let resolvedExternals = await resolveExternals({
+		externals: [
+			rootPath, 
+			...externals.map(p => path.dirname(p))
+		]
+	})
+
 	let dependencies = {}
-	let dependenciesList = Object.entries(inputDependencies)
+	let dependenciesList = Object.entries(resolvedExternals)
 		.map(([name, meta]) => [name, meta.version])
 
 	for(let [name, locator] of dependenciesList){
