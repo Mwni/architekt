@@ -61,7 +61,7 @@ export default async function({ platform, rootPath, entry, importerImpl, isServe
 			polyfill()
 		],
 		inject: [importerImpl],
-		platform: 'node',
+		platform: isServer ? 'node' : 'browser',
 		target: 'es2020',
 		format: 'esm',
 		bundle: true,
