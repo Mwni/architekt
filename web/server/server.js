@@ -114,6 +114,9 @@ function serveWellKnown({ router }){
 function serveDir({ router, fileDir, webPath }){
 	let absFileDir = path.join(__dirname, fileDir)
 
+	if(!fs.existsSync(absFileDir))
+		return
+
 	for(let file of fs.readdirSync(absFileDir)){
 		let { ext } = path.parse(file)
 		let mime = mimes[ext] || mimes.default
