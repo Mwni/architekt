@@ -8,6 +8,9 @@ export default async ({ chunk }) => {
 	let images = {}
 
 	for(let { xid, manifest } of assets){
+		if(!manifest.file)
+			continue
+
 		let { name, ext } = path.parse(manifest.file)
 
 		if(ext === '.svg'){
