@@ -28,6 +28,21 @@ export function createRouter({ window, redraw }){
 		redraw()
 	}
 
+	function back({ path, fallback, basePath }){
+		if(popping){
+			popQueue.push(() => back({ path, basePath }))
+			return
+		}
+
+		if(log.length <= 1 && fallback){
+			this.set(fallback, { path, replace: true, basePath })
+			return
+		}
+
+		popping = true
+		window.history.back()
+	}
+
 	function resolve({ path = '/', basePath }){
 		return relate(path, basePath)
 			.replace(/\/\*[^$]/g, '/')
@@ -48,6 +63,7 @@ export function createRouter({ window, redraw }){
 
 	return {
 		go,
+		back,
 		resolve,
 		match(route){
 			return match(resolve(route), location.pathname)
@@ -93,6 +109,12 @@ export function createRoute({ path: basePath, fallback, bad, router, params }){
 		params,
 		set(params){
 			return router.go({ 
+				...params,
+				basePath
+			})
+		},
+		back(params){
+			return router.back({
 				...params,
 				basePath
 			})
