@@ -1,9 +1,14 @@
 import { ctx } from './context.js'
-import Fragment from './fragment.js'
+
+let renderPassCounter = 0
 
 
 export function render(scope, node){
 	Object.assign(ctx, scope, { node })
+
+	let prevRenderPass = ctx.runtime.renderPass
+
+	ctx.runtime.renderPass = ++renderPassCounter
 
 	updateNodes(
 		scope.node ? [scope.node] : [], 
@@ -14,6 +19,15 @@ export function render(scope, node){
 		node,
 		node => dispatchCallbacks(node, 'afterDraw')
 	)
+
+	if(ctx.runtime.nextRender){
+		let { scope, node } = ctx.runtime.nextRender
+
+		ctx.runtime.nextRender = undefined
+		render(scope, node)
+	}
+
+	ctx.runtime.renderPass = prevRenderPass
 }
 
 
@@ -261,10 +275,8 @@ function collectChildren(node, view, props, content){
 
 	let children = view(
 		props, 
-		typeof content === 'function' && (() => content() || ctx.stack) || content
+		typeof content === 'function' && ((...args) => content(...args) || ctx.stack) || content
 	)
-
-	
 
 	if(!children || !Array.isArray(children))
 		children = ctx.stack

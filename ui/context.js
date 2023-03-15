@@ -27,7 +27,14 @@ export function getContext(){
 				}
 			}
 
-			render(renderScope, node)
+			if(ctx.runtime.renderPass){
+				ctx.runtime.nextRender = {
+					scope: renderScope,
+					node
+				}
+			}else{
+				render(renderScope, node)
+			}
 		},
 		afterDraw: callback => {
 			registerCallback(scope.node, 'afterDraw', callback)
