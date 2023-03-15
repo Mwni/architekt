@@ -61,7 +61,7 @@ export function match(route, path){
 			continue
 		}
 
-		if(routeSegment.charAt(0) === ':')
+		if(pathSegment && routeSegment.charAt(0) === ':')
 			params[routeSegment.slice(1)] = pathSegment
 		else if(routeSegment !== pathSegment)
 			return
