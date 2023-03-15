@@ -31,6 +31,11 @@ export default async function({ platform, rootPath, entry, importerImpl, isServe
 			resolveDir: entryDir
 		},
 		plugins: [
+			...(
+				isServer
+					? []
+					: [polyfill()]
+			),
 			namespaces(),
 			shorthands({
 				rootPath
@@ -58,7 +63,6 @@ export default async function({ platform, rootPath, entry, importerImpl, isServe
 				transforms: defaultTransforms,
 				captures: capturedTransforms,
 			}),
-			polyfill()
 		],
 		inject: [importerImpl],
 		platform: isServer ? 'node' : 'browser',

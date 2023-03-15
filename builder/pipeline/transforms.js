@@ -11,6 +11,7 @@ export default opts => ({
 			}, 
 			async ({ path }) => {
 				let code = await fs.readFile(path, 'utf8')
+				let untouched = true
 				let state = {
 					code, 
 					path, 
@@ -21,9 +22,14 @@ export default opts => ({
 					if(skip && skip(state))
 						continue
 
-					if(transform)
+					if(transform){
 						Object.assign(state, await transform(state))
+						untouched = false
+					}
 				}
+
+				if(untouched)
+					return
 
 				let { code: finalCode, ...meta } = state
 
