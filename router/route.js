@@ -10,6 +10,12 @@ export default ({ path, fallback, bad }, content) => {
 }
 
 const Holder = Fragment(({ route }, content) => {
-	ctx.downstream.route = route
-	content(route.params)
+	let nodes = content(route.params)
+
+	for(let node of nodes){
+		node.downstream = {
+			...node.downstream,
+			route
+		}
+	}
 })
