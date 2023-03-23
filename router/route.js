@@ -10,7 +10,10 @@ export default ({ path, fallback, bad }, content) => {
 }
 
 const Holder = Fragment(({ route }, content) => {
+	let prevRoute = ctx.downstream.route = route
 	let nodes = content(route.params)
+
+	ctx.downstream.route = prevRoute
 
 	for(let node of nodes){
 		node.downstream = {
