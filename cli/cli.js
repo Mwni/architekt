@@ -13,12 +13,12 @@ import { fork } from 'child_process'
 const args = minimist(process.argv.slice(2))
 const descriptorRaw = fs.readFileSync('package.json', 'utf-8')
 const descriptor = JSON.parse(descriptorRaw)
-const platforms = descriptor.platforms || {}
+const platforms = descriptor.architekt || {}
 const platform = args._[1] || Object.keys(platforms)[0] || 'web'
 const config = platforms[platform]
 
 if(!config){
-	log.error(`missing "${platform}" configuration in package.json`)
+	log.error(`missing "architekt.${platform}" configuration in package.json`)
 	log.error(`consult the documentation`)
 	process.exit(1)
 }
