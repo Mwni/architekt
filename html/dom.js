@@ -69,7 +69,12 @@ export function setAttrs(node, attrs, previousAttrs){
 }
 
 function setAttr(node, key, old, value, isFileInput) {
-	if(key === 'key' || value == null || (old === value && !isFormAttribute(node, key)) && typeof value !== 'object' || key === 'type' && node.tag === 'input') 
+	if(value === undefined){
+		node.dom.removeAttribute(key)
+		return
+	}
+
+	if(key === 'key' || (old === value && !isFormAttribute(node, key)) && typeof value !== 'object' || (key === 'type' && node.tag === 'input')) 
 		return
 	
 	if(key.startsWith('on')) 
