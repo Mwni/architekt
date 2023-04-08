@@ -19,6 +19,7 @@ const tags = {
 	Link: '.a-link',
 	TextInput: '.a-textinput',
 	FileInput: '.a-fileinput',
+	Progress: '.a-progress',
 	Canvas: '.a-canvas',
 }
 

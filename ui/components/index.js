@@ -14,6 +14,7 @@ export const WebLink = (...args) => ctx.runtime.components.WebLink(...args)
 export const Radio = (...args) => ctx.runtime.components.Radio(...args)
 export const TextInput = (...args) => ctx.runtime.components.TextInput(...args)
 export const FileInput = (...args) => ctx.runtime.components.FileInput(...args)
+export const Progress = (...args) => ctx.runtime.components.Progress(...args)
 export const Canvas = (...args) => ctx.runtime.components.Canvas(...args)
 export const Group = (...args) => ctx.runtime.components.Group(...args)
 export const Table = Object.defineProperty(
