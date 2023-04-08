@@ -3,11 +3,10 @@ import { bundle } from '@architekt/builder'
 import { libPath } from '../../paths.js'
 import template from '../lib/template.js'
 import { rewriteImports } from '../lib/imports.js'
-import { resolveExternals } from '../lib/externals.js'
 
 
 export default async ({ config, procedure, watch }) => {
-	let { platform, rootPath, envFile, serverInit, clientEntry, outputPath, serverPort } = config
+	let { platform, rootPath, envFile, serverInit, clientEntry, serverPort } = config
 	let serverConfig = { port: serverPort }
 
 	let { mainChunk, asyncChunks, standaloneChunks, externals, watchFiles } = await procedure({
