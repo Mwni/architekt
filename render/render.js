@@ -264,12 +264,7 @@ function updateElement(node, newNode){
 	}
 }
 
-let killme = 0
-
 function collectChildren(node, view, props, content){
-	if(killme)
-		console.log(view)
-
 	ctx.node = node
 	ctx.stack = []
 
@@ -288,14 +283,6 @@ function collectChildren(node, view, props, content){
 		children[i].prevSibling = children[i-1]
 		children[i].nextSibling = children[i+1]
 	}
-
-	if(node.props?.flag){
-		console.log('cc', children)
-		killme = 1
-	}
-
-	if(killme)
-		console.log('yield', children)
 
 	return children
 }
