@@ -1,4 +1,4 @@
-import { getContext, Component, Image } from '@architekt/ui'
+import { Component, Image } from '@architekt/ui'
 
 
 export default Component(({ icon }) => {

@@ -1,9 +1,8 @@
 import { Component } from '@architekt/render'
-import { getContext } from '@architekt/ui'
-import { Element } from '../dom.js'
+import Element from '../element.js'
 
 
-export default Component(({ controller }) => {
+export default Component(({ ctx, controller }) => {
 	let { afterDomCreation, afterRemove, afterDraw, isServer, teardown } = getContext()
 	let wrap
 	let canvas
@@ -35,8 +34,8 @@ export default Component(({ controller }) => {
 			return teardown()
 
 		Element(
-			'div',
 			{
+				tag: 'div',
 				class: 'a-canvas-wrap'
 			},
 			() => Element(

@@ -1,24 +1,14 @@
-import { ctx } from '@architekt/render'
-import { Fragment } from '@architekt/ui'
+import { Fragment, Component } from '@architekt/ui'
 
-export default ({ path, fallback, bad }, content) => {
-	let route = ctx.downstream.route.maybeEnter({ path, fallback, bad })
+export default Fragment(({ ctx, path, fallback, bad }, content) => {
+	let route = ctx.upstream.route.maybeEnter({ path, fallback, bad })
 
 	if(route){
-		Holder({ route }, content)
+		Route({ route }, content)
 	}
-}
+})
 
-const Holder = Fragment(({ route }, content) => {
-	let prevRoute = ctx.downstream.route = route
-	let nodes = content(route.params)
-
-	ctx.downstream.route = prevRoute
-
-	for(let node of nodes){
-		node.downstream = {
-			...node.downstream,
-			route
-		}
-	}
+const Route = Component(({ ctx, route }, content) => {
+	ctx.public({ route })
+	content(route.params)
 })

@@ -1,13 +1,12 @@
 import { Fragment } from '@architekt/render'
-import { Element } from '../dom.js'
+import Element from '../element.js'
 
-export default Fragment(({ text, ...props }) => {
-	Element(
-		'span', 
+export default Fragment(({ text, ...props }) => Element(
 		{
 			...props,
-			class: ['a-text', props.class]
-		}, 
-		text
+			tag: 'span',
+			class: ['a-text', props.class],
+			textContent: text
+		}
 	)
-})
+)

@@ -1,23 +1,20 @@
-import { ctx } from './context.js'
-
+import { renderState } from './render.js'
 
 export default view => {
-	let fragment = (props, content) => {
+	return (props, content) => {
 		if(typeof props === 'function'){
 			content = props
 			props = {}
 		}
 
-		let node = {
-			fragment,
+		let fragment = {
+			view,
 			props,
 			content
 		}
 
-		ctx.stack.push(node)
+		renderState.stack.push(fragment)
 
-		return node
+		return fragment
 	}
-
-	return Object.assign(fragment, { view })
 }

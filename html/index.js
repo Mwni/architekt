@@ -1,35 +1,26 @@
 import { render } from '@architekt/render'
-import { createElementWrap as createElement, insertElement, removeElement, setAttrs, Element } from './dom.js'
+import Element from './element.js'
 import * as components from './components/index.js'
 
 
-export function mount(dom, component, props, ctxOverride){
-	let ctx = {
-		downstream: {},
-		upstream: {},
+export function mount(dom, component, props){
+	let node = {
+		dom: {
+			element: dom,
+			children: []
+		},
+		children: [],
+		draw: component,
 		runtime: {
-			components,
-			createElement, 
-			insertElement,
-			removeElement,
-			setAttrs,
 			createOverlay,
 			document: dom.ownerDocument,
-		},
-		...ctxOverride
-	}
-
-	let node = {
-		component,
-		props,
-		parentNode: {
-			dom
+			components
 		}
 	}
 
-	node.parentNode.children = [node]
+	render(node, props)
 
-	render(ctx, node)
+	dom.ownerDocument.defaultView.rootNode = node
 
 	return node
 }

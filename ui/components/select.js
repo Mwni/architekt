@@ -1,64 +1,40 @@
-import { Fragment, Interactive, Text } from '../index.js'
+import { Component, Interactive } from '../index.js'
 
-export default Fragment(({ value, onSelect, selectedClass }, content) => {
+export default Component(({ value, onSelect, selectedClass }, content) => {
 	return content().map(
-		node => Interactive(
-			{
-				value: node.props.value,
-				onTap: () => {
-					onSelect(node.props.value)
-				}
-			},
-			() => [
-				{
-					...node,
-					props: {
-						...node.props,
-						color: 'red',
-						selected: value === node.props.value,
-						class: [
-							node.props.class,
-							value === node.props.value && selectedClass
-						]
-					}
-				}
-			]
-		)
+		node => Option({
+			selected: value === node.props.value,
+			value: node.props.value,
+			onSelect,
+			selectedClass,
+			node
+		})
 	)
 })
 
-/*
-export default Component(({ value, onSelect, selectedClass }) => {
-	let { node } = getContext()
+const Option = Component(({ ctx, selected, value, onSelect, selectedClass, node }) => {
+	ctx.public({ 
+		optionSelected: selected 
+	})
 
-	node.childPatch = (render, props, content) => {
-		return [
-			Interactive,
+	return Interactive(
+		{
+			onTap: () => {
+				onSelect(value)
+			}
+		},
+		[
 			{
-				
-			},
-			() => render(
-				{
-					...props,
-					selected: value === props.value,
+				...node,
+				props: {
+					...node.props,
+					selected,
 					class: [
-						props.class,
-						value === props.value && selectedClass
+						node.props.class,
+						selected && selectedClass
 					]
-				}, 
-				content
-			)
+				}
+			}
 		]
-	}
-
-	return (props, content) => {
-		value = props.value
-		onSelect = props.onSelect
-		selectedClass = props.selectedClass
-		
-		let nodes = content()
-
-		console.log(nodes.map(node => node.props))
-	}
+	)
 })
-*/

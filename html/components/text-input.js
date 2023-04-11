@@ -1,10 +1,10 @@
 import { Fragment } from '@architekt/render'
-import { Element } from '../dom.js'
+import Element from '../element.js'
 
 export default Fragment(({ text, onInput, onChange, ...props }) => {
 	Element(
-		'input', 
 		{
+			tag: 'input',
 			type: 'text',
 			...props,
 			class: ['a-textinput', props.class],

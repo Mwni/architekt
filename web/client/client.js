@@ -1,7 +1,7 @@
 import { mount } from '@architekt/html'
-import { getContext, Component } from '@architekt/ui'
+import { Fragment } from '@architekt/ui'
 import { importAssets } from './importer.js'
-import Icon, { repo as iconRepo } from './icon.js'
+import Icon, { repo as icons } from './icon.js'
 import createPage from './page.js'
 import createCookies from './cookies.js'
 
@@ -16,15 +16,16 @@ export default async ({ App }) => {
 	
 	mount(
 		document.body, 
-		Component(() => {
-			let { runtime, downstream } = getContext()
+		Fragment(({ ctx }) => {
+			ctx.runtime.components.Icon = Icon
+
+			Object.assign(ctx.runtime, {
+				page: createPage(),
+				cookies: createCookies(),
+				icons
+			})
 		
-			runtime.cookies = createCookies()
-			runtime.components.Icon = Icon
-			downstream.icons = iconRepo
-			downstream.page = createPage()
-		
-			return App
+			App()
 		})
 	)
 }

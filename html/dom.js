@@ -1,59 +1,15 @@
-import { ctx } from '@architekt/render'
-
-export const Element = (tag, attrs, content) => {
-	if(typeof content === 'string'){
-		attrs.textContent = content
-		content = undefined
-	}
-
-	if(attrs.class)
-		attrs.class = flattenClass(attrs.class)
-
-	let node = { element: tag, attrs, content }
-
-	ctx.stack.push(node)
-
-	return node
-}
-
-export function createElementWrap(tag){
-	return tag === 'body'
-		? ctx.runtime.document.body
-		: ctx.runtime.document.createElement(tag)
-}
-
-export function insertElement(parent, element, nextSibling){
-	if(element === ctx.runtime.document.body)
-		return
-
-	if(nextSibling)
-		parent.insertBefore(element, nextSibling)
-	else
-		parent.appendChild(element)
-}
-
-export function removeElement(element){
-	if(element === ctx.runtime.document.body)
-		return
-
-	if(!element.parentNode)
-		return
-	
-	element.parentNode.removeChild(element)
-}
-
-export function setAttrs(node, attrs, previousAttrs){
+export function setAttrs(element, attrs, previousAttrs){
 	if(attrs){
-		let isInput = node.element === 'input'
+		let isInput = element.tagName === 'INPUT'
 		let isFileInput = isInput && attrs.type === 'file'
 
 		if(isInput && attrs.type != null){
 			// The browser does things to inputs based on the value, so it needs to be set first.
-			node.dom.setAttribute('type', attrs.type)
+			element.setAttribute('type', attrs.type)
 		}
 		
 		for (let key in attrs) {
-			setAttr(node, key, previousAttrs?.[key], attrs[key], isFileInput)
+			setAttr(element, key, previousAttrs?.[key], attrs[key], isFileInput)
 		}
 	}
 
@@ -62,43 +18,43 @@ export function setAttrs(node, attrs, previousAttrs){
 
 		for(let key in previousAttrs) {
 			if (((val = previousAttrs[key]) != null) && (attrs == null || attrs[key] == null)) {
-				removeAttr(node, key, val)
+				removeAttr(element, key, val)
 			}
 		}
 	}
 }
 
-function setAttr(node, key, old, value, isFileInput) {
+function setAttr(element, key, old, value, isFileInput) {
 	if(value === undefined){
-		node.dom.removeAttribute(key)
+		element.removeAttribute(key)
 		return
 	}
 
-	if(key === 'key' || (old === value && !isFormAttribute(node, key)) && typeof value !== 'object' || (key === 'type' && node.tag === 'input')) 
+	if(key === 'ctx' || (old === value && !isFormAttribute(element, key)) && typeof value !== 'object' || (key === 'type' && element.tagName === 'INPUT')) 
 		return
 	
 	if(key.startsWith('on')) 
-		return updateEvent(node, key, value)
+		return updateEvent(element, key, value)
 
 	if(key.slice(0, 6) === 'xlink:') 
-		node.dom.setAttributeNS('http://www.w3.org/1999/xlink', key.slice(6), value)
+		element.setAttributeNS('http://www.w3.org/1999/xlink', key.slice(6), value)
 
 	else if(key === 'style') 
-		updateStyle(node.dom, old, value)
+		updateStyle(element, old, value)
 
-	else if(hasPropertyKey(node, key)){
+	else if(hasPropertyKey(element, key)){
 		if(key === 'value'){
 			// Setting input[value] to same value by typing on focused element moves cursor to end in Chrome.
 			// Setting input[type=file][value] to same value causes an error to be generated if it's non-empty.
-			if((node.tag === 'input' || node.tag === 'textarea') && node.dom.value === '' + value && (isFileInput || node.dom === activeElement())) 
+			if((element.tag === 'INPUT' || element.tag === 'TEXTAREA') && element.value === '' + value && (isFileInput || element === activeElement())) 
 				return
 
 			// Setting select[value] to same value while having select open blinks select dropdown in Chrome.
-			if(node.tag === 'select' && old !== null && node.dom.value === '' + value) 
+			if(element.tag === 'SELECT' && old !== null && element.value === '' + value) 
 				return
 
 			// Setting option[value] to same value while having select open blinks select dropdown in Chrome.
-			if(node.tag === 'option' && old !== null && node.dom.value === '' + value) 
+			if(element.tag === 'OPTION' && old !== null && element.value === '' + value) 
 				return
 
 			// Setting input[type=file][value] to different value is an error if it's non-empty.
@@ -109,40 +65,40 @@ function setAttr(node, key, old, value, isFileInput) {
 			}
 		}
 
-		node.dom[key] = value
+		element[key] = value
 	}else{
 		if(typeof value === 'boolean'){
 			if (value) 
-				node.dom.setAttribute(key, '')
+				element.setAttribute(key, '')
 			else 
-				node.dom.removeAttribute(key)
+				element.removeAttribute(key)
 		}else{
-			node.dom.setAttribute(key === 'className' ? 'class' : key, value)
+			element.setAttribute(key === 'className' ? 'class' : key, value)
 		}
 	}
 }
 
-function removeAttr(node, key, old) {
+function removeAttr(element, key, old) {
 	if(key === 'key' || key === 'is' || old == null) 
 		return
 
 	if(key[0] === 'o' && key[1] === 'n') 
-		updateEvent(node, key, undefined)
+		updateEvent(element, key, undefined)
 
 	else if(key === 'style') 
-		updateStyle(node.dom, old, null)
+		updateStyle(element.dom, old, null)
 
 	else if (
-		hasPropertyKey(node, key)
+		hasPropertyKey(element, key)
 		&& key !== 'className'
 		&& key !== 'title' // creates 'null' as title
 		&& !(key === 'value' && (
-			node.tag === 'option'
-			|| node.tag === 'select' && node.dom.selectedIndex === -1 && vnode.dom === activeElement()
+			element.tagName === 'OPTION'
+			|| element.tagName === 'SELECT' && element.selectedIndex === -1 && element === activeElement()
 		))
-		&& !(node.tag === 'input' && key === 'type')
+		&& !(element.tagName === 'INPUT' && key === 'type')
 	){
-		node.dom[key] = null
+		element[key] = null
 	}else{
 		let nsLastIndex = key.indexOf(':')
 
@@ -150,31 +106,35 @@ function removeAttr(node, key, old) {
 			key = key.slice(nsLastIndex + 1)
 
 		if(old !== false) 
-			node.dom.removeAttribute(key === 'className' ? 'class' : key)
+			element.removeAttribute(key === 'className' ? 'class' : key)
 	}
 }
 
-function isFormAttribute(vnode, attr) {
-	return attr === 'value' || attr === 'checked' || attr === 'selectedIndex' || attr === 'selected' && vnode.dom === activeElement() || vnode.tag === 'option' && vnode.dom.parentNode === $doc.activeElement
+function isFormAttribute(element, attr) {
+	return attr === 'value' || attr === 'checked' || attr === 'selectedIndex' || attr === 'selected' && element === activeElement() || element.tagName === 'OPTION' && element.parentNode === $doc.activeElement
 }
 
 function activeElement(){
 	return window.activeElement
 }
 
-function hasPropertyKey(vnode, key) {
+function hasPropertyKey(element, key) {
 	// Filter out namespaced keys
 	return(
 		// If it's a custom element, just keep it.
-		vnode.element.indexOf('-') > -1 || vnode.attrs != null && vnode.attrs.is ||
+		element.tagName.indexOf('-') > -1 ||
 		// If it's a normal element, let's try to avoid a few browser bugs.
 		key !== 'href' && key !== 'list' && key !== 'form' && key !== 'width' && key !== 'height'// && key !== 'type'
 		// Defer the property check until *after* we check everything.
-	) && key in vnode.dom
+	) && key in element
 }
 
-var uppercaseRegex = /[A-Z]/g
-function toLowerCase(capital) { return '-' + capital.toLowerCase() }
+const uppercaseRegex = /[A-Z]/g
+
+function toLowerCase(capital) { 
+	return '-' + capital.toLowerCase()
+}
+
 function normalizeKey(key) {
 	return key[0] === '-' && key[1] === '-' ? key :
 		key === 'cssFloat' ? 'float' :
@@ -241,35 +201,27 @@ class EventDict{
 	}
 }
 
+function updateEvent(element, key, value) {
+	if(element.events){
+		element.events._ = null
 
-
-function updateEvent(node, key, value) {
-	if(node.events){
-		node.events._ = null
-
-		if(node.events[key] === value)
+		if(element.events[key] === value)
 			return
 
 		if(value && (typeof value === 'function' || typeof value === 'object')){
-			if(node.events[key] == null) 
-				node.dom.addEventListener(key.slice(2), node.events, false)
+			if(element.events[key] == null) 
+			element.addEventListener(key.slice(2), element.events, false)
 
-			node.events[key] = value
+			element.events[key] = value
 		}else{
-			if(node.events[key] != null) 
-				node.dom.removeEventListener(key.slice(2), node.events, false)
+			if(element.events[key] != null) 
+			element.removeEventListener(key.slice(2), element.events, false)
 
-			node.events[key] = undefined
+			element.events[key] = undefined
 		}
 	}else if(value != null && (typeof value === 'function' || typeof value === 'object')){
-		node.events = new EventDict()
-		node.dom.addEventListener(key.slice(2), node.events, false)
-		node.events[key] = value
+		element.events = new EventDict()
+		element.addEventListener(key.slice(2), element.events, false)
+		element.events[key] = value
 	}
-}
-
-function flattenClass(c){
-	return Array.isArray(c)
-		? c.filter(Boolean).map(flattenClass).join(' ')
-		: c
 }

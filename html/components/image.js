@@ -1,5 +1,5 @@
 import { Fragment } from '@architekt/render'
-import { Element } from '../dom.js'
+import Element from '../element.js'
 
 export default Fragment((props, content) => {
 	let src
@@ -10,9 +10,9 @@ export default Fragment((props, content) => {
 		src = props.url
 
 	Element(
-		'img', 
 		{
 			...props,
+			tag: 'img',
 			class: ['a-image', props.class],
 			src
 		}

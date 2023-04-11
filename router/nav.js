@@ -1,10 +1,7 @@
-import { findFirstElement, walkNodes } from '@architekt/render'
-import { getContext, Component } from '@architekt/ui'
+import { Component } from '@architekt/ui'
 import Link from './link.js'
 
-export default Component(() => {
-	let { route } = getContext()
-
+export default Component(({ ctx }) => {
 	return (props, content) => content().map(
 		node => {
 			if(node.component === Link){
@@ -12,7 +9,7 @@ export default Component(() => {
 					? '/'
 					: `${node.props.path}/*`
 
-				if(route.match({ path }))
+				if(ctx.upstream.route.match({ path }))
 					return {
 						...node,
 						props: {

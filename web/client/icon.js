@@ -1,15 +1,13 @@
-import { getContext, Component, Image } from '@architekt/ui'
+import { Component } from '@architekt/ui'
 import { Element } from '@architekt/html'
 
 export const repo = {}
 
-export default Component(({ asset }) => {
-	let { node, teardown, afterDraw } = getContext()
-	
+export default Component(({ ctx, asset }) => {
 	Object.assign(asset, repo[asset.xid])
 
-	afterDraw(() => {
-		let img = node.children[0].dom
+	ctx.afterRender(() => {
+		let img = ctx.dom[0]
 		let multivariant = asset.variants
 
 		let style = multivariant || asset.replace
@@ -28,9 +26,12 @@ export default Component(({ asset }) => {
 
 	return ({ asset: newAsset, ...props }) => {
 		if(asset.xid !== newAsset.xid)
-			return teardown()
+			return ctx.teardown()
 
-		Element('img', { class: ['a-icon', props.class] })
+		Element({ 
+			tag: 'img', 
+			class: ['a-icon', props.class] 
+		})
 	}
 })
 

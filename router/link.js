@@ -1,21 +1,19 @@
-import { getContext, Component, Interactive, WebLink } from '@architekt/ui'
+import { Component, Interactive, WebLink } from '@architekt/ui'
 
-export default Component(() => {
-	let { route } = getContext()
-
+export default Component(({ ctx }) => {
 	return (props, content) => {
 		Interactive(
 			{
 				onTap: event => {
 					event.preventDefault()
-					route.set(props)
+					ctx.upstream.route.set(props)
 				}
 			},
 			() => WebLink(
 				{
 					...props,
 					class: ['a-link', props.class],
-					url: route.resolve(props),
+					url: ctx.upstream.route.resolve(props),
 				},
 				content || props.text
 			)

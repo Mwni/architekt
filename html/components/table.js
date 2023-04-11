@@ -1,6 +1,5 @@
 import { Fragment } from '@architekt/render'
-import { Text } from '@architekt/ui'
-import { Element } from '../dom.js'
+import Element from '../element.js'
 
 
 export default Object.assign(
@@ -24,22 +23,22 @@ export default Object.assign(
 
 		return [
 			Element(
-				'table',
-				props,
+				{
+					...props,
+					tag: 'table'
+				},
 				() => {
 					if(headRows.length > 0){
 						Element(
-							'thead',
-							{},
-							() => headRows
+							{ tag: 'thead' },
+							headRows
 						)
 					}
 			
 					if(bodyRows.length > 0){
 						Element(
-							'tbody',
-							{},
-							() => bodyRows
+							{ tag: 'tbody' },
+							bodyRows
 						)
 					}
 				}
@@ -47,18 +46,20 @@ export default Object.assign(
 		]
 	}),
 	{
-		Row: Fragment(({ head, ...props }, content) => [
-			Element(
-				'tr',
-				props,
-				() => content().map(
-					cell => Element(
-						head ? 'th' : 'td',
-						{},
-						() => [cell]
+		Row: Fragment(({ head, ...props }, content) => Element(
+				{
+					...props,
+					tag: 'tr'
+				},
+				() => {
+					return content().map(
+						cell => Element(
+							{ tag: head ? 'th' : 'td' },
+							[cell]
+						)
 					)
-				)
+				}
 			)
-		])
+		)
 	}
 )

@@ -1,40 +1,37 @@
 import { Fragment } from '@architekt/render'
-import { getContext } from '@architekt/ui'
-import { Element } from '../dom.js'
+import Element from '../element.js'
 
-export default Fragment(({ onChange, multiple, ...props }, content) => {
-	let { downstream, redraw } = getContext()
+export default Fragment(({ ctx, onChange, multiple, ...props }, content) => {
 	let xid = Math.random()
 		.toString(32)
 		.slice(2, 10)
 
-
 	if(content){
 		Element(
-			'label', 
 			{ 
+				tag: 'label',
 				class: 'a-fileinput',
 				for: xid,
 				ondragover: event => {
 					event.preventDefault()
-					downstream.dropActive = true
-					redraw()
+					ctx.public({ dropActive: true })
+					ctx.redraw()
 				},
 				ondragenter: event => {
 					event.preventDefault()
-					downstream.dropActive = true
-					redraw()
+					ctx.public({ dropActive: true })
+					ctx.redraw()
 				},
 				ondragleave: event => {
 					event.preventDefault()
-					downstream.dropActive = false
-					redraw()
+					ctx.public({ dropActive: false })
+					ctx.redraw()
 				},
 				ondrop: event => {
 					let input = document.getElementById(xid)
 
-					downstream.dropActive = false
-					redraw()
+					ctx.public({ dropActive: false })
+					ctx.redraw()
 
 					event.preventDefault()
 					input.files = event.dataTransfer.files
@@ -48,8 +45,8 @@ export default Fragment(({ onChange, multiple, ...props }, content) => {
 	}
 
 	Element(
-		'input', 
 		{
+			tag: 'input',
 			type: 'file',
 			multiple,
 			...props,

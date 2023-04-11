@@ -24,7 +24,7 @@ const descriptor = {
 	name: 'architekt-server'
 }
 
-export default async ({ port, clientApp }) => {
+export default async ({ port, render, clientApp }) => {
 	Object.assign(
 		descriptor, 
 		readFile({ 
@@ -44,7 +44,7 @@ export default async ({ port, clientApp }) => {
 	serveDir({ router, fileDir: './client', webPath: '/app' })
 	serveDir({ router, fileDir: './static', webPath: '/app' })
 	serveWellKnown({ router })
-	serveApp({ router, clientApp, bootstrapCode })
+	serveApp({ router, clientApp, bootstrapCode, render })
 
 	koa.use(router.routes(), router.allowedMethods())
 	koa.listen(port)
@@ -56,7 +56,7 @@ export default async ({ port, clientApp }) => {
 	log(`listening on port ${port}`)
 }
 
-function serveApp({ router, clientApp, bootstrapCode }){
+function serveApp({ router, clientApp, bootstrapCode, render }){
 	router.get('/(.*)', async ctx => {
 		let dom = new JSDOM()
 		let page = {
@@ -69,19 +69,21 @@ function serveApp({ router, clientApp, bootstrapCode }){
 		})
 
 		try{
-			let node = mountComponent(
-				dom.window.document.body, 
-				clientComponent, 
-				{ 
-					page, 
-					clientApp,
-					cookies: createCookies(ctx)
-				}
-			)
+			if(render){
+				let node = mountComponent(
+					dom.window.document.body, 
+					clientComponent, 
+					{ 
+						page, 
+						clientApp,
+						cookies: createCookies(ctx)
+					}
+				)
 
-			await new Promise(resolve => {
-				awaitAsyncNodes(node, resolve)
-			})
+				await new Promise(resolve => {
+					awaitAsyncNodes(node, resolve)
+				})
+			}
 
 			let destinationPath = dom.window.document.location.href.slice(
 				'http://app'.length

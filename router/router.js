@@ -1,24 +1,25 @@
-import { findParentElement, awaitAsyncNodes } from '@architekt/render'
-import { getContext, Component } from '@architekt/ui'
+import { awaitAsyncNodes } from '@architekt/render'
+import { Component } from '@architekt/ui'
 import { createRoute, createRouter } from './routing.js'
 
-export default Component(({}) => {
-	let { node, downstream, redraw, afterDraw } = getContext()
+export default Component(({ ctx }) => {
 	let router = createRouter({
-		window: findParentElement(node).ownerDocument.defaultView,
-		redraw,
+		window: ctx.runtime.document.defaultView,
+		redraw: () => ctx.redraw(),
 	})
 
-	downstream.route = createRoute({
-		path: '/',
-		router
+	ctx.public({
+		route: createRoute({
+			path: '/',
+			router
+		})
 	})
 
-	return ({}, content) => {
+	return (props, content) => {
 		router.startResolve()
 		content()
-		afterDraw(
-			() => awaitAsyncNodes(node, router.endResolve)
+		ctx.afterRender(
+			() => awaitAsyncNodes(ctx.node, router.endResolve)
 		)
 	}
 })

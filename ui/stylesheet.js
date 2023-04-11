@@ -1,20 +1,9 @@
-import { getContext, Component } from './index.js'
+import { Component } from './index.js'
 
-export default Component(({ xid }) => {
-	let { node, afterDraw } = getContext()
-
-	return () => {
-		afterDraw(() => apply(node.parentNode, xid))
-	}
+export default Component(({ ctx, xid }) => {
+	ctx.afterRender(() => {
+		for(let element of ctx.parent.dom){
+			element.classList.add(xid)
+		}
+	})
 })
-
-function apply(node, xid){
-	if(node.dom){
-		node.dom.classList.add(xid)
-		return
-	}
-
-	for(let child of node.children){
-		apply(child, xid)
-	}
-}

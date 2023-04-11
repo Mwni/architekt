@@ -1,4 +1,4 @@
-import { ctx } from './context.js'
+import { renderState } from './render.js'
 
 
 export default construct => {
@@ -8,15 +8,15 @@ export default construct => {
 			props = {}
 		}
 
-		let node = {
+		let blueprint = {
 			component,
 			props,
 			content
 		}
 
-		ctx.stack.push(node)
+		renderState.stack.push(blueprint)
 
-		return node
+		return blueprint
 	}
 
 	return Object.assign(component, { construct })

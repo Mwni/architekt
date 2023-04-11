@@ -6,8 +6,13 @@ import { rewriteImports } from '../lib/imports.js'
 
 
 export default async ({ config, procedure, watch }) => {
-	let { platform, rootPath, envFile, serverInit, clientEntry, serverPort } = config
-	let serverConfig = { port: serverPort }
+	let { platform, rootPath, envFile, serverInit, clientEntry, serverPort, serverRender } = config
+	let serverConfig = { 
+		port: serverPort, 
+		render: serverRender === undefined 
+			? true 
+			: serverRender
+	}
 
 	let { mainChunk, asyncChunks, standaloneChunks, externals, watchFiles } = await procedure({
 		id: `build-server`,

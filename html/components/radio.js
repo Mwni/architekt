@@ -1,25 +1,15 @@
-import { Fragment, getContext, Select } from '@architekt/ui'
-import { Element } from '../dom.js'
+import { Fragment, Select } from '@architekt/ui'
+import Element from '../element.js'
 
-export default Fragment(({ checked, onChange, ...props }) => {
+export default Fragment(({ ctx, checked, onChange, ...props }) => {
 	if(checked === undefined){
-		let { node } = getContext()
-
-		while(node){
-			let parent = node.parentNode
-			
-			if(parent?.fragment === Select){
-				checked = node.props.value === parent.props.value
-			}
-
-			node = parent
-		}
+		checked = ctx.upstream.optionSelected
 	}
 	
 
 	Element(
-		'input',
 		{
+			tag: 'input',
 			type: 'radio',
 			...props,
 			class: ['a-radio', props.class],
