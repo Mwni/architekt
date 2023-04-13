@@ -16,6 +16,8 @@ export const WebLink = (...args) => renderState.runtime.components.WebLink(...ar
 export const Radio = (...args) => renderState.runtime.components.Radio(...args)
 export const TextInput = (...args) => renderState.runtime.components.TextInput(...args)
 export const FileInput = (...args) => renderState.runtime.components.FileInput(...args)
+export const Slider = (...args) => renderState.runtime.components.Slider(...args)
+export const Dropdown = (...args) => renderState.runtime.components.Dropdown(...args)
 export const Progress = (...args) => renderState.runtime.components.Progress(...args)
 export const Canvas = (...args) => renderState.runtime.components.Canvas(...args)
 export const Group = (...args) => renderState.runtime.components.Group(...args)
