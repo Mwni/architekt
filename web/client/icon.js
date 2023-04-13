@@ -6,27 +6,27 @@ export const repo = {}
 export default Component(({ ctx, asset }) => {
 	Object.assign(asset, repo[asset.xid])
 
-	ctx.afterRender(() => {
-		let img = ctx.dom[0]
-		let multivariant = asset.variants
-
-		let style = multivariant || asset.replace
-			? window.getComputedStyle(img)
-			: null
-
-		let icon = multivariant
-			? pickVariant(asset.variants, style)
-			: asset
-
-		if(icon.svg)
-			applySVG(img, icon, style)
-		else
-			applyRemote(img, icon, style)
-	})
-
 	return ({ asset: newAsset, ...props }) => {
 		if(asset.xid !== newAsset.xid)
 			return ctx.teardown()
+
+		ctx.afterRender(() => {
+			let img = ctx.dom[0]
+			let multivariant = asset.variants
+	
+			let style = multivariant || asset.replace
+				? window.getComputedStyle(img)
+				: null
+	
+			let icon = multivariant
+				? pickVariant(asset.variants, style)
+				: asset
+	
+			if(icon.svg)
+				applySVG(img, icon, style)
+			else
+				applyRemote(img, icon, style)
+		})
 
 		Element({ 
 			tag: 'img', 
