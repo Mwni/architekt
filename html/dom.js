@@ -111,7 +111,7 @@ function removeAttr(element, key, old) {
 }
 
 function isFormAttribute(element, attr) {
-	return attr === 'value' || attr === 'checked' || attr === 'selectedIndex' || attr === 'selected' && element === activeElement() || element.tagName === 'OPTION' && element.parentNode === $doc.activeElement
+	return attr === 'value' || attr === 'checked' || attr === 'selectedIndex' || attr === 'selected' && element === activeElement() || element.tagName === 'OPTION' && element.parentNode === activeElement()
 }
 
 function activeElement(){
