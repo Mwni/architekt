@@ -9,7 +9,7 @@ export function createRouter({ window, redraw }){
 	let fullyMatched
 	let fallbackOnPath
 
-	function go({ path, replace, basePath }){
+	function go({ path, replace, basePath, retainScroll = false }){
 		if(popping){
 			popQueue.push(() => go({ path, replace, baseRoute }))
 			return
@@ -26,6 +26,9 @@ export function createRouter({ window, redraw }){
 
 		log.push(url)
 		redraw()
+
+		if(!retainScroll)
+			window.scrollTo(0, 0)
 	}
 
 	function back({ path, fallback, basePath }){
