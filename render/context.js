@@ -56,29 +56,6 @@ export default class Context{
 
 	redraw({ all } = {}){
 		render(this.node)
-		/*let node = scope.node
-		let renderScope = scope
-
-		if(all){
-			while(node.parentNode)
-				node = node.parentNode
-
-			node = node.children[0]
-			renderScope = {
-				...scope,
-				node,
-				downstream: node.downstream
-			}
-		}
-
-		if(ctx.runtime.renderPass){
-			ctx.runtime.nextRender = {
-				scope: renderScope,
-				node
-			}
-		}else{
-			render(renderScope, node)
-		}*/
 	}
 	
 	teardown(){
@@ -91,6 +68,24 @@ export default class Context{
 
 	afterDelete(callback){
 		registerCallback(this.node, 'afterDelete', callback)
+	}
+
+	createOverlay(content){
+		let orgDraw = this.node.draw
+		let Overlay = this.runtime.createOverlay(content)
+		let handle = {
+			close: () => {
+				this.node.draw = orgDraw
+				render(this.node)
+			}
+		}
+
+		this.node.draw = () => {
+			orgDraw()
+			Overlay({ handle })
+		}
+
+		render(this.node)
 	}
 }
 
