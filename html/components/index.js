@@ -1,4 +1,6 @@
 export { default as Root } from './root.js'
+export { default as VScroll } from './v-scroll.js'
+export { default as HScroll } from './h-scroll.js'
 export { default as VStack } from './v-stack.js'
 export { default as HStack } from './h-stack.js'
 export { default as Absolute } from './absolute.js'

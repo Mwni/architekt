@@ -1,6 +1,8 @@
 import { renderState } from '@architekt/render'
 
 export const Root = (...args) => renderState.runtime.components.Root(...args)
+export const VScroll = (...args) => renderState.runtime.components.VScroll(...args)
+export const HScroll = (...args) => renderState.runtime.components.HScroll(...args)
 export const VStack = (...args) => renderState.runtime.components.VStack(...args)
 export const HStack = (...args) => renderState.runtime.components.HStack(...args)
 export const Absolute = (...args) => renderState.runtime.components.Absolute(...args)
