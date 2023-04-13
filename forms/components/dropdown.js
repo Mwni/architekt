@@ -5,7 +5,7 @@ export default Fragment(({ model, key, disabled, ...props }) => {
 		...props,
 		value: model.get(key),
 		onChange: event => model.set(key, event.target.value),
-		invalid: !!model.fieldStatus[key]?.invalid,
+		invalid: model.fieldStatus[key]?.valid === false,
 		disabled: model.submitting || disabled
 	})
 })
