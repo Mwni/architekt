@@ -68,6 +68,7 @@ export default ({ data: initalData, constraints }) => {
 		},
 		async validate(){
 			await applyConstraints(true)
+			events.emit('update')
 
 			if(!model.canSubmit)
 				throw {
