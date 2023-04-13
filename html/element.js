@@ -39,7 +39,7 @@ export default Component(({ ctx, tag }) => {
 		setAttrs(element, attrs, prevAttrs)
 		prevAttrs = attrs
 
-		return content()
+		return content ? content() : undefined
 	}
 })
 

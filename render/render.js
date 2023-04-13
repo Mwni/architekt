@@ -79,10 +79,11 @@ function createNode(blueprint, index){
 		node.draw = () => {}
 		node.constructPromise = stackOrDraw
 			.then(f => {
+				node.constructPromise = undefined
+
 				if(node.deleted)
 					return
 
-				node.constructPromise = undefined
 				node.draw = f
 				render(node)
 			})
@@ -125,17 +126,19 @@ function viewStack(node, draw, props, content){
 			...props,
 			ctx: new Context(node)
 		}, 
-		(...args) => {
-			if(typeof content === 'function'){
-				let offset = renderState.stack.length
-				return content(...args) || renderState.stack.slice(offset)
-			}
-
-			if(Array.isArray(content)){
-				stack.push(...content)
-				return content
-			}
-		}
+		content
+			? (
+				typeof content === 'function'
+					? (...args) => {
+						let offset = renderState.stack.length
+						return content(...args) || renderState.stack.slice(offset)
+					}
+					: () => {
+						stack.push(...content)
+						return content
+					}
+			)
+			: undefined
 	)
 
 	renderState.stack = undefined
