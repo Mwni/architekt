@@ -58,7 +58,7 @@ export default async ({ port, render, clientApp }) => {
 
 function serveApp({ router, clientApp, bootstrapCode, render }){
 	router.get('/(.*)', async ctx => {
-		let dom = new JSDOM()
+		let dom = new JSDOM(`<!DOCTYPE html>`)
 		let page = {
 			status: 'ok',
 			title: undefined
