@@ -13,15 +13,17 @@ export default async ({ chunk }) => {
 
 		let { name, ext } = path.parse(manifest.file)
 
-		if(ext === '.svg'){
+		if(manifest.type === 'svg'){
 			images[xid] = {
+				type: 'svg',
 				svg: fs.readFileSync(manifest.file, 'utf-8'),
-				replace: manifest.replace
+				styleKeys: manifest.styleKeys
 			}
 		}else{
 			let { width, height } = getImageSize(manifest.file)
 
 			images[xid] = {
+				type: 'image',
 				url: `/app/${name}${ext}`,
 				width,
 				height

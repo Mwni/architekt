@@ -1,4 +1,4 @@
-import { repo as iconRepo } from './icon.js'
+import { assets as globalAssets } from './assets.js'
 
 export async function importBundle(path){
 	return (await Promise.all([
@@ -13,7 +13,7 @@ export async function importAssets(path){
 	delete architektAssets[path]
 
 	let res = await fetch(`/app/${path}.json`)
-	let { stylesheet, images } = await res.json()
+	let { stylesheet, assets } = await res.json()
 
 	if(stylesheet){
 		let tag = document.createElement('style')
@@ -23,7 +23,7 @@ export async function importAssets(path){
 		document.head.appendChild(tag)
 	}
 	
-	if(images){
-		Object.assign(iconRepo, images)
+	if(assets){
+		Object.assign(globalAssets, assets)
 	}
 }

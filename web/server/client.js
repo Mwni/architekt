@@ -8,7 +8,7 @@ export default Component(({ ctx, page, clientApp, cookies }) => {
 		isServer: true,
 		page,
 		cookies,
-		icons: {}
+		assets: {}
 	})
 
 	return clientApp

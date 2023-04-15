@@ -1,10 +1,23 @@
-import { Component } from '@architekt/ui'
+import { Component, Fragment } from '@architekt/ui'
 import { Element } from '@architekt/html'
+import { assets } from './assets.js'
 
-export const repo = {}
 
-export default Component(({ ctx, asset }) => {
-	Object.assign(asset, repo[asset.xid])
+export default ({ asset, ...props }) => {
+	asset = assets[asset.xid]
+
+	if(asset.styleKeys){
+		return DynamicIcon({ asset, ...props })
+	}else{
+		return StaticIcon({ asset, ...props })
+	}
+}
+
+const DynamicIcon = Component(({ ctx, asset }) => {
+	if(asset.type !== 'svg')
+		throw new Error(`dynamic ${asset.type} asset type not supported`)
+
+	let state = {}
 
 	return ({ asset: newAsset, ...props }) => {
 		if(asset.xid !== newAsset.xid)
@@ -12,20 +25,29 @@ export default Component(({ ctx, asset }) => {
 
 		ctx.afterRender(() => {
 			let img = ctx.dom[0]
-			let multivariant = asset.variants
-	
-			let style = multivariant || asset.replace
-				? window.getComputedStyle(img)
-				: null
-	
-			let icon = multivariant
-				? pickVariant(asset.variants, style)
-				: asset
-	
-			if(icon.svg)
-				applySVG(img, icon, style)
-			else
-				applyRemote(img, icon, style)
+			let style = window.getComputedStyle(img)
+			let unchanged = true
+			let svg = asset.svg
+
+			for(let key of asset.styleKeys){
+				if(state[key] !== style.getPropertyValue(key)){
+					unchanged = false
+					break
+				}
+			}
+
+			if(unchanged)
+				return
+
+			for(let key of asset.styleKeys){
+				state[key] = style.getPropertyValue(key)
+				svg = svg.replaceAll(
+					`{{${key}}}`,
+					state[key]
+				)
+			}
+
+			img.src = toDataURL(svg)
 		})
 
 		Element({ 
@@ -35,32 +57,29 @@ export default Component(({ ctx, asset }) => {
 	}
 })
 
-function pickVariant(variants, style){
-	return variants[0]
-}
+const StaticIcon = Component(({ ctx, asset }) => {
+	if(asset.type === 'svg'){
+		return props => Element({ 
+			tag: 'img',
+			class: ['a-icon', props.class],
+			src: toDataURL(asset.svg)
+		})
+	}else if(asset.type === 'image'){
+		let img = new Image(asset.url)
 
-function applySVG(img, icon, style){
-	let { svg, replace } = icon
-
-	if(replace){
-		for(let [target, repl] of Object.entries(replace)){
-			svg = svg.replaceAll(
-				target,
-				style.getPropertyValue(repl) || style.getPropertyValue(`--${repl}`)
-			)
+		img.onload = () => {
+			ctx.redraw()
 		}
-	}
 
-	img.src = toDataURL(svg)
-}
-
-function applyRemote(img, icon){
-	img.src = generatePlaceholder(icon.width, icon.height)
-	img.onload = () => {
-		img.src = icon.url
-		img.onload = null
+		return props => Element({ 
+			tag: 'img',
+			class: ['a-icon', props.class],
+			src: img.complete
+				? asset.url
+				: generatePlaceholder(asset.width, asset.height)
+		})
 	}
-}
+})
 
 function generatePlaceholder(width, height){
 	return toDataURL(`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"></svg>`)

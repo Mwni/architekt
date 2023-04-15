@@ -1,5 +1,5 @@
 import bundleStylesheets from './stylesheets.js'
-import bundleImages from './images.js'
+import bundleAssets from './assets.js'
 
 
 export default async ({ chunk, rootPath, procedure, watch, plugins }) => {
@@ -16,7 +16,7 @@ export default async ({ chunk, rootPath, procedure, watch, plugins }) => {
 	}
 
 	if(chunk.assets.length > 0){
-		bundle.images = await bundleImages({ chunk, rootPath, watch })
+		bundle.assets = await bundleAssets({ chunk, rootPath, watch })
 	}
 
 	return Object.keys(bundle).length > 0

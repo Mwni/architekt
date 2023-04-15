@@ -7,8 +7,8 @@ export default ({ captures }) => ({
 	name: 'architekt-assets',
 	setup(build){
 		build.onResolve(
-			{ 
-				filter: /\.(json|svg|png|jpg)$/,
+			{
+				filter: /\.(svg|png|jpg|gif)$/,
 				namespace: 'file'
 			},
 			async ({ path: assetPath, resolveDir }) => ({
@@ -28,6 +28,12 @@ export default ({ captures }) => ({
 				let { ext } = path.parse(manifestOrAssetPath)
 				let xid = generateXid(5)
 				let manifest
+				let mapFilePath = file => path.resolve(
+					path.join(
+						path.dirname(manifestOrAssetPath),
+						file
+					)
+				)
 
 				if(ext === '.json'){
 					manifest = JSON.parse(
@@ -35,17 +41,16 @@ export default ({ captures }) => ({
 					)
 
 					if(manifest.file){
-						manifest.file = path.resolve(
-							path.join(
-								path.dirname(manifestOrAssetPath),
-								manifest.file
-							)
-						)
+						manifest.file = mapFilePath(manifest.file)
+					}else if(manifest.variants){
+						for(let key of Object.keys(manifest.variants)){
+							manifest.variants[key].file = mapFilePath(manifest.variants[key].file)
+						}
 					}
+				}else if(ext === '.svg'){
+					manifest = svgLoader(manifestOrAssetPath)
 				}else{
-					manifest = {
-						file: manifestOrAssetPath
-					}
+					manifest = defaultAssetLoader(manifestOrAssetPath)
 				}
 
 				captures.push({
@@ -62,3 +67,29 @@ export default ({ captures }) => ({
 		)
 	}
 })
+
+function svgLoader(path){
+	let svg = fs.readFileSync(path, 'utf-8')
+	let templatesRegex = /\{\{([^}]+)\}\}/g
+	let result
+	let styleKeys = []
+  
+	while((result = templatesRegex.exec(svg)) !== null){
+		styleKeys.push(result[1])
+	}
+
+	return {
+		type: 'svg',
+		file: path,
+		styleKeys: styleKeys.length > 0 
+			? styleKeys 
+			: undefined
+	}
+}
+
+function defaultAssetLoader(path){
+	return {
+		type: 'image',
+		file: path
+	}
+}
