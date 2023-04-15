@@ -1,7 +1,7 @@
 import { Fragment } from '@architekt/render'
 import Element from '../element.js'
 
-export default Fragment((props, content) => {
+export default Fragment(props => {
 	let value
 	let max
 
@@ -17,7 +17,6 @@ export default Fragment((props, content) => {
 			value,
 			max,
 			class: ['a-progress', props.class]
-		}, 
-		content
+		}
 	)
 })
