@@ -1,7 +1,7 @@
 import { Fragment } from '@architekt/render'
 import Element from '../element.js'
 
-export default Fragment(({ text, multiline, onInput, onChange, ...props }) => {
+export default Fragment(({ text, multiline, secure, onInput, onChange, ...props }) => {
 	if(multiline){
 		return Element(
 			{
@@ -17,7 +17,7 @@ export default Fragment(({ text, multiline, onInput, onChange, ...props }) => {
 		return Element(
 			{
 				tag: 'input',
-				type: 'text',
+				type: secure ? 'password' : 'text',
 				...props,
 				class: ['a-textinput', props.class],
 				value: text,
