@@ -1,6 +1,8 @@
 import { Fragment, Text } from '@architekt/ui'
 
-export default Fragment(({ model, key, ...props }) => {
+export default Fragment(({ ctx, model, key, ...props }) => {
+	model = model || ctx.upstream.model
+
 	if(key){
 		let status = model.fieldStatus[key]
 	

@@ -1,6 +1,7 @@
 import { Fragment, Button } from '@architekt/ui'
 
-export default Fragment(({ model, busyClass, ...props }) => {
+	model = model || ctx.upstream.model
+	
 	Button({
 		...props,
 		class: (model.submitting && busyClass) || props.class,

@@ -20,6 +20,7 @@ export const Slider = (...args) => renderState.runtime.components.Slider(...args
 export const Dropdown = (...args) => renderState.runtime.components.Dropdown(...args)
 export const Progress = (...args) => renderState.runtime.components.Progress(...args)
 export const Canvas = (...args) => renderState.runtime.components.Canvas(...args)
+export const Form = (...args) => renderState.runtime.components.Form(...args)
 export const Group = (...args) => renderState.runtime.components.Group(...args)
 export const Table = Object.defineProperty(
 	(...args) => renderState.runtime.components.Table(...args),

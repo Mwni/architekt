@@ -1,6 +1,8 @@
 import { Fragment, Select } from '@architekt/ui'
 
-export default Fragment(({ model, key, disabled, ...props }, content) => {
+export default Fragment(({ ctx, model, key, disabled, ...props }, content) => {
+	model = model || ctx.upstream.model
+
 	return Select(
 		{
 			...props,

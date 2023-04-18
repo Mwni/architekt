@@ -1,6 +1,8 @@
 import { Fragment, Slider } from '@architekt/ui'
 
-export default Fragment(({ model, key, disabled, ...props }) => {
+export default Fragment(({ ctx, model, key, disabled, ...props }) => {
+	model = model || ctx.upstream.model
+	
 	Slider({
 		...props,
 		value: model.get(key),
