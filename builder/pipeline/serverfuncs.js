@@ -69,6 +69,10 @@ function compileClientAST({ functions }){
 	let statements = []
 
 	for(let node of functions){
+		if(!node.illegalDecorators){
+			throw new Error(`server function "${node.name.escapedText}" is missing a method decorator (get, post, put, delete)`)
+		}
+
 		let methodDecorator = node.illegalDecorators.find(
 			decorator => methods.includes(decorator.expression.expression.escapedText)
 		)
