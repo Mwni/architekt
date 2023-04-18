@@ -3,13 +3,23 @@ import dotenv from 'dotenv'
 dotenv.config({ path: '{{{envFile}}}' })
 {{/if}}
 
-{{#if serverInit}}
-import serverInit from '{{{serverInit}}}'
-serverInit()
-{{/if}}
-
 import clientApp from '{{{clientEntry}}}'
-import runServer from '@architekt/web/server'
+import startServer from '@architekt/web/server'
 
 const config = {{{serverConfig}}}
-runServer({ ...config, clientApp })
+
+{{#if serverEntry}}
+import serverEntry from '{{{serverEntry}}}'
+serverEntry({
+	config,
+	startServer: (overrides = {}) => {
+		startServer({ 
+			clientApp,
+			...config, 
+			...overrides,
+		})
+	}
+})
+{{else}}
+startServer({ ...config, clientApp })
+{{/if}}

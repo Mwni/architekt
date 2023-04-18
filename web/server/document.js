@@ -6,12 +6,15 @@ const httpCodes = {
 	notFound: 404
 }
 
-export function writeDocument({ ctx, dom, page, imports, bootstrapCode }){
+export function writeDocument({ ctx, dom, page, imports, bootstrapCode, clientConfig }){
 	let { document } = dom.window
 	
 	writeDefaultMeta({ document })
 	//writeImports({ document, imports })
 	writeBootstrapCode({ document, bootstrapCode })
+
+	if(clientConfig)
+		writeClientConfig({ document, clientConfig })
 
 	ctx.status = httpCodes[page.status] || 400
 	ctx.body = beautify.html(
@@ -74,6 +77,14 @@ function writeBootstrapCode({ document, bootstrapCode }){
 	let bootstrapScript = document.createElement('script')
 
 	bootstrapScript.textContent = bootstrapCode
+
+	document.head.appendChild(bootstrapScript)
+}
+
+function writeClientConfig({ document, clientConfig }){
+	let bootstrapScript = document.createElement('script')
+
+	bootstrapScript.textContent = `var architektConfig = ${JSON.stringify(clientConfig)}`
 
 	document.head.appendChild(bootstrapScript)
 }

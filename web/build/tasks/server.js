@@ -6,7 +6,7 @@ import { rewriteImports } from '../lib/imports.js'
 
 
 export default async ({ config, procedure, watch }) => {
-	let { platform, rootPath, envFile, serverInit, clientEntry, serverPort, serverRender } = config
+	let { platform, rootPath, envFile, clientEntry, serverEntry, serverPort, serverRender } = config
 	let serverConfig = { 
 		port: serverPort, 
 		render: serverRender === undefined 
@@ -28,11 +28,11 @@ export default async ({ config, procedure, watch }) => {
 						fields: { 
 							clientEntry, 
 							serverConfig: JSON.stringify(serverConfig),
-							serverInit,
+							serverEntry,
 							envFile: envFile && '.env'
 						}
 					}),
-					file: './server.js'
+					file: './architekt-server-entry.js'
 				},
 				importerImpl: path.join(
 					libPath, 

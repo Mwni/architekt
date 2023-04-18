@@ -24,7 +24,7 @@ const descriptor = {
 	name: 'architekt-server'
 }
 
-export default async ({ port, render, clientApp }) => {
+export default async ({ port, render, clientApp, clientConfig }) => {
 	Object.assign(
 		descriptor, 
 		readFile({ 
@@ -44,7 +44,7 @@ export default async ({ port, render, clientApp }) => {
 	serveDir({ router, fileDir: './client', webPath: '/app' })
 	serveDir({ router, fileDir: './static', webPath: '/app' })
 	serveWellKnown({ router })
-	serveApp({ router, clientApp, bootstrapCode, render })
+	serveApp({ router, clientApp, clientConfig, bootstrapCode, render })
 
 	koa.use(router.routes(), router.allowedMethods())
 	koa.listen(port)
@@ -56,7 +56,7 @@ export default async ({ port, render, clientApp }) => {
 	log(`listening on port ${port}`)
 }
 
-function serveApp({ router, clientApp, bootstrapCode, render }){
+function serveApp({ router, clientApp, clientConfig, bootstrapCode, render }){
 	router.get('/(.*)', async ctx => {
 		let dom = new JSDOM(`<!DOCTYPE html>`)
 		let page = {
@@ -76,6 +76,7 @@ function serveApp({ router, clientApp, bootstrapCode, render }){
 					{ 
 						page, 
 						clientApp,
+						clientConfig,
 						cookies: createCookies(ctx)
 					}
 				)
@@ -97,6 +98,7 @@ function serveApp({ router, clientApp, bootstrapCode, render }){
 					page,
 					imports,
 					bootstrapCode,
+					clientConfig
 				})
 			}else{
 				ctx.redirect(destinationPath)

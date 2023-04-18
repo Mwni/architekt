@@ -23,7 +23,10 @@ export default async ({ App }) => {
 			Object.assign(ctx.runtime, {
 				page: createPage(),
 				cookies: createCookies(),
-				assets
+				assets,
+				config: typeof architektConfig !== 'undefined'
+					? architektConfig
+					: {}
 			})
 		
 			App()
