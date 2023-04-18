@@ -29,7 +29,10 @@ async function execute(ctx, func){
 	try{
 		ctx.type = 'json'
 		ctx.body = JSON.stringify(
-			await func(ctx.state.payload)
+			await func({
+				...ctx.state.payload,
+				ctx
+			})
 		)
 	}catch(error){
 		let { expose, message, statusCode, ...extra } = error
