@@ -6,6 +6,11 @@ import { assets } from './assets.js'
 export default ({ asset, ...props }) => {
 	asset = assets[asset.xid]
 
+	if(!asset){
+		console.warn('icon component was given invalid asset')
+		return
+	}
+
 	if(asset.styleKeys){
 		return DynamicIcon({ asset, ...props })
 	}else{
