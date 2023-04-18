@@ -1,6 +1,6 @@
 import { createEmitter } from '@mwni/events'
 
-export default ({ data: initalData, constraints }) => {
+export default ({ data: initalData, constraints, submit: submitFunc }) => {
 	let model
 	let events = createEmitter()
 	let data = { ...initalData }
@@ -76,7 +76,10 @@ export default ({ data: initalData, constraints }) => {
 					fields: fieldStatus
 				}
 		},
-		async submit(f){
+		async submit(f = submitFunc){
+			if(!f)
+				throw new Error(`no submission function given`)
+
 			submitting = true
 			events.emit('update')
 
