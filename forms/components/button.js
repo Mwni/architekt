@@ -5,7 +5,7 @@ export default Fragment(({ ctx, model, classBusy, ...props }) => {
 	
 	Button({
 		...props,
-		type: 'submit',
+		type: 'button',
 		class: (model.submitting && classBusy) || props.class,
 		disabled: !model.isEagerValid || model.submitting,
 	})
