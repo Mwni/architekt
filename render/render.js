@@ -15,14 +15,20 @@ export function render(node){
 export function renderNode(node){
 	renderState.runtime = node.runtime
 
-	let stack = viewStack(node, node.draw)
-	let commonLength = Math.min(node.children.length, stack.length)
+	let stack = viewStack(
+		node, 
+		node.draw, 
+		node.props, 
+		node.content
+	)
 
 	if(node.teardown){
 		deleteNode(node)
 		node.parent.children[node.index] = createNode(node, node.index)
 		return
 	}
+
+	let commonLength = Math.min(node.children.length, stack.length)
 
 	for (let i=0; i<commonLength; i++){
 		let n = node.children[i]
@@ -57,6 +63,7 @@ function needsTeardown(node, blueprint){
 	return node.teardown || node.component !== blueprint.component
 }
 
+
 function createNode(blueprint, index){
 	let node = {
 		index,
@@ -72,7 +79,9 @@ function createNode(blueprint, index){
 
 	let stackOrDraw = viewStack(
 		node, 
-		blueprint.component.construct
+		blueprint.component.construct,
+		blueprint.props,
+		blueprint.content
 	)
 
 	if(stackOrDraw instanceof Promise){
@@ -96,7 +105,12 @@ function createNode(blueprint, index){
 		return node
 	}else if(typeof stackOrDraw === 'function'){
 		node.draw = stackOrDraw
-		stackOrDraw = viewStack(node, stackOrDraw)
+		stackOrDraw = viewStack(
+			node, 
+			stackOrDraw,
+			blueprint.props,
+			blueprint.content
+		)
 	}else{
 		node.draw = blueprint.component.construct
 	}
@@ -117,28 +131,26 @@ function deleteNode(node){
 
 function viewStack(node, draw, props, content){
 	let stack = renderState.stack = []
+	let contentFunc
 
-	props = props || node.props
-	content = content || node.content
+	if(typeof content === 'function'){
+		contentFunc = (...args) => {
+			let offset = renderState.stack.length
+			return content(...args) || renderState.stack.slice(offset)
+		}
+	}else if(Array.isArray(content)){
+		contentFunc = () => {
+			renderState.stack.push(...content)
+			return content
+		}
+	}
 
 	let returnedStack = draw(
 		{
 			...props,
 			ctx: new Context(node)
 		}, 
-		content
-			? (
-				typeof content === 'function'
-					? (...args) => {
-						let offset = renderState.stack.length
-						return content(...args) || renderState.stack.slice(offset)
-					}
-					: () => {
-						stack.push(...content)
-						return content
-					}
-			)
-			: undefined
+		contentFunc
 	)
 
 	renderState.stack = undefined
@@ -150,6 +162,9 @@ function viewStack(node, draw, props, content){
 	// use patched
 	if(Array.isArray(returnedStack))
 		stack = returnedStack
+
+	if(returnedStack?.component || returnedStack?.view)
+		stack = [returnedStack]
 
 
 	let fullstack = []
