@@ -32,7 +32,7 @@ async function execute(ctx, func){
 			await func({
 				...ctx.state.payload,
 				ctx
-			})
+			}) || null
 		)
 	}catch(error){
 		let { expose, message, statusCode, ...extra } = error
