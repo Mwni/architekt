@@ -26,7 +26,7 @@ export default Fragment(({ ctx, model, key, ...props }, content) => {
 	}else{
 		Text({ 
 			class: props.class || 'status invalid', 
-			text: status.message 
+			text: issueMessage
 		})
 	}
 })
