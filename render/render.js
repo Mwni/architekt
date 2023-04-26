@@ -239,7 +239,10 @@ export function createDom(node, element){
 }
 
 export function deleteDom(node, element){
-	node.dom.parent.element.removeChild(element)
+	try{
+		node.dom.parent.element.removeChild(element)
+	}catch{}
+	
 	node.dom.parent.children = node.dom.parent.children.filter(
 		child => child.element !== element
 	)
