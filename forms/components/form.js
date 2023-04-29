@@ -1,6 +1,6 @@
 import { Component, Form } from '@architekt/ui'
 
-export default Component(({ ctx, model, ...props }, content) => {
+export default Component(({ ctx, model, ...props }) => {
 	let redraw = ctx.redraw.bind(ctx)
 	
 	ctx.public({ model })
@@ -8,16 +8,21 @@ export default Component(({ ctx, model, ...props }, content) => {
 
 	model.on('update', redraw)
 
-	return () => [
-		Form(
-			{
-				...props,
-				onsubmit: evt => {
-					evt.preventDefault()
-					model.submit()
-				}
-			},
-			content
-		)
-	]
+	return ({ model: newModel }, content) => {
+		if(model !== newModel)
+			return ctx.teardown()
+
+		return [
+			Form(
+				{
+					...props,
+					onsubmit: evt => {
+						evt.preventDefault()
+						model.submit()
+					}
+				},
+				content
+			)
+		]
+	}
 })
