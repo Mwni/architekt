@@ -1,6 +1,6 @@
 import { createEmitter } from '@mwni/events'
 
-export default ({ data: initalData, constraints, submit: submitFunc }) => {
+export default ({ data: initalData, constraints = [], submit: submitFunc }) => {
 	let model
 	let events = createEmitter()
 	let data = { ...initalData }
@@ -56,10 +56,13 @@ export default ({ data: initalData, constraints, submit: submitFunc }) => {
 		get(key){
 			return data[key]
 		},
-		set(key, value){
+		set(key, value, options={}){
 			data[key] = value
 			applyConstraints()
-			submissionError = undefined
+
+			if(!options.retainErrors)
+				submissionError = undefined
+				
 			events.emit('change', { key, value })
 			events.emit('update')
 		},
