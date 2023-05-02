@@ -32,3 +32,4 @@ export const Table = Object.defineProperty(
 )
 
 export { default as Select } from './select.js'
+export { default as Overlay } from './overlay.js'

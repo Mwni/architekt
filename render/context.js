@@ -75,17 +75,21 @@ export default class Context{
 		let Overlay = this.runtime.createOverlay(content)
 		let handle = {
 			close: () => {
-				this.node.draw = orgDraw
+				this.node.draw = orgDraw || (() => {})
 				render(this.node)
 			}
 		}
 
-		this.node.draw = () => {
-			orgDraw()
+		this.node.draw = (...args) => {
+			if(orgDraw)
+				orgDraw(...args)
+
 			Overlay({ handle })
 		}
 
 		render(this.node)
+
+		return handle
 	}
 }
 
