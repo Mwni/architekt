@@ -1,4 +1,4 @@
-import { Fragment, Select } from '@architekt/ui'
+import { Fragment } from '@architekt/ui'
 import Element from '../element.js'
 
 export default Fragment(({ ctx, checked, onChange, ...props }) => {
@@ -6,7 +6,6 @@ export default Fragment(({ ctx, checked, onChange, ...props }) => {
 		checked = ctx.upstream.optionSelected
 	}
 	
-
 	Element(
 		{
 			tag: 'input',
