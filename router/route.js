@@ -10,5 +10,7 @@ export default Fragment(({ ctx, path, fallback, bad }, content) => {
 
 const Route = Component(({ ctx, route }, content) => {
 	ctx.public({ route })
-	content(route.params)
+
+	if(content)
+		content(route.params)
 })
