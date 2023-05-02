@@ -1,21 +1,23 @@
-import { Component, getContext } from '@architekt/ui'
-import { getChildElements } from '@architekt/render'
+import { Component } from '@architekt/ui'
 
-export default Component((props, content) => {
-	let { node, afterDomCreation } = getContext()
-	
-	afterDomCreation(dom => {
+export default Component(({ ctx }, content) => {
+	ctx.afterRender(() => {
+		let dom = ctx.dom
+
 		for(let element of dom){
 			element.classList.add('a-group-member')
+
 			element.addEventListener('click', evt => {
-				for(let child of node.children){
-					for(let element of getChildElements(child)){
-						element.click()
-					}
+				for(let sibling of dom){
+					if(sibling === element)
+						continue
+
+					console.log('click', sibling)
+					sibling.click()
 				}
 			})
 		}
 	})
 
-	return content
+	return (props, content) => content()
 })
