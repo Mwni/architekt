@@ -1,9 +1,8 @@
 import { Component } from '@architekt/render'
 import Element from '../element.js'
-import Root from './root.js'
 
-export default Component(({ ctx, direction, ...props }, content) => {
-	let isRootScroller = true//ctx.parent.node.component === Root
+export default Component(({ ctx, direction }) => {
+	let isRootScroller = ctx.parent.parent.node.root
 	let scrollElement = isRootScroller
 		? ctx.runtime.document.defaultView
 		: undefined
@@ -29,7 +28,7 @@ export default Component(({ ctx, direction, ...props }, content) => {
 		}
 	}
 
-	return () => {
+	return (props, content) => {
 		let [ contentNode ] = content()
 
 		if(isRootScroller)
