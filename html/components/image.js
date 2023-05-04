@@ -1,19 +1,19 @@
 import { Component } from '@architekt/render'
 import Element from '../element.js'
 
-export default Component(({ ctx, ...props }) => {
+export default Component(({ ctx, svg, blob, url, ...props }) => {
 	return newProps => {
-		if(props.svg !== newProps.svg || props.blob !== newProps.blob || props.url !== newProps.url)
+		if(svg !== newProps.svg || blob !== newProps.blob || url !== newProps.url)
 			return ctx.teardown()
 
 		let src
 
-		if(props.svg)
-			src = toSvgUrl('', props.svg)
-		else if(props.blob)
-			src = toBlobUrl(props.blob)
+		if(svg)
+			src = toSvgUrl(svg)
+		else if(blob)
+			src = toBlobUrl(blob)
 		else
-			src = props.url
+			src = url
 	
 		Element(
 			{
@@ -26,7 +26,7 @@ export default Component(({ ctx, ...props }) => {
 	}
 })
 
-function toSvgUrl(type, svg){
+function toSvgUrl(svg){
 	let header = 'data:image/svg+xml,'
 	let encoded = encodeURIComponent(svg)
 		.replace(/'/g, '%27')
