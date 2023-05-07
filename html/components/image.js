@@ -2,18 +2,18 @@ import { Component } from '@architekt/render'
 import Element from '../element.js'
 
 export default Component(({ ctx, svg, blob, url, ...props }) => {
+	let src
+
+	if(svg)
+		src = toSvgUrl(svg)
+	else if(blob)
+		src = toBlobUrl(blob)
+	else
+		src = url
+
 	return newProps => {
 		if(svg !== newProps.svg || blob !== newProps.blob || url !== newProps.url)
 			return ctx.teardown()
-
-		let src
-
-		if(svg)
-			src = toSvgUrl(svg)
-		else if(blob)
-			src = toBlobUrl(blob)
-		else
-			src = url
 	
 		Element(
 			{
