@@ -37,14 +37,14 @@ export default async ({ port, render, clientApp, clientConfig }) => {
 
 	let koa = new Koa()
 	let router = new Router()
-	let bootstrapCode = readFile({ filePath: 'client/bootstrap.js' })
+	let loaderCode = readFile({ filePath: 'client/loader.js' })
 
 	await serveFunctions({ router })
 
 	serveDir({ router, fileDir: './client', webPath: '/app' })
 	serveDir({ router, fileDir: './static', webPath: '/app' })
 	serveWellKnown({ router })
-	serveApp({ router, clientApp, clientConfig, bootstrapCode, render })
+	serveApp({ router, clientApp, clientConfig, loaderCode, render })
 
 	koa.use(router.routes(), router.allowedMethods())
 	koa.listen(port)
@@ -56,7 +56,7 @@ export default async ({ port, render, clientApp, clientConfig }) => {
 	log(`listening on port ${port}`)
 }
 
-function serveApp({ router, clientApp, clientConfig, bootstrapCode, render }){
+function serveApp({ router, clientApp, clientConfig, loaderCode, render }){
 	router.get('/(.*)', async ctx => {
 		let dom = new JSDOM(`<!DOCTYPE html>`)
 		let page = {
@@ -97,7 +97,7 @@ function serveApp({ router, clientApp, clientConfig, bootstrapCode, render }){
 					dom,
 					page,
 					imports,
-					bootstrapCode,
+					loaderCode,
 					clientConfig
 				})
 			}else{

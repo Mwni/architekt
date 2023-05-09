@@ -1,13 +1,10 @@
-import fs from 'fs'
-import path from 'path'
 import { esbuild } from '@architekt/builder'
 import template from '../lib/template.js'
-import { deriveVariants, reconcileVariants } from '../lib/variants.js'
+import { reconcileVariants } from '../lib/variants.js'
 
 
 export default async ({ config, procedure, plugins }) => {
-	let { rootPath, outputPath, splashScript } = config
-	let [ baseVariant ] = deriveVariants(plugins)
+	let { rootPath, splashScript } = config
 	let alternatives = reconcileVariants(plugins)
 	let alternativesCode = ''
 
@@ -25,22 +22,22 @@ export default async ({ config, procedure, plugins }) => {
 	}
 
 	
-	let bootstrapChunks = []
+	let loaderChunks = []
 
 	await procedure({
-		id: `bootstrap`,
-		description: `building browser bootstrap`,
+		id: `loader`,
+		description: `building browser loader`,
 		execute: async () => {
 			let { outputFiles } = await esbuild.build({
 				stdin: {
 					contents: template({
-						file: 'bootstrap.js',
+						file: 'loader.js',
 						fields: {
 							splashScript, 
 							alternatives: alternativesCode
 						}
 					}),
-					sourcefile: `bootstrap.js`,
+					sourcefile: `loader.js`,
 					resolveDir: rootPath
 				},
 				format: 'iife',
@@ -49,12 +46,12 @@ export default async ({ config, procedure, plugins }) => {
 				logLevel: 'silent'
 			})
 
-			bootstrapChunks.push({
-				file: 'client/bootstrap.js',
+			loaderChunks.push({
+				file: 'client/loader.js',
 				code: outputFiles[0].text
 			})
 		}
 	})
 
-	return { bootstrapChunks }
+	return { loaderChunks }
 }

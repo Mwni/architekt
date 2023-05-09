@@ -6,12 +6,12 @@ const httpCodes = {
 	notFound: 404
 }
 
-export function writeDocument({ ctx, dom, page, imports, bootstrapCode, clientConfig }){
+export function writeDocument({ ctx, dom, page, imports, loaderCode, clientConfig }){
 	let { document } = dom.window
 	
 	writeDefaultMeta({ document })
 	//writeImports({ document, imports })
-	writeBootstrapCode({ document, bootstrapCode })
+	writeLoaderCode({ document, loaderCode })
 
 	if(clientConfig)
 		writeClientConfig({ document, clientConfig })
@@ -73,12 +73,12 @@ function writeImports({ document, imports }){
 	}
 }
 
-function writeBootstrapCode({ document, bootstrapCode }){
-	let bootstrapScript = document.createElement('script')
+function writeLoaderCode({ document, loaderCode }){
+	let tag = document.createElement('script')
 
-	bootstrapScript.textContent = bootstrapCode
+	tag.textContent = loaderCode
 
-	document.head.appendChild(bootstrapScript)
+	document.head.appendChild(tag)
 }
 
 function writeClientConfig({ document, clientConfig }){

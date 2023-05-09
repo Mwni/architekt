@@ -9,7 +9,7 @@ export default async ({ config, plugins, procedure, data }) => {
 	let files = []
 	let externals = await data.externals
 	let chunks = [
-		...await data.bootstrapChunks,
+		...await data.loaderChunks,
 		...await data.clientChunks,
 		...await data.serverChunks,
 	]
