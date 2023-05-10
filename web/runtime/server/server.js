@@ -39,7 +39,7 @@ export default async ({ clientApp, clientConfig, ssr = true }) => {
 	let router = new Router()
 	let loaderCode = readFile({ filePath: 'client/loader.js' })
 
-	await serveFunctions({ router })
+	await serveApis({ router })
 
 	serveDir({ router, fileDir: './client', webPath: '/app' })
 	serveDir({ router, fileDir: './static', webPath: '/app' })
@@ -137,8 +137,8 @@ function serveDir({ router, fileDir, webPath }){
 	}
 }
 
-async function serveFunctions({ router }){
-	let file = path.join(__dirname, 'server', 'functions.js')
+async function serveApis({ router }){
+	let file = path.join(__dirname, 'server', 'apis.js')
 
 	if(!fs.existsSync(file))
 		return
@@ -146,7 +146,7 @@ async function serveFunctions({ router }){
 	let { default: init } = await import(`file://${file}`)
 
 	init(router)
-	log(`server functions initialized`)
+	log(`apis initialized`)
 }
 
 function readFile({ filePath, json }){

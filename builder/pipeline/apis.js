@@ -6,16 +6,16 @@ import ts from 'typescript'
 const methods = ['get', 'post']
 
 export default opts => ({
-	name: 'architekt-serverfuncs',
+	name: 'architekt-apis',
 	setup(build){
 		build.onLoad(
 			{
 				filter: /.*/,
-				namespace: 'server'
+				namespace: 'api'
 			},
 			async ({ path, pluginData, ...args }) => {
 				let srcAST = ts.createSourceFile(
-					'functions.ts',
+					'api.ts',
 					fs.readFileSync(path, 'utf-8'),
 					ts.ScriptTarget.Latest
 				)

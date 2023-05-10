@@ -46,13 +46,13 @@ export default async ({ config, projectPath, procedure, watch }) => {
 			})
 
 			for(let chunk of standaloneChunks){
-				chunk.file = 'server/functions.js'
+				chunk.file = 'server/apis.js'
 			}
 
 			return { mainChunk, asyncChunks, standaloneChunks, externals, watchFiles }
 		}
 	})
-	
+
 	watch(watchFiles)
 
 	return {

@@ -10,7 +10,7 @@ import assets from './pipeline/assets.js'
 import transforms from './pipeline/transforms.js'
 import defaultTransforms from './transforms/index.js'
 import { generateXid } from './lib/xid.js'
-import serverfuncs from './pipeline/serverfuncs.js'
+import apis from './pipeline/apis.js'
 import template from './template.js'
 import virtual from './pipeline/virtual.js'
 
@@ -22,12 +22,12 @@ export async function bundle({ projectPath, entry, virtuals, importerImpl, isSer
 	let capturedTransforms = []
 	let capturedStylesheets = []
 	let capturedAssets = []
-	let capturedServerFunctions = []
+	let capturedApis = []
+
+	let { dir: entryDir, base: entryFile } = path.parse(entry.file)
 	
 
 	if(entry.code){
-		let { dir: entryDir, base: entryFile } = path.parse(entry.file)
-
 		baseConfig = {
 			stdin: {
 				contents: entry.code,
@@ -69,10 +69,10 @@ export async function bundle({ projectPath, entry, virtuals, importerImpl, isSer
 				projectPath, 
 				emissions: capturedExternals
 			}),
-			serverfuncs({
+			apis({
 				isServer,
 				projectPath,
-				emissions: capturedServerFunctions
+				emissions: capturedApis
 			}),
 			transforms({
 				projectPath,
@@ -151,30 +151,30 @@ export async function bundle({ projectPath, entry, virtuals, importerImpl, isSer
 
 	let standaloneChunks = []
 
-	if(capturedServerFunctions.length > 0){
+	if(capturedApis.length > 0){
 		let { outputFiles, metafile } = await esbuild.build({
 			stdin: {
 				contents: template({
-					file: 'svfuncs.js',
+					file: 'apis.js',
 					fields: {
-						modules: capturedServerFunctions.map(
+						modules: capturedApis.map(
 							({ code, path }, i) => ({
-								name: `svf${i}`,
+								name: `api${i}`,
 								path,
 								code
 							})
 						)
 					}
 				}),
-				sourcefile: 'functions.js',
+				sourcefile: 'apis.js',
 				resolveDir: entryDir
 			},
 			plugins: [
 				namespaces(),
 				virtual({
-					modules: capturedServerFunctions.map(
+					modules: capturedApis.map(
 						({ code, path }, i) => ({
-							name: `svf${i}`,
+							name: `api${i}`,
 							path,
 							code
 						})
@@ -183,7 +183,7 @@ export async function bundle({ projectPath, entry, virtuals, importerImpl, isSer
 				externals({
 					isServer: true,
 					projectPath, 
-					captures: capturedExternals
+					emissions: capturedExternals
 				}),
 			],
 			platform: 'node',
@@ -199,9 +199,9 @@ export async function bundle({ projectPath, entry, virtuals, importerImpl, isSer
 		})
 
 		standaloneChunks.push({
-			type: 'serverfuncs',
-			file: 'functions.js',
-			local: './functions.js',
+			type: 'api',
+			file: 'apis.js',
+			local: './apis.js',
 			code: outputFiles[0].text,
 			build: metafile.outputs[0],
 			files: []
