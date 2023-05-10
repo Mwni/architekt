@@ -48,9 +48,9 @@ switch(args._[0]){
 			let timers = []
 			let postBuildTimer
 			let handle = build({
-				...config,
+				config,
 				platform,
-				rootPath: process.cwd(),
+				projectPath: process.cwd(),
 				outputPath,
 				dev: true
 			})
@@ -79,7 +79,7 @@ switch(args._[0]){
 					let duration = Date.now() - startTime
 					let exit = () => server.kill() & resolve()
 
-					watcher.update(build.watch)
+					watcher.update(build.watchFiles)
 
 					log.info(`build complete after ${duration.toLocaleString('en')} ms`)
 					log.info(`spawning server at ${path.join(outputPath, 'server.js')}`)
@@ -123,8 +123,8 @@ switch(args._[0]){
 		Object.assign(config, config.dist)
 
 		let timers = []
-		let rootPath = process.cwd()
-		let outputPath = dirs.ensureDist(rootPath, 'dist')
+		let projectPath = process.cwd()
+		let outputPath = dirs.ensureDist(projectPath, 'dist')
 
 		dirs.clean(outputPath)
 
@@ -132,7 +132,7 @@ switch(args._[0]){
 		let handle = build({
 			...config,
 			platform,
-			rootPath: process.cwd(),
+			projectPath: process.cwd(),
 			outputPath
 		})
 

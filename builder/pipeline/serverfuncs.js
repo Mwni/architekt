@@ -38,11 +38,11 @@ export default opts => ({
 					let serverAST = compileServerAST({ setup, functions })
 					let code = printer.printNode(ts.EmitHint.Unspecified, serverAST, serverAST)
 					let relativePath = pa.relative(
-						opts.rootPath,
+						opts.projectPath,
 						path
 					)
 
-					opts.captures.push({
+					opts.emissions.push({
 						code,
 						path: `./${relativePath.replace(/\\/g, '/')}`
 					})

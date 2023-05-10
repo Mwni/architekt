@@ -15,58 +15,74 @@ import template from './template.js'
 import virtual from './pipeline/virtual.js'
 
 
-export default async function({ platform, rootPath, entry, importerImpl, isServer }){
+export async function bundle({ projectPath, entry, virtuals, importerImpl, isServer }){
+	let baseConfig = {}
 	let ephemeral = generateXid(8)
 	let capturedExternals = []
 	let capturedTransforms = []
 	let capturedStylesheets = []
 	let capturedAssets = []
 	let capturedServerFunctions = []
+	
 
-	let { dir: entryDir, base: entryFile } = path.parse(entry.file)
+	if(entry.code){
+		let { dir: entryDir, base: entryFile } = path.parse(entry.file)
+
+		baseConfig = {
+			stdin: {
+				contents: entry.code,
+				sourcefile: entryFile,
+				resolveDir: entryDir
+			}
+		}
+	}else{
+		baseConfig = {
+			entryPoints: [entry.file]
+		}
+	}
+
+	
 	let { outputFiles, metafile } = await esbuild.build({
-		stdin: {
-			contents: entry.code,
-			sourcefile: entryFile,
-			resolveDir: entryDir
-		},
+		...baseConfig,
 		plugins: [
 			...(
 				isServer
 					? []
 					: [polyfill()]
 			),
+			virtual({
+				modules: virtuals || []
+			}),
 			namespaces(),
 			shorthands({
-				rootPath
+				projectPath
 			}),
 			stylesheets({
-				rootPath,
-				captures: capturedStylesheets
+				projectPath,
+				emissions: capturedStylesheets
 			}),
 			assets({
-				captures: capturedAssets
+				emissions: capturedAssets
 			}),
 			externals({
 				isServer,
-				rootPath, 
-				captures: capturedExternals
+				projectPath, 
+				emissions: capturedExternals
 			}),
 			serverfuncs({
 				isServer,
-				rootPath,
-				captures: capturedServerFunctions
+				projectPath,
+				emissions: capturedServerFunctions
 			}),
 			transforms({
-				rootPath,
-				platform,
+				projectPath,
 				transforms: defaultTransforms,
-				captures: capturedTransforms,
+				emissions: capturedTransforms,
 			}),
 		],
 		inject: [importerImpl],
 		platform: isServer ? 'node' : 'browser',
-		target: 'es2020',
+		target: isServer ? 'es2022' : 'es2020',
 		format: 'esm',
 		bundle: true,
 		metafile: true,
@@ -166,7 +182,7 @@ export default async function({ platform, rootPath, entry, importerImpl, isServe
 				}),
 				externals({
 					isServer: true,
-					rootPath, 
+					projectPath, 
 					captures: capturedExternals
 				}),
 			],

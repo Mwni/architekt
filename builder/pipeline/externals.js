@@ -68,7 +68,7 @@ export default opts => ({
 					
 					if(descriptorPath){
 						let packagePath = path.dirname(descriptorPath)
-						let isForeignPackage = packagePath !== opts.rootPath
+						let isForeignPackage = packagePath !== opts.projectPath
 						let isArchitektPackage = path.resolve(path.join(packagePath, '..')) === repoPath
 
 						if(!isArchitektPackage && isForeignPackage){
@@ -86,7 +86,7 @@ export default opts => ({
 
 
 				if(external){
-					opts.captures.push(f)
+					opts.emissions.push(f)
 					f = ''
 				}
 

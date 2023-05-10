@@ -3,7 +3,7 @@ import path from 'path'
 import { generateXid } from '../lib/xid.js'
 
 
-export default ({ captures }) => ({
+export default ({ emissions }) => ({
 	name: 'architekt-assets',
 	setup(build){
 		build.onResolve(
@@ -53,7 +53,7 @@ export default ({ captures }) => ({
 					manifest = defaultAssetLoader(manifestOrAssetPath)
 				}
 
-				captures.push({
+				emissions.push({
 					xid,
 					manifest,
 					path: manifestOrAssetPath

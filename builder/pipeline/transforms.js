@@ -14,8 +14,7 @@ export default opts => ({
 				let untouched = true
 				let state = {
 					code, 
-					path, 
-					platform: opts.platform
+					path
 				}
 
 				for(let { skip, transform } of opts.transforms){
@@ -33,7 +32,7 @@ export default opts => ({
 
 				let { code: finalCode, ...meta } = state
 
-				opts.captures.push(meta)
+				opts.emissions.push(meta)
 
 				return {
 					contents: finalCode,

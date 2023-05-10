@@ -1,59 +1,48 @@
-import path from 'path'
 import { pathToFileURL } from 'url'
 
-const task = process.argv[2].slice(1, -1)
-const { default: run } = await import(pathToFileURL(task))
+const scriptFile = process.argv[2].slice(1, -1)
+const { default: scriptFunc } = await import(pathToFileURL(scriptFile))
 const cache = {}
 
 let data
 let dataCallbacks
 
 
-async function perform(config){
-	let plugins = []
-
-	if(config.plugins){
-		for(let pkg of config.plugins){
-			let pluginFile = path.join(config.rootPath, 'node_modules', pkg, 'index.js')
-			let { default: createPlugin } = await import(pathToFileURL(pluginFile))
-			let plugin = createPlugin(config)
-
-			if(plugin)
-				plugins.push(plugin)
-		}
-	}
-
+async function run(args){
 	data = {}
 	dataCallbacks = {}
 
 	let ctx = {
-		config,
+		...args,
 		cache,
-		plugins,
-		procedure: async ({ execute, ...descriptor }) => {
+		procedure: async ({ description, execute }) => {
 			let result 
+			let id = Math.random()
+				.toString(16)
+				.slice(2)
 
 			await new Promise(resolve => setTimeout(resolve, 10))
 
 			process.send({
-				subject: 'procedure',
+				event: 'procedure',
 				phase: 'start',
-				descriptor
+				description,
+				id
 			})
 
 			try{
 				result = await execute()
 
 				process.send({
-					subject: 'procedure',
+					event: 'procedure',
 					phase: 'end',
-					descriptor
+					id
 				})
 			}catch(error){
 				process.send({
-					subject: 'procedure',
+					event: 'procedure',
 					phase: 'fail',
-					descriptor
+					id
 				})
 
 				throw error
@@ -61,34 +50,22 @@ async function perform(config){
 
 			return result
 		},
-		data: new Proxy(data, {
-			get: (_, prop) => {
-				if(data[prop])
-					return Promise.resolve(data[prop])
-				else
-					return new Promise(resolve => {
-						dataCallbacks[prop] = resolve
-					})
-			}
-		}),
 		watch: files => process.send({
-			subject: 'watch',
+			event: 'watch',
 			files
 		})
 	}
 
 	try{
-		let data = await run(ctx) || {}
-
-		await new Promise(resolve => setTimeout(resolve, 10))
+		let data = await scriptFunc(ctx)
 
 		process.send({
-			subject: 'complete',
+			event: 'result',
 			data
 		})
 	}catch(error){
 		process.send({
-			subject: 'error',
+			event: 'error',
 			error: formatError(error)
 		})
 	}
@@ -129,23 +106,8 @@ function formatError(e){
 }
 
 
-process.on('message', ({ subject, ...payload }) => {
-	switch(subject){
-		case 'perform':
-			perform(payload.instructions)
-			break
-
-		case 'data':
-			for(let [key, value] of Object.entries(payload.data)){
-				data[key] = value
-
-				if(dataCallbacks[key]){
-					dataCallbacks[key](value)
-					delete dataCallbacks[key]
-				}
-			}
-			break
+process.on('message', ({ command, ...payload }) => {
+	if(command === 'run'){
+		run(payload.args)
 	}
 })
-
-process.send({subject: 'ready'})

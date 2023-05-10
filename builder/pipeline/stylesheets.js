@@ -26,7 +26,7 @@ export default opts => ({
 			async ({ path, pluginData, ...args }) => {
 				let xid = generateXid(5)
 
-				opts.captures.push({
+				opts.emissions.push({
 					path,
 					xid
 				})
@@ -36,7 +36,7 @@ export default opts => ({
 						file: 'stylesheet.js',
 						fields: { xid }
 					}),
-					resolveDir: opts.rootPath,
+					resolveDir: opts.projectPath,
 					loader: 'js',
 					pluginData: {
 						...pluginData,

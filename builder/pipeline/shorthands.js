@@ -14,7 +14,7 @@ export default opts => ({
 					return
 
 				return await build.resolve(
-					path.resolve(path.join(opts.rootPath, p.slice(1))), 
+					path.resolve(path.join(opts.projectPath, p.slice(1))), 
 					{
 						...args,
 						pluginData: {

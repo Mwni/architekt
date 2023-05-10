@@ -5,19 +5,22 @@ export default opts => ({
 			{ 
 				filter: /.*$/
 			},
-			async ({ path, pluginData, ...args }) => pluginData?.resolveOverride
-				? await build.resolve(
-					path,
-					{
-						...args,
-						...pluginData?.resolveOverride,
-						pluginData: {
-							...pluginData,
-							resolveOverride: undefined
+			async ({ path, pluginData, ...args }) => {
+				if(pluginData?.resolveOverride)
+					return await build.resolve(
+						path,
+						{
+							...args,
+							...pluginData?.resolveOverride,
+							pluginData: {
+								...pluginData,
+								resolveOverride: undefined
+							}
 						}
-					}
-				)
-				: undefined
+					)
+
+				
+			}
 		)
 
 		build.onResolve(
