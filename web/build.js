@@ -119,8 +119,4 @@ export default async ({ config, projectPath, outputPath, procedure, watch, dev }
 			}
 		}
 	})
-
-	return {
-		
-	}
 }
