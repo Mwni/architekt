@@ -1,42 +1,35 @@
 import path from 'path'
 import { bundle } from '@architekt/builder'
-import { libPath } from '../../paths.js'
+import { libPath } from '../paths.js'
 import template from '../lib/template.js'
 import { rewriteImports } from '../lib/imports.js'
 
 
-export default async ({ config, procedure, watch }) => {
-	let { platform, rootPath, envFile, clientEntry, serverEntry, serverPort, serverRender } = config
-	let serverConfig = { 
-		port: serverPort, 
-		render: serverRender === undefined 
-			? true 
-			: serverRender
-	}
-
+export default async ({ config, projectPath, procedure, watch }) => {
 	let { mainChunk, asyncChunks, standaloneChunks, externals, watchFiles } = await procedure({
-		id: `build-server`,
 		description: `building server app`,
 		execute: async () => {
 			let { mainChunk, asyncChunks, standaloneChunks, externals, watchFiles } = await bundle({
 				isServer: true,
-				platform,
-				rootPath,
+				projectPath,
 				entry: {
-					code: template({
-						file: 'server.js',
-						fields: { 
-							clientEntry, 
-							serverConfig: JSON.stringify(serverConfig),
-							serverEntry,
-							envFile: envFile && '.env'
-						}
-					}),
-					file: './architekt-server-entry.js'
+					file: config.server
 				},
+				virtuals: [
+					{
+						path: 'app:server',
+						code: template({
+							file: 'server.js',
+							fields: { 
+								appComponent: config.appComponent
+							}
+						})
+					}
+				],
 				importerImpl: path.join(
 					libPath, 
-					'server', 
+					'runtime',
+					'server',
 					'importer.js'
 				)
 			})
@@ -59,14 +52,7 @@ export default async ({ config, procedure, watch }) => {
 			return { mainChunk, asyncChunks, standaloneChunks, externals, watchFiles }
 		}
 	})
-
-	if(envFile){
-		mainChunk.files.push({
-			src: path.join(rootPath, envFile),
-			dest: '.env'
-		})
-	}
-
+	
 	watch(watchFiles)
 
 	return {

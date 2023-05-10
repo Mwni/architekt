@@ -1,29 +1,29 @@
 import path from 'path'
-import { bundle } from '@architekt/builder'
-import { libPath } from '../../paths.js'
+import { bundle, loadPlugins } from '@architekt/builder'
+import { libPath } from '../paths.js'
 import template from '../lib/template.js'
-import bundleAssets from '../assets/index.js'
 import { rewriteImports } from '../lib/imports.js'
+import bundleAssets from '../assets/index.js'
 
 
-export default async ({ config, plugins, procedure, watch }) => {
-	let { platform, rootPath, clientEntry } = config
+export default async ({ config, projectPath, procedure, watch }) => {
 	let { mainChunk, asyncChunks, watchFiles } = await procedure({
-		id: `build-client`,
 		description: `building client app`,
 		execute: async () => await bundle({
-			platform,
-			rootPath,
+			projectPath,
 			entry: {
 				code: template({
 					file: 'client.js',
-					fields: { clientEntry }
+					fields: {
+						appComponent: config.appComponent
+					}
 				}),
 				file: './client.js'
 			},
 			importerImpl: path.join(
 				libPath, 
-				'client', 
+				'runtime',
+				'client',
 				'importer.js'
 			)
 		})
@@ -34,18 +34,19 @@ export default async ({ config, plugins, procedure, watch }) => {
 	})
 
 	await procedure({
-		id: `bundle-client`,
 		description: `creating asset bundles`,
 		execute: async () => {
 			let hasAssets = {}
 
 			for(let chunk of [mainChunk, ...asyncChunks]){
 				chunk.assetBundle = await bundleAssets({ 
-					rootPath, 
+					projectPath, 
 					chunk, 
 					procedure,
 					watch,
-					plugins
+					plugins: config.plugins
+						? await loadPlugins(config.plugins)
+						: []
 				})
 			}
 		

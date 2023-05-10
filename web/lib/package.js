@@ -3,16 +3,16 @@ import path from 'path'
 import { resolveExternals } from './externals.js'
 
 
-export async function createDistPackage({ rootPath, outputPath, externals }){
+export async function createDistPackage({ projectPath, outputPath, externals }){
 	let projectDescriptor = JSON.parse(
 		fs.readFileSync(
-			path.join(rootPath, 'package.json')
+			path.join(projectPath, 'package.json')
 		)
 	)
 
 	let resolvedExternals = await resolveExternals({
 		externals: [
-			rootPath, 
+			projectPath, 
 			...externals.map(p => path.dirname(p))
 		]
 	})
@@ -91,10 +91,10 @@ export async function createDistPackage({ rootPath, outputPath, externals }){
 }
 
 
-export function createDevPackage({ rootPath, outputPath }){
-	let descriptorSrc = path.join(rootPath, 'package.json')
+export function createDevPackage({ projectPath, outputPath }){
+	let descriptorSrc = path.join(projectPath, 'package.json')
 	let descriptorDest = path.join(outputPath, 'package.json')
-	let modulesSrc = path.join(rootPath, 'node_modules')
+	let modulesSrc = path.join(projectPath, 'node_modules')
 	let modulesDest = path.join(outputPath, 'node_modules')
 
 	fs.copyFileSync(descriptorSrc, descriptorDest)

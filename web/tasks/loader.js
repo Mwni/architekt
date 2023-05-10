@@ -1,12 +1,15 @@
-import { esbuild } from '@architekt/builder'
+import { esbuild, loadPlugins } from '@architekt/builder'
 import template from '../lib/template.js'
 import { reconcileVariants } from '../lib/variants.js'
 
 
-export default async ({ config, procedure, plugins }) => {
-	let { rootPath, splashScript } = config
-	let alternatives = reconcileVariants(plugins)
+export default async ({ config, projectPath, procedure }) => {
 	let alternativesCode = ''
+	let alternatives = config.plugins
+		? reconcileVariants(
+			await loadPlugins(config.plugins)
+		)
+		: []
 
 	if(alternatives.length > 0){
 		alternativesCode = alternatives
@@ -33,12 +36,12 @@ export default async ({ config, procedure, plugins }) => {
 					contents: template({
 						file: 'loader.js',
 						fields: {
-							splashScript, 
+							splashScript: config.splashScript, 
 							alternatives: alternativesCode
 						}
 					}),
 					sourcefile: `loader.js`,
-					resolveDir: rootPath
+					resolveDir: projectPath
 				},
 				format: 'iife',
 				bundle: true,

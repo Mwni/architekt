@@ -94,7 +94,7 @@ const postcssFonts = ({ from, chunk }) => ({
 })
 
 
-export default async ({ rootPath, plugins, chunk, procedure, watch }) => {
+export default async ({ projectPath, plugins, chunk, procedure, watch }) => {
 	let { stylesheets } = chunk
 	let compiledCss = ''
 
@@ -113,7 +113,7 @@ export default async ({ rootPath, plugins, chunk, procedure, watch }) => {
 		let { css, messages } = await processor.process(
 			content || fs.readFileSync(path, 'utf-8'),
 			{
-				from: path || rootPath,
+				from: path || projectPath,
 				map: false
 			}
 		)
@@ -144,12 +144,12 @@ export default async ({ rootPath, plugins, chunk, procedure, watch }) => {
 			execute: async () => {
 				let processor = postcss(
 					postcssPlugins.map(
-						({ init }) => init({ rootPath, plugins, chunk, watch })
+						({ init }) => init({ projectPath, plugins, chunk, watch })
 					)
 				)
 		
 				let result = await processor.process(compiledCss, {
-					from: rootPath,
+					from: projectPath,
 					map: false
 				})
 		

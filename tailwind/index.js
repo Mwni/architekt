@@ -10,7 +10,7 @@ export default config => ({
 	id: 'tailwind',
 	postcssPlugins: [
 		{
-			init: ({ rootPath, chunk }) => {
+			init: ({ projectPath, chunk }) => {
 				let state = {
 					context: null,
 					watcher: null,
@@ -53,7 +53,7 @@ export default config => ({
 				return {
 					postcssPlugin: 'tailwindcss',
 					async Once(root, { result }){
-						let configPath = `${rootPath}/tailwind.config.js`
+						let configPath = `${projectPath}/tailwind.config.js`
 						let config = fs.existsSync(configPath)
 							? (await import(`file://${configPath}`)).default
 							: {}

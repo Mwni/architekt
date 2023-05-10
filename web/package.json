@@ -2,7 +2,6 @@
 	"name": "@architekt/web",
 	"type": "module",
 	"version": "1.0.0",
-	"main": "index.js",
 	"dependencies": {
 		"@architekt/api": "1.0.0",
 		"@architekt/builder": "1.0.0",
@@ -17,13 +16,13 @@
 		"js-beautify": "^1.14.7",
 		"jsdom": "^20.0.2",
 		"koa": "^2.13.4",
+		"koa-compose": "^4.1.0",
 		"postcss": "^8.3.11",
 		"postcss-import": "^14.0.2",
 		"postcss-nested": "^5.0.6"
 	},
 	"exports": {
-		".": "./index.js",
-		"./server": "./server/server.js",
-		"./client": "./client/client.js"
+		"./server": "./runtime/server/server.js",
+		"./client": "./runtime/client/client.js"
 	}
 }

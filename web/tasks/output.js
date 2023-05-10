@@ -5,7 +5,7 @@ import { createDevPackage, createDistPackage } from '../lib/package.js'
 
 
 export default async ({ config, plugins, procedure, data }) => {
-	let { rootPath, outputPath } = config
+	let { projectPath, outputPath } = config
 	let files = []
 	let externals = await data.externals
 	let chunks = [
@@ -52,7 +52,7 @@ export default async ({ config, plugins, procedure, data }) => {
 			fs.emptyDirSync(outputPath)
 
 			if(config.dev){
-				await createDevPackage({ rootPath, outputPath })
+				await createDevPackage({ projectPath, outputPath })
 			}else{
 				await createDistPackage({ rootPath, outputPath, externals })
 			}

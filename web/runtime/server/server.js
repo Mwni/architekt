@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
-import Koa from 'koa'
 import Router from '@koa/router'
+import compose from 'koa-compose'
 import { fileURLToPath } from 'url'
 import { JSDOM } from 'jsdom'
 import { fetch } from '@architekt/api'
@@ -14,6 +14,7 @@ import createCookies from './cookies.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
+
 const mimes = {
 	default: 'text/plain',
 	'.js': 'text/javascript',
@@ -24,7 +25,7 @@ const descriptor = {
 	name: 'architekt-server'
 }
 
-export default async ({ port, render, clientApp, clientConfig }) => {
+export default async ({ clientApp, clientConfig, ssr = true }) => {
 	Object.assign(
 		descriptor, 
 		readFile({ 
@@ -33,9 +34,8 @@ export default async ({ port, render, clientApp, clientConfig }) => {
 		})
 	)
 
-	log('starting')
+	log('init')
 
-	let koa = new Koa()
 	let router = new Router()
 	let loaderCode = readFile({ filePath: 'client/loader.js' })
 
@@ -44,19 +44,21 @@ export default async ({ port, render, clientApp, clientConfig }) => {
 	serveDir({ router, fileDir: './client', webPath: '/app' })
 	serveDir({ router, fileDir: './static', webPath: '/app' })
 	serveWellKnown({ router })
-	serveApp({ router, clientApp, clientConfig, loaderCode, render })
+	serveApp({ router, clientApp, clientConfig, loaderCode, ssr })
 
-	koa.use(router.routes(), router.allowedMethods())
-	koa.listen(port)
+	return compose([
+		router.routes(), 
+		router.allowedMethods()
+	])
 
-	fetch.config({
+	/*fetch.config({
 		urlBase: `http://localhost:${port}`
 	})
 
-	log(`listening on port ${port}`)
+	log(`listening on port ${port}`)*/
 }
 
-function serveApp({ router, clientApp, clientConfig, loaderCode, render }){
+function serveApp({ router, clientApp, clientConfig, loaderCode, ssr }){
 	router.get('/(.*)', async ctx => {
 		let dom = new JSDOM(`<!DOCTYPE html>`)
 		let page = {
@@ -69,7 +71,7 @@ function serveApp({ router, clientApp, clientConfig, loaderCode, render }){
 		})
 
 		try{
-			if(render){
+			if(ssr){
 				let node = mountComponent(
 					dom.window.document.body, 
 					clientComponent, 

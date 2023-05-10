@@ -1,5 +1,5 @@
 import path from 'path'
-import template from '../lib/template.js'
+import template from '../build/lib/template.js'
 import bundleAssets from '../assets/index.js'
 
 
