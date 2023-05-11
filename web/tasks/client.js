@@ -45,7 +45,7 @@ export default async ({ config, projectPath, procedure, watch }) => {
 					procedure,
 					watch,
 					plugins: config.plugins
-						? await loadPlugins(config.plugins)
+						? await loadPlugins({ plugins: config.plugins, projectPath })
 						: []
 				})
 			}

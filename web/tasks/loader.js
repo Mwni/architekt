@@ -7,7 +7,7 @@ export default async ({ config, projectPath, procedure }) => {
 	let alternativesCode = ''
 	let alternatives = config.plugins
 		? reconcileVariants(
-			await loadPlugins(config.plugins)
+			await loadPlugins({ plugins: config.plugins, projectPath })
 		)
 		: []
 
