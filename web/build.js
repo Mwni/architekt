@@ -2,6 +2,7 @@ import fs from 'fs-extra'
 import path from 'path'
 import { loadPlugins, spawnTask } from '@architekt/builder'
 import { createDevPackage, createDistPackage } from './lib/package.js'
+import { deriveVariants } from './lib/variants.js'
 
 
 
@@ -55,7 +56,10 @@ export default async ({ config, projectPath, outputPath, procedure, watch, dev }
 	]
 
 	if(app.config.plugins){
-		let plugins = await loadPlugins(app.config.plugins)
+		let plugins = await loadPlugins({
+			plugins: app.config.plugins,
+			projectPath
+		})
 
 		for(let { name, bundleSuffix, chunkTransforms } of deriveVariants(plugins)){
 			if(chunkTransforms.length > 0){
