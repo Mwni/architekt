@@ -130,7 +130,7 @@ switch(args._[0]){
 
 		let startTime = Date.now()
 		let handle = build({
-			...config,
+			config,
 			platform,
 			projectPath: process.cwd(),
 			outputPath
