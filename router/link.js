@@ -22,7 +22,7 @@ export default Fragment(({ ctx, ...props }, content) => {
 				url: route.resolve(props),
 				active
 			},
-			content || props.text
+			content ? () => content({ active }) : props.text
 		)
 	)
 })
