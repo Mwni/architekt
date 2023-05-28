@@ -74,6 +74,7 @@ function createNode(blueprint, index){
 		component: blueprint.component,
 		parent: blueprint.parent,
 		runtime: blueprint.parent.runtime,
+		global: blueprint.parent.global,
 		xid: Math.random()
 	}
 

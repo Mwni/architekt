@@ -24,6 +24,10 @@ export default class Context{
 		return this.runtime.cookies
 	}
 
+	get global(){
+		return this.node.global
+	}
+
 	get state(){
 		return this.node.state
 	}

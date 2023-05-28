@@ -16,7 +16,8 @@ export function mount(dom, component, props){
 			createOverlay,
 			document: dom.ownerDocument,
 			components
-		}
+		},
+		global: {}
 	}
 
 	render(node, props)
