@@ -6,6 +6,6 @@
 	"dependencies": {
 		"@architekt/render": "1.0.0",
 		"@architekt/ui": "1.0.0",
-		"@mwni/events": "^2.0.1"
+		"@mwni/events": "^3.0.0"
 	}
 }
