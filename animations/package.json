@@ -1,0 +1,11 @@
+{
+	"name": "@architekt/animations",
+	"type": "module",
+	"version": "1.0.0",
+	"main": "index.js",
+	"dependencies": {
+		"@architekt/render": "1.0.0",
+		"@architekt/ui": "1.0.0",
+		"@mwni/events": "^2.0.1"
+	}
+}
