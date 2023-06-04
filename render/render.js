@@ -126,6 +126,7 @@ function createNode(blueprint, index){
 }
 
 function deleteNode(node){
+	walkNodes(node, node => dispatchCallbacks(node, 'beforeDelete'))
 	node.deleted = true
 	walkNodes(node, node => dispatchCallbacks(node, 'afterDelete'))
 }

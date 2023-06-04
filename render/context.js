@@ -70,6 +70,10 @@ export default class Context{
 		registerCallback(this.node, 'afterRender', callback)
 	}
 
+	beforeDelete(callback){
+		registerCallback(this.node, 'beforeDelete', callback)
+	}
+
 	afterDelete(callback){
 		registerCallback(this.node, 'afterDelete', callback)
 	}
