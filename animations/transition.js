@@ -1,5 +1,6 @@
 import { Component } from '@architekt/render'
 import { createTween } from './tween.js'
+import { createPhantom, createSnapshot } from './phantom.js'
 
 
 export default Component(({ ctx, ...tweens }) => {
@@ -19,7 +20,19 @@ export default Component(({ ctx, ...tweens }) => {
 				})
 			})
 
+			if(tweens.out){
+				ctx.beforeDelete(() => {
+					let [ element ] = ctx.dom
+					let snapshot = createSnapshot({ element })
 
+					ctx.afterDelete(() => {
+						let phantom = createPhantom({
+							element,
+							snapshot
+						})
+					})
+				})
+			}
 		}
 	}
 
