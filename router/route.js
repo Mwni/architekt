@@ -12,5 +12,5 @@ const Route = Component(({ ctx, route }, content) => {
 	ctx.public({ route })
 
 	if(content)
-		content(route.params)
+		content(route)
 })
