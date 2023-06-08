@@ -22,6 +22,7 @@
 		"postcss-nested": "^5.0.6"
 	},
 	"exports": {
+		".": "./components.js",
 		"./server": "./runtime/server/server.js",
 		"./client": "./runtime/client/client.js"
 	}

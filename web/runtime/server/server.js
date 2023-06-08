@@ -76,6 +76,7 @@ function serveApp({ router, clientApp, clientConfig, loaderCode, ssr }){
 					dom.window.document.body, 
 					clientComponent, 
 					{ 
+						document: dom.window.document,
 						page, 
 						clientApp,
 						clientConfig,
