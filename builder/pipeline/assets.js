@@ -1,9 +1,9 @@
-import fs from 'fs'
 import path from 'path'
+import template from '../template.js'
 import { generateXid } from '../lib/xid.js'
 
 
-export default ({ emissions }) => ({
+export default ({ projectPath, emissions }) => ({
 	name: 'architekt-assets',
 	setup(build){
 		build.onResolve(
@@ -19,44 +19,30 @@ export default ({ emissions }) => ({
 			})
 		)
 
+		build.onResolve(
+			{ 
+				filter: /\.(html)$/,
+				namespace: 'file'
+			},
+			async ({ path: stylesheetPath, resolveDir }) => ({
+				path: path.resolve(
+					path.join(resolveDir, stylesheetPath)
+				),
+				namespace: 'html',
+			})
+		)
+
 		build.onLoad(
 			{ 
 				filter: /.*/,
 				namespace: 'asset'
 			},
-			async ({ path: manifestOrAssetPath }) => {
-				let { ext } = path.parse(manifestOrAssetPath)
+			async ({ path }) => {
 				let xid = generateXid(5)
-				let manifest
-				let mapFilePath = file => path.resolve(
-					path.join(
-						path.dirname(manifestOrAssetPath),
-						file
-					)
-				)
-
-				if(ext === '.json'){
-					manifest = JSON.parse(
-						fs.readFileSync(manifestOrAssetPath, 'utf-8')
-					)
-
-					if(manifest.file){
-						manifest.file = mapFilePath(manifest.file)
-					}else if(manifest.variants){
-						for(let key of Object.keys(manifest.variants)){
-							manifest.variants[key].file = mapFilePath(manifest.variants[key].file)
-						}
-					}
-				}else if(ext === '.svg'){
-					manifest = svgLoader(manifestOrAssetPath)
-				}else{
-					manifest = defaultAssetLoader(manifestOrAssetPath)
-				}
 
 				emissions.push({
 					xid,
-					manifest,
-					path: manifestOrAssetPath
+					path
 				})
 
 				return {
@@ -65,31 +51,35 @@ export default ({ emissions }) => ({
 				}
 			}
 		)
+
+		build.onLoad(
+			{ 
+				filter: /.*/,
+				namespace: 'html'
+			}, 
+			async ({ path, pluginData, ...args }) => {
+				let xid = generateXid(5)
+				
+				emissions.push({
+					path,
+					xid
+				})
+
+				return {
+					contents: template({
+						file: 'html.js',
+						fields: { xid }
+					}),
+					resolveDir: projectPath,
+					loader: 'js',
+					pluginData: {
+						...pluginData,
+						resolveOverride: {
+							namespace: 'file'
+						}
+					}
+				}
+			}
+		)
 	}
 })
-
-function svgLoader(path){
-	let svg = fs.readFileSync(path, 'utf-8')
-	let templatesRegex = /\{\{([^}]+)\}\}/g
-	let result
-	let styleKeys = []
-  
-	while((result = templatesRegex.exec(svg)) !== null){
-		styleKeys.push(result[1])
-	}
-
-	return {
-		type: 'svg',
-		file: path,
-		styleKeys: styleKeys.length > 0 
-			? styleKeys 
-			: undefined
-	}
-}
-
-function defaultAssetLoader(path){
-	return {
-		type: 'image',
-		file: path
-	}
-}

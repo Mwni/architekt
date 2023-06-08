@@ -1,5 +1,5 @@
-import template from '../template.js'
 import path from 'path'
+import template from '../template.js'
 import { generateXid } from '../lib/xid.js'
 
 export default opts => ({

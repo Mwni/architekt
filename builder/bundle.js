@@ -62,6 +62,7 @@ export async function bundle({ projectPath, entry, virtuals, importerImpl, isSer
 				emissions: capturedStylesheets
 			}),
 			assets({
+				projectPath,
 				emissions: capturedAssets
 			}),
 			externals({
@@ -108,7 +109,7 @@ export async function bundle({ projectPath, entry, virtuals, importerImpl, isSer
 				.filter(Boolean)
 
 			let assets = Object.keys(build.inputs)
-				.map(src => capturedAssets.find(({ path }) => `asset:${path}` === src))
+				.map(src => capturedAssets.find(({ path }) => [`asset:${path}`, `html:${path}`].includes(src)))
 				.filter(Boolean)
 
 			return {

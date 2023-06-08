@@ -6,7 +6,10 @@ export default opts => ({
 				filter: /.*$/
 			},
 			async ({ path, pluginData, ...args }) => {
-				if(pluginData?.resolveOverride)
+				if(pluginData?.resolveOverride){
+					if(path.includes('favicons'))
+					console.log('override resolve:', path, args, pluginData.resolveOverride)
+
 					return await build.resolve(
 						path,
 						{
@@ -18,8 +21,7 @@ export default opts => ({
 							}
 						}
 					)
-
-				
+				}
 			}
 		)
 
