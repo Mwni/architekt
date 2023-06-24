@@ -22,19 +22,22 @@ export async function resolveExternals({ externals }){
 		if(!fs.existsSync(manifestPath))
 			continue
 
+		let packagePath = path.resolve(path.dirname(manifestPath))
 		let manifest = JSON.parse(
 			fs.readFileSync(manifestPath, 'utf-8')
 		)
 
+		if(externalPackages.some(pkg => pkg.packagePath === packagePath))
+			continue
+
 		externalPackages.push({
 			manifest,
-			manifestPath
+			manifestPath,
+			packagePath
 		})
 	}
 
-	for(let { manifest, manifestPath } of externalPackages){
-		let packagePath = path.dirname(manifestPath)
-
+	for(let { manifest, packagePath } of externalPackages){
 		if(!manifest.dependencies)
 			continue
 
@@ -64,5 +67,8 @@ export async function resolveExternals({ externals }){
 		}
 	}
 
-	return dependencies
+	return {
+		dependencies,
+		packages: externalPackages
+	}
 }

@@ -99,7 +99,11 @@ export default async ({ config, projectPath, outputPath, procedure, watch, dev }
 			fs.emptyDirSync(outputPath)
 
 			if(dev){
-				await createDevPackage({ projectPath, outputPath })
+				await createDevPackage({ 
+					projectPath, 
+					outputPath, 
+					externals: app.externals 
+				})
 			}else{
 				await createDistPackage({ 
 					projectPath, 
