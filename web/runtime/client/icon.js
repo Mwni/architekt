@@ -11,7 +11,7 @@ export default ({ asset, ...props }) => {
 		return
 	}
 
-	if(asset.styleKeys){
+	if(asset.styleKeys?.length > 0){
 		return DynamicIcon({ asset, ...props })
 	}else{
 		return StaticIcon({ asset, ...props })
