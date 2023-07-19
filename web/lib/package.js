@@ -108,16 +108,16 @@ export async function createDevPackage({ projectPath, outputPath, externals }){
 	if(!fs.existsSync(modulesDest))
 		fs.mkdirSync(modulesDest)
 
-	for(let { packagePath } of packages){
+
+	for(let { manifest, packagePath } of packages){
 		if(packagePath === path.resolve(projectPath))
 			continue
 
-		let potentialScope = path.basename(path.dirname(packagePath))
 		let packageDest
 
-		if(potentialScope.charAt(0) === '@'){
+		if(manifest.name.startsWith('@')){
 			packagePath = path.dirname(packagePath)
-			packageDest = path.join(modulesDest, potentialScope)
+			packageDest = path.join(modulesDest, manifest.name.split('/')[0])
 		}else{
 			packageDest = path.join(modulesDest, path.basename(packagePath))
 		}
