@@ -6,7 +6,7 @@ export default Component(({ }) => {
 	return props => {
 		Element({
 			tag: 'img',
-			class: ['a-icon', props.class]
+			class: ['a-image', props.class]
 		})
 	}
 })

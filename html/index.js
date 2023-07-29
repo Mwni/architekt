@@ -15,7 +15,7 @@ export function mount(dom, component, props){
 		runtime: {
 			createOverlay,
 			document: dom.ownerDocument,
-			components
+			components: { ...components }
 		},
 		global: {}
 	}

@@ -1,11 +1,9 @@
 import { Component } from '@architekt/ui'
+import ServerImage from './image.js'
 import ServerIcon from './icon.js'
 import ServerHTML from './html.js'
 
 export default Component(({ ctx, document, page, clientApp, clientConfig, cookies }) => {
-	ctx.runtime.components.Icon = ServerIcon
-	ctx.runtime.components.HTML = ServerHTML
-
 	Object.assign(ctx.runtime, {
 		isServer: true,
 		document,
@@ -13,6 +11,12 @@ export default Component(({ ctx, document, page, clientApp, clientConfig, cookie
 		cookies,
 		assets: {},
 		config: clientConfig
+	})
+
+	Object.assign(ctx.runtime.components, {
+		Image: ServerImage,
+		Icon: ServerIcon,
+		HTML: ServerHTML
 	})
 
 	return clientApp
