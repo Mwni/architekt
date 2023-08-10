@@ -3,7 +3,6 @@ import Element from '../element.js'
 
 
 export default Component(({ ctx, controller }) => {
-	let { afterDomCreation, afterRemove, afterDraw, isServer, teardown } = getContext()
 	let wrap
 	let canvas
 
@@ -15,15 +14,15 @@ export default Component(({ ctx, controller }) => {
 		canvas.dispatchEvent(new Event('resize'))
 	}
 
-	if(!isServer){
-		afterDomCreation(dom => {
-			wrap = dom[0]
+	if(ctx.isClient){
+		ctx.afterRender(() => {
+			wrap = ctx.dom[0]
 			canvas = wrap.children[0]
 
 			window.addEventListener('resize', resize)
 			controller(canvas)
 
-			afterRemove(() => {
+			ctx.afterDelete(() => {
 				canvas.dispatchEvent(new Event('remove'))
 			})
 		})
@@ -31,23 +30,21 @@ export default Component(({ ctx, controller }) => {
 
 	return ({ controller: newController, ...props }) => {
 		if(newController !== controller)
-			return teardown()
+			return ctx.teardown()
 
 		Element(
 			{
 				tag: 'div',
 				class: 'a-canvas-wrap'
 			},
-			() => Element(
-				'canvas',
-				{
-					...props,
-					class: ['a-canvas', props.class]
-				}
-			)
+			() => Element({
+				tag: 'canvas',
+				...props,
+				class: ['a-canvas', props.class]
+			})
 		)
 
-		if(!isServer)
-			afterDraw(resize)
+		if(ctx.isClient)
+			ctx.afterRender(resize)
 	}
 })
