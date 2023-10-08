@@ -1,4 +1,5 @@
 import makeJsonParser from 'koa-json-body'
+import getRawBody from 'raw-body'
 
 const jsonParse = makeJsonParser({ fallback: true })
 
@@ -19,6 +20,30 @@ export function post({ path }, router, func){
 		jsonParse,
 		(ctx, next) => {
 			ctx.state.payload = ctx.request.body
+			return next(ctx)
+		},
+		ctx => execute(ctx, func)
+	)
+}
+
+export function upload({ path }, router, func){
+	router.post(
+		path,
+		async (ctx, next) => {
+			try{
+				ctx.state.payload = {
+					file: {
+						type: ctx.headers['content-type'],
+						name: ctx.headers['file-name'],
+						buffer: await getRawBody(ctx.req),
+					}
+				}
+			}catch(error){
+				ctx.status = 400
+				ctx.body = {
+					message: `Corrupted File (${error.message})`
+				}
+			}
 			return next(ctx)
 		},
 		ctx => execute(ctx, func)

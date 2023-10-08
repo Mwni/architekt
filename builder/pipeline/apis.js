@@ -3,7 +3,7 @@ import pa from 'path'
 import ts from 'typescript'
 
 
-const methods = ['get', 'post']
+const methods = ['get', 'post', 'upload']
 
 export default opts => ({
 	name: 'architekt-apis',

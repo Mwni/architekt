@@ -45,3 +45,44 @@ export function post({ path }){
 	}
 }
 
+export function upload({ path }){
+	return async ({ file, onProgress }) => {
+		let request = new XMLHttpRequest();
+
+		request.open('POST', path)
+		request.setRequestHeader('file-name', file.name)
+		request.setRequestHeader('content-type', file.type)
+		request.setRequestHeader('accept', 'application/json')
+		request.send(file)
+
+		request.upload.addEventListener('progress', evt => {
+			onProgress(evt.loaded / evt.total)
+		})
+
+		return Object.assign(
+			new Promise((resolve, reject) => {
+				request.addEventListener('load', evt => {
+					resolve(JSON.parse(request.responseText))
+				})
+			
+				request.addEventListener('error', error => {
+					reject({
+						...JSON.parse(request.responseText),
+						statusCode: request.status
+					})
+				})
+			}),
+			{
+				abort: () => {
+					try{ 
+						request.abort()
+						return true
+					}catch{
+						return false
+					}
+				}
+			}
+		)
+	}
+}
+

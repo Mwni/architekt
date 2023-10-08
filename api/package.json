@@ -9,6 +9,7 @@
 		"./client": "./client.js"
 	},
 	"dependencies": {
-		"koa-json-body": "^5.3.0"
+		"koa-json-body": "^5.3.0",
+		"raw-body": "^2.5.2"
 	}
 }
